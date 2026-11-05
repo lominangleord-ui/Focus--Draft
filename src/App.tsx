@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { DESIGNS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
+import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -58,10 +58,11 @@ type AppState = {
   studyVideo: string;
   spotify: { type: string; id: string } | null;
   youtubeMusicUrl: string;
-  /** Manual accent override (0-359). Null means "follow the scene / background". */
-  customHue: number | null;
   /** Active design orientation. "classic" is the original look. */
   design: DesignId;
+  /** Manual accent override (0-359), remembered per theme. A missing entry
+      means "use the theme's own palette" (which itself may follow the scene). */
+  designHues: Partial<Record<DesignId, number>>;
   windows: Record<string, WinFrame>;
 };
 
@@ -259,8 +260,8 @@ const defaultState = (): AppState => ({
   studyVideo: DEFAULT_STUDY_VIDEO,
   spotify: null,
   youtubeMusicUrl: "",
-  customHue: null,
   design: DEFAULT_DESIGN,
+  designHues: {},
   windows: {},
 });
 
@@ -279,8 +280,8 @@ function todayKey(date = new Date()) {
 function defaultFrame(wide = false): WinFrame {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const w = Math.min(wide ? 460 : 390, vw - 20);
-  const h = Math.min(wide ? 540 : 500, Math.max(380, vh * 0.66));
+  const w = Math.min(wide ? 540 : 390, vw - 20);
+  const h = Math.min(wide ? 580 : 500, Math.max(380, vh * 0.7));
   return {
     x: Math.max(10, (vw - w) / 2),
     y: Math.max(12, Math.min(84, (vh - h) / 2 - 48)),
@@ -326,9 +327,19 @@ function loadState(): AppState {
     }
     // Older saves have no study video — give everyone a working Lofi stream.
     if (!merged.studyVideo) merged.studyVideo = DEFAULT_STUDY_VIDEO;
-    // Guard against corrupted/out-of-range custom hue values.
-    merged.customHue =
-      typeof merged.customHue === "number" && Number.isFinite(merged.customHue) ? ((merged.customHue % 360) + 360) % 360 : null;
+    // Manual accents are stored per theme. Older saves kept a single global
+    // hue — adopt it for whichever theme was active at the time.
+    const legacyHue = (parsed as { customHue?: number | null }).customHue;
+    const hues: Partial<Record<DesignId, number>> = {};
+    for (const [key, value] of Object.entries(parsed.designHues ?? {})) {
+      if (isDesignId(key) && typeof value === "number" && Number.isFinite(value)) {
+        hues[key] = ((value % 360) + 360) % 360;
+      }
+    }
+    if (legacyHue != null && Number.isFinite(legacyHue) && hues[merged.design] == null) {
+      hues[merged.design] = ((legacyHue % 360) + 360) % 360;
+    }
+    merged.designHues = hues;
 
     // Migrate minute-based day records to the second-based buckets, and drop
     // anything older than ~6 months so the saved JSON never grows unbounded.
@@ -722,6 +733,7 @@ function App() {
 
   /* ---- dynamic theme: hue is sampled from whatever is on screen ---- */
   const preset = designById(state.design);
+  const customHue = state.designHues[state.design] ?? null;
   const effectiveScene = state.sceneAuto ? autoScene() : state.scene;
   const bgUrl = state.customImage || (effectiveScene !== "pure" ? SCENE_IMAGES[effectiveScene] : "");
 
@@ -732,29 +744,33 @@ function App() {
     // canvas decode entirely while one is active — nothing to gain from it.
     // Presets that ship their own accent (terminal, brutalist, aurora) don't
     // follow the background either, so they skip it too.
-    if (!bgUrl || state.customHue != null || preset.accentHue != null) return;
+    if (!bgUrl || customHue != null || preset.accent != null) return;
     sampleImageHue(bgUrl).then((hue) => {
       if (alive) setSampledHue(hue);
     });
     return () => {
       alive = false;
     };
-  }, [bgUrl, state.customHue, preset.accentHue]);
+  }, [bgUrl, customHue, preset.accent]);
 
-  // Priority: your manual pick > the preset's own accent > the hue sampled off
+  // Priority: your manual pick > the theme's own palette > the hue sampled off
   // the current background > the scene's default. Never static, intentional.
-  const hue = state.customHue ?? preset.accentHue ?? sampledHue ?? SCENE_HUES[effectiveScene];
+  const hue = customHue ?? preset.accent?.hue ?? sampledHue ?? SCENE_HUES[effectiveScene];
+  // Themes can also pin saturation/lightness so e.g. gold stays gold and neon
+  // stays neon. A hand-picked hue keeps the classic 66%/60% recipe.
+  const accentSat = customHue != null || !preset.accent ? 66 : preset.accent.sat;
+  const accentLight = customHue != null || !preset.accent ? 60 : preset.accent.light;
   const breakHue = preset.breakHue ?? (hue + 140) % 360;
   const themeVars = useMemo(
     () =>
       ({
-        "--accent": `hsl(${hue} 66% 60%)`,
-        "--accent-2": `hsl(${hue} 72% 46%)`,
-        "--accent-glow": `hsla(${hue}, 75%, 60%, 0.45)`,
-        "--accent-soft": `hsla(${hue}, 70%, 60%, 0.15)`,
+        "--accent": `hsl(${hue} ${accentSat}% ${accentLight}%)`,
+        "--accent-2": `hsl(${hue} ${clamp(accentSat + 6, 0, 100)}% ${clamp(accentLight - 14, 0, 100)}%)`,
+        "--accent-glow": `hsla(${hue}, ${clamp(accentSat + 9, 0, 100)}%, ${accentLight}%, 0.45)`,
+        "--accent-soft": `hsla(${hue}, ${clamp(accentSat + 4, 0, 100)}%, ${accentLight}%, 0.15)`,
         "--break": `hsl(${breakHue} 62% 64%)`,
       }) as React.CSSProperties,
-    [hue, breakHue],
+    [hue, accentSat, accentLight, breakHue],
   );
 
   /* ---- persistence ----
@@ -1074,11 +1090,20 @@ function App() {
     window.setTimeout(() => setToast(""), 2400);
   }
 
-  /* A preset is a whole look, accent included — so switching clears any older
-     manual accent. The accent picker stays available to override afterwards. */
   function chooseDesign(id: DesignId) {
-    setState((prev) => ({ ...prev, design: id, customHue: null }));
-    notify(id === DEFAULT_DESIGN ? "Original look restored." : `${designById(id).name} design applied.`);
+    setState((prev) => ({ ...prev, design: id }));
+    notify(id === DEFAULT_DESIGN ? "Original look restored." : `${designById(id).name} theme applied.`);
+  }
+
+  /* Accent overrides are remembered per theme, so a colour you picked for one
+     look is still there when you come back to it. Null forgets the override. */
+  function setAccentHue(value: number | null) {
+    setState((prev) => {
+      const next = { ...prev.designHues };
+      if (value == null) delete next[prev.design];
+      else next[prev.design] = ((Math.round(value) % 360) + 360) % 360;
+      return { ...prev, designHues: next };
+    });
   }
 
   function startTimer() {
@@ -1433,41 +1458,49 @@ function App() {
     personal: (
       <>
         <p className="field-hint">
-          A design orientation restyles everything — type, surfaces, corners, depth and color. Original is the default;
+          A theme restyles everything — type, buttons, surfaces, corners, depth and colour. Original is the default;
           your tasks, stats and notes are untouched.
         </p>
 
-        <div className="design-grid" role="radiogroup" aria-label="Design presets">
-          {DESIGNS.map((item) => {
-            const active = state.design === item.id;
-            return (
-              <button
-                key={item.id}
-                role="radio"
-                aria-checked={active}
-                data-preview={item.id}
-                className={`design-card ${active ? "active" : ""}`}
-                onClick={() => chooseDesign(item.id)}
-                title={item.tagline}
-              >
-                <span className="design-thumb" aria-hidden="true">
-                  <span className="dt-dots"><i /><i /><i /><i /></span>
-                  <b className="dt-time">25:00</b>
-                  <span className="dt-row">
-                    <i className="dt-round" />
-                    <i className="dt-start" />
-                    <i className="dt-round" />
-                  </span>
-                </span>
-                <span className="design-card-name">
-                  {item.name}
-                  {item.id === DEFAULT_DESIGN && <em>default</em>}
-                </span>
-                <span className="design-card-tag">{item.tagline}</span>
-              </button>
-            );
-          })}
-        </div>
+        {DESIGN_GROUPS.map((group) => (
+          <div className="design-group" key={group.id}>
+            <div className="design-group-head">
+              <span>{group.label}</span>
+              <small>{group.note}</small>
+            </div>
+            <div className="design-grid" role="radiogroup" aria-label={group.label}>
+              {DESIGNS.filter((item) => item.group === group.id).map((item) => {
+                const active = state.design === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    role="radio"
+                    aria-checked={active}
+                    data-preview={item.id}
+                    className={`design-card ${active ? "active" : ""}`}
+                    onClick={() => chooseDesign(item.id)}
+                    title={item.tagline}
+                  >
+                    <span className="design-thumb" aria-hidden="true">
+                      <span className="dt-dots"><i /><i /><i /><i /></span>
+                      <b className="dt-time">25:00</b>
+                      <span className="dt-row">
+                        <i className="dt-round" />
+                        <i className="dt-start" />
+                        <i className="dt-round" />
+                      </span>
+                    </span>
+                    <span className="design-card-name">
+                      {item.name}
+                      {item.id === DEFAULT_DESIGN && <em>default</em>}
+                    </span>
+                    <span className="design-card-tag">{item.tagline}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
         <div className="theme-block">
           <div className="theme-head">
@@ -1478,13 +1511,13 @@ function App() {
           <div className="swatch-grid">
             {THEME_SWATCHES.map((hexValue) => {
               const swatchHue = hexToHue(hexValue);
-              const active = state.customHue !== null && Math.abs(((state.customHue - swatchHue + 540) % 360) - 180) < 6;
+              const active = customHue !== null && Math.abs(((customHue - swatchHue + 540) % 360) - 180) < 6;
               return (
                 <button
                   key={hexValue}
                   className={`swatch ${active ? "active" : ""}`}
                   style={{ background: hexValue }}
-                  onClick={() => setState((prev) => ({ ...prev, customHue: swatchHue }))}
+                  onClick={() => setAccentHue(swatchHue)}
                   aria-label={`Use ${hexValue} as the accent color`}
                   title={hexValue}
                 />
@@ -1498,12 +1531,12 @@ function App() {
             min={0}
             max={359}
             value={Math.round(hue)}
-            onChange={(event) => setState((prev) => ({ ...prev, customHue: Number(event.target.value) }))}
+            onChange={(event) => setAccentHue(Number(event.target.value))}
             aria-label="Accent hue"
           />
 
-          <button className="theme-reset" onClick={() => setState((prev) => ({ ...prev, customHue: null }))} disabled={state.customHue == null}>
-            {preset.accentHue != null ? `Reset to ${preset.name} accent` : "Reset to scene color"}
+          <button className="theme-reset" onClick={() => setAccentHue(null)} disabled={customHue == null}>
+            {preset.accent ? `Reset to ${preset.name} palette` : "Reset to scene color"}
           </button>
         </div>
 

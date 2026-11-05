@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,ital@9..144,300..800,0..1&family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,ital@9..144,300..800,0..1&family=Caveat:wght@400..700&family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Patrick+Hand&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -4450,4 +4450,4312 @@ body:has(.focus-app[data-design="aurora"]) {
   .focus-app .dt-time {
     font-size: 0.98rem;
   }
+}
+
+/* ============================================================================
+   THEME LIBRARY — shared plumbing
+   ----------------------------------------------------------------------------
+   A few extra tokens let a theme reshape structure, not just colour: clipped
+   corners, inset (pressed) shadows, bevelled borders, a coloured window title
+   bar. Defaults keep the original look and are no-ops for earlier themes.
+   ========================================================================== */
+
+.focus-app {
+  --d-btn-border: 0;
+  --d-btn-clip: none;
+  --d-panel-clip: none;
+  --d-input-inset: none;
+  --d-card-shadow: none;
+  --d-ctl-shadow: none;
+  --d-title-ink: inherit;
+  --d-headbar-bg: transparent;
+}
+
+.focus-app .start-control,
+.focus-app .panel-primary,
+.focus-app .util-go {
+  border: var(--d-btn-border);
+  clip-path: var(--d-btn-clip);
+}
+
+.focus-app .round-control {
+  box-shadow: var(--d-ctl-shadow);
+  clip-path: var(--d-btn-clip);
+}
+
+.focus-app .mode-choice,
+.focus-app .task-chip {
+  clip-path: var(--d-btn-clip);
+}
+
+.focus-app .float-win,
+.focus-app .util-panel {
+  clip-path: var(--d-panel-clip);
+}
+
+.focus-app .field input,
+.focus-app .notes,
+.focus-app .add-row input,
+.focus-app .util-bar input {
+  box-shadow: var(--d-input-inset);
+}
+
+.focus-app :is(.task-progress, .today-hero, .yt-audio-card, .stat-row div, .task-item, .theme-block, .design-card) {
+  box-shadow: var(--d-card-shadow);
+}
+
+.focus-app .bottom-dock button,
+.focus-app .icon-button {
+  box-shadow: var(--d-ctl-shadow);
+}
+
+.focus-app .fw-head {
+  background: var(--d-headbar-bg);
+}
+
+.focus-app .fw-title {
+  color: var(--d-title-ink);
+}
+
+/* ---- grouped theme picker ---- */
+
+.focus-app .design-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.focus-app .design-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--d-hairline);
+}
+
+.focus-app .design-group-head span {
+  color: var(--dim);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.focus-app .design-group-head small {
+  color: var(--d-faint);
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.focus-app .design-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.4rem, 1fr));
+  gap: 0.55rem;
+}
+
+/* ============================================================================
+   THEME LIBRARY — miniature previews
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="swiss"] {
+  --pv-bg: #ffffff;
+  --pv-ink: #0d0d0d;
+  --pv-accent: hsl(4 74% 50%);
+  --pv-radius: 0;
+  --pv-border: 1px solid #0d0d0d;
+  --pv-font: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.05em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="swiss"] .design-thumb {
+  border-left: 7px solid hsl(4 74% 50%);
+}
+
+.focus-app .design-card[data-preview="sketch"] {
+  --pv-bg: #fffdf4;
+  --pv-ink: #2b2a26;
+  --pv-accent: #b0603a;
+  --pv-radius: 18px 10px 16px 11px / 11px 16px 10px 18px;
+  --pv-border: 2px dashed rgba(43, 42, 38, 0.55);
+  --pv-font: "Caveat", "Patrick Hand", cursive;
+  --pv-weight: 700;
+  --pv-tracking: 0;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="retro"] {
+  --pv-bg: #008080;
+  --pv-ink: #c0c0c0;
+  --pv-accent: #000080;
+  --pv-radius: 0;
+  --pv-border: 2px solid;
+  --pv-font: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+  --pv-weight: 700;
+  --pv-tracking: 0;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="retro"] .design-thumb {
+  border-color: #ffffff #404040 #404040 #ffffff;
+  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+}
+
+.focus-app .design-card[data-preview="retro"] .dt-time {
+  padding: 0.06rem 0.3rem;
+  background: #c0c0c0;
+  color: #101010;
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+}
+
+.focus-app .design-card[data-preview="cyber"] {
+  --pv-bg: radial-gradient(circle at 50% 120%, rgba(255, 62, 200, 0.55), #06010c 62%);
+  --pv-ink: #ffffff;
+  --pv-accent: #ff3ec8;
+  --pv-radius: 0;
+  --pv-border: 1px solid rgba(255, 62, 200, 0.55);
+  --pv-font: "JetBrains Mono", monospace;
+  --pv-weight: 700;
+  --pv-tracking: 0.04em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="deco"] {
+  --pv-bg: radial-gradient(circle at 50% -20%, #17392b, #08110e 66%);
+  --pv-ink: #f3e9cd;
+  --pv-accent: #d4af37;
+  --pv-radius: 0;
+  --pv-border: 1px solid rgba(212, 175, 55, 0.6);
+  --pv-font: "Fraunces", Georgia, serif;
+  --pv-weight: 300;
+  --pv-tracking: 0.06em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="clay"] {
+  --pv-bg: linear-gradient(160deg, #fdfaff, #e9e1f8);
+  --pv-ink: #3b3350;
+  --pv-accent: #a97bff;
+  --pv-radius: 1.3rem;
+  --pv-border: 0;
+  --pv-shadow: inset 0 -4px 6px rgba(150, 120, 190, 0.25), inset 0 4px 6px rgba(255, 255, 255, 0.9), 0 6px 12px rgba(96, 76, 140, 0.18);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.03em;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="neu"] {
+  --pv-bg: #e6eaf2;
+  --pv-ink: #4a5266;
+  --pv-accent: #7d8db3;
+  --pv-radius: 1.1rem;
+  --pv-border: 0;
+  --pv-shadow: inset 3px 3px 6px #c3c9d6, inset -3px -3px 6px #ffffff;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 700;
+  --pv-tracking: 0;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="nordic"] {
+  --pv-bg: #222b27;
+  --pv-ink: #e7e6df;
+  --pv-accent: #7ea17f;
+  --pv-radius: 0.8rem;
+  --pv-border: 1px solid rgba(231, 230, 223, 0.14);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 300;
+  --pv-tracking: 0.03em;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+/* ============================================================================
+   PRESET — SWISS (white grid, grotesk caps, one red rule)
+   ========================================================================== */
+
+.focus-app[data-design="swiss"] {
+  color-scheme: light;
+  --ink: #0d0d0d;
+  --dim: rgba(13, 13, 13, 0.55);
+  --line: rgba(13, 13, 13, 0.2);
+  --danger: #c1121f;
+
+  --d-shell-bg: #fafaf7;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 84%, #0d0d0d);
+  --d-break-ink: color-mix(in srgb, var(--break) 50%, #0d0d0d);
+
+  --d-font-ui: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --d-font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
+
+  --d-panel-bg: #fafaf7;
+  --d-panel-border: 1px solid #0d0d0d;
+  --d-panel-radius: 0;
+  --d-panel-shadow: none;
+  --d-panel-blur: none;
+  --d-panel-head: #0d0d0d;
+
+  --d-util-bg: #fafaf7;
+  --d-util-border: 1px solid #0d0d0d;
+  --d-util-shadow: none;
+  --d-util-blur: none;
+
+  --d-head-bg: #fafaf7;
+  --d-bar-bg: #fafaf7;
+  --d-hairline: rgba(13, 13, 13, 0.85);
+  --d-view-bg: #ffffff;
+
+  --d-surface-bg: #ffffff;
+  --d-surface-border: 1px solid #0d0d0d;
+  --d-surface-line: rgba(13, 13, 13, 0.35);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: #ffffff;
+  --d-card-grad: #ffffff;
+  --d-card-border: 1px solid #0d0d0d;
+  --d-card-radius: 0;
+  --d-soft-bg: #efefe9;
+  --d-soft-ink: rgba(13, 13, 13, 0.62);
+  --d-tab-ink: #0d0d0d;
+  --d-on-soft: #ffffff;
+  --d-body-ink: #0d0d0d;
+  --d-body-ink-strong: #0d0d0d;
+  --d-faint: rgba(13, 13, 13, 0.45);
+  --d-hover-bg: #efefe9;
+  --d-hover-soft: #f2f2ee;
+
+  --d-btn-grad: #0d0d0d;
+  --d-btn-text: #fafaf7;
+  --d-btn-border: 1px solid #0d0d0d;
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: none;
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.1em;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: #ffffff;
+  --d-ctl-border: 1px solid #0d0d0d;
+  --d-ctl-radius: 0;
+
+  --d-chip-bg: #ffffff;
+  --d-chip-border: 1px solid #0d0d0d;
+  --d-chip-radius: 0;
+  --d-chip-ink: #0d0d0d;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(13, 13, 13, 0.45);
+  --d-mode-weight: 800;
+  --d-mode-spacing: 0.12em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.4rem 0.05rem;
+  --d-mode-hover: transparent;
+
+  --d-dock-bg: #fafaf7;
+  --d-dock-border: 1px solid #0d0d0d;
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: #0d0d0d;
+  --d-toggle-radius: 0;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.07em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: 0.02em;
+  --d-title-transform: uppercase;
+
+  --d-track-bg: rgba(13, 13, 13, 0.14);
+  --d-dot-bg: rgba(13, 13, 13, 0.3);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(13, 13, 13, 0.2);
+  --d-switch-knob: #0d0d0d;
+  --d-dial-core: #fafaf7;
+
+  --d-greet-ink: rgba(13, 13, 13, 0.62);
+  --d-date-ink: rgba(13, 13, 13, 0.5);
+  --d-resize-line: #0d0d0d;
+  --d-grip-line: #0d0d0d;
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: #0d0d0d;
+  --d-quote-shadow: none;
+  --d-quote-font: var(--d-font-ui);
+
+  --d-danger-ink: #c1121f;
+  --d-danger-bg: #ffe9ea;
+  --d-danger-border: 1px solid #c1121f;
+  --d-danger-radius: 0;
+
+  --d-toast-bg: #0d0d0d;
+  --d-toast-border: 1px solid #0d0d0d;
+  --d-toast-radius: 0;
+  --d-toast-ink: #fafaf7;
+
+  --d-misc-bg: rgba(13, 13, 13, 0.3);
+  --d-reset-radius: 0;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="swiss"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="swiss"] .visual-plane {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(13, 13, 13, 0.055) 0 1px, transparent 1px 8.3333%),
+    linear-gradient(180deg, #ffffff, #f2f1eb);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="swiss"] .video-plane,
+.focus-app[data-design="swiss"] .snow-layer,
+.focus-app[data-design="swiss"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="swiss"] .scrim {
+  background: rgba(250, 250, 247, 0.84);
+  box-shadow: none;
+}
+
+.focus-app[data-design="swiss"] .topbar {
+  border-bottom: 3px solid #0d0d0d;
+  padding-bottom: 0.65rem;
+}
+
+.focus-app[data-design="swiss"] .greet-line,
+.focus-app[data-design="swiss"] .field-hint,
+.focus-app[data-design="swiss"] .empty-copy,
+.focus-app[data-design="swiss"] .task-progress-foot em,
+.focus-app[data-design="swiss"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="swiss"] .greet-clock {
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.focus-app[data-design="swiss"] .mode-row {
+  gap: 1.6rem;
+  border-bottom: 1px solid #0d0d0d;
+}
+
+.focus-app[data-design="swiss"] .mode-choice {
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="swiss"] .mode-choice:hover {
+  color: #0d0d0d;
+}
+
+.focus-app[data-design="swiss"] .mode-choice.active {
+  background: transparent;
+  color: #0d0d0d;
+  box-shadow: none;
+  border-bottom-color: var(--d-accent-ink);
+}
+
+.focus-app[data-design="swiss"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="swiss"] .micro-dots span {
+  width: 1.4rem;
+  height: 3px;
+  border-radius: 0;
+}
+
+.focus-app[data-design="swiss"] .phase-copy {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.focus-app[data-design="swiss"] .start-control:hover {
+  background: var(--d-accent-ink);
+}
+
+.focus-app[data-design="swiss"] .fw-head {
+  border-bottom: 3px solid #0d0d0d;
+}
+
+.focus-app[data-design="swiss"] .task-chip,
+.focus-app[data-design="swiss"] .bottom-dock {
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="swiss"] .bottom-dock button.active {
+  background: #0d0d0d;
+  color: #fafaf7;
+}
+
+.focus-app[data-design="swiss"] :is(.stat-row strong, .figure b, .focus-dial-core strong, .task-progress-head b) {
+  font-family: var(--d-font-ui);
+}
+
+.focus-app[data-design="swiss"] .design-card.active {
+  box-shadow: 0 0 0 3px var(--d-accent-ink);
+}
+
+/* ============================================================================
+   PRESET — SKETCHBOOK (ruled paper, wobble borders, handwriting)
+   ========================================================================== */
+
+.focus-app[data-design="sketch"] {
+  color-scheme: light;
+  --ink: #2b2a26;
+  --dim: rgba(43, 42, 38, 0.62);
+  --line: rgba(43, 42, 38, 0.4);
+  --danger: #b03a2e;
+
+  --d-shell-bg: #fdf8ea;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 78%, #2b2a26);
+  --d-break-ink: color-mix(in srgb, var(--break) 55%, #2b2a26);
+
+  --d-font-ui: "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  --d-font-display: "Caveat", "Patrick Hand", cursive;
+  --d-font-mono: "Patrick Hand", "Courier New", monospace;
+
+  --d-panel-bg: #fffdf4;
+  --d-panel-border: 2px dashed rgba(43, 42, 38, 0.55);
+  --d-panel-radius: 24px 14px 22px 12px / 14px 22px 12px 24px;
+  --d-panel-shadow: 4px 5px 0 rgba(43, 42, 38, 0.12);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(43, 42, 38, 0.35);
+
+  --d-util-bg: #fffdf4;
+  --d-util-border: 2px dashed rgba(43, 42, 38, 0.55);
+  --d-util-shadow: 4px 5px 0 rgba(43, 42, 38, 0.12);
+  --d-util-blur: none;
+
+  --d-head-bg: #fffdf4;
+  --d-bar-bg: #fffdf4;
+  --d-hairline: rgba(43, 42, 38, 0.3);
+  --d-view-bg: #fffdf4;
+
+  --d-surface-bg: #fffdf4;
+  --d-surface-border: 2px solid rgba(43, 42, 38, 0.5);
+  --d-surface-line: rgba(43, 42, 38, 0.4);
+  --d-surface-radius: 14px 8px 12px 9px / 9px 12px 8px 14px;
+  --d-field-radius: 14px 8px 12px 9px / 9px 12px 8px 14px;
+  --d-field-radius-sm: 12px 7px 10px 8px / 8px 10px 7px 12px;
+  --d-add-radius: 12px 8px 10px 9px / 9px 10px 8px 12px;
+
+  --d-card-bg: #fffdf4;
+  --d-card-grad: #fffdf4;
+  --d-card-border: 2px solid rgba(43, 42, 38, 0.35);
+  --d-card-radius: 18px 10px 16px 11px / 11px 16px 10px 18px;
+  --d-card-shadow: 3px 3px 0 rgba(43, 42, 38, 0.08);
+  --d-soft-bg: rgba(43, 42, 38, 0.06);
+  --d-soft-ink: rgba(43, 42, 38, 0.68);
+  --d-tab-ink: rgba(43, 42, 38, 0.75);
+  --d-on-soft: #2b2a26;
+  --d-body-ink: #2b2a26;
+  --d-body-ink-strong: #1f1e1b;
+  --d-faint: rgba(43, 42, 38, 0.5);
+  --d-hover-bg: rgba(43, 42, 38, 0.08);
+  --d-hover-soft: rgba(43, 42, 38, 0.06);
+
+  --d-btn-grad: var(--accent);
+  --d-btn-text: #2b2a26;
+  --d-btn-border: 2px solid #2b2a26;
+  --d-btn-radius: 16px 9px 14px 10px / 10px 14px 9px 16px;
+  --d-btn-radius-sm: 12px 7px 11px 8px / 8px 11px 7px 12px;
+  --d-btn-shadow: 3px 3px 0 #2b2a26;
+  --d-btn-shadow-sm: 2px 2px 0 #2b2a26;
+  --d-btn-weight: 400;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #fffdf4;
+  --d-ctl-border: 2px solid #2b2a26;
+  --d-ctl-radius: 999px;
+  --d-ctl-shadow: 2px 2px 0 rgba(43, 42, 38, 0.25);
+
+  --d-chip-bg: #fffdf4;
+  --d-chip-border: 2px solid #2b2a26;
+  --d-chip-radius: 16px 9px 14px 10px / 10px 14px 9px 16px;
+  --d-chip-ink: #2b2a26;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 2px solid rgba(43, 42, 38, 0.4);
+  --d-mode-radius: 14px 8px 12px 9px / 9px 12px 8px 14px;
+  --d-mode-ink: #2b2a26;
+  --d-mode-weight: 400;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.5rem 1.1rem;
+  --d-mode-hover: rgba(43, 42, 38, 0.07);
+
+  --d-dock-bg: #fffdf4;
+  --d-dock-border: 2px solid rgba(43, 42, 38, 0.5);
+  --d-dock-radius: 20px 12px 18px 10px / 10px 18px 12px 20px;
+  --d-dock-btn-radius: 12px 8px 10px 9px / 9px 10px 8px 12px;
+  --d-dock-ink: rgba(43, 42, 38, 0.75);
+  --d-toggle-radius: 14px 9px 12px 10px / 10px 12px 9px 14px;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 700;
+  --d-readout-spacing: 0;
+  --d-readout-shadow: 2px 2px 0 rgba(43, 42, 38, 0.12);
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: rgba(43, 42, 38, 0.14);
+  --d-dot-bg: rgba(43, 42, 38, 0.3);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(43, 42, 38, 0.22);
+  --d-switch-knob: #fffdf4;
+  --d-dial-core: #fffdf4;
+
+  --d-greet-ink: rgba(43, 42, 38, 0.65);
+  --d-date-ink: rgba(43, 42, 38, 0.5);
+  --d-resize-line: rgba(43, 42, 38, 0.45);
+  --d-grip-line: rgba(43, 42, 38, 0.35);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(43, 42, 38, 0.85);
+  --d-quote-shadow: none;
+  --d-quote-font: var(--d-font-display);
+
+  --d-danger-ink: #b03a2e;
+  --d-danger-bg: #ffece7;
+  --d-danger-border: 2px dashed #b03a2e;
+  --d-danger-radius: 12px 8px 10px 9px / 9px 10px 8px 12px;
+
+  --d-toast-bg: #2b2a26;
+  --d-toast-border: 2px solid #2b2a26;
+  --d-toast-radius: 14px 9px 12px 10px / 10px 12px 9px 14px;
+  --d-toast-ink: #fffdf4;
+
+  --d-misc-bg: rgba(43, 42, 38, 0.3);
+  --d-reset-radius: 12px 8px 10px 9px / 9px 10px 8px 12px;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="sketch"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="sketch"] .visual-plane {
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(43, 42, 38, 0.075) 31px 32px),
+    linear-gradient(180deg, #fffdf4, #f6eeda);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="sketch"] .video-plane,
+.focus-app[data-design="sketch"] .snow-layer,
+.focus-app[data-design="sketch"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="sketch"] .scrim {
+  background: linear-gradient(180deg, rgba(255, 253, 244, 0.84), rgba(246, 238, 218, 0.92));
+  box-shadow: none;
+}
+
+.focus-app[data-design="sketch"] .greet-clock {
+  font-family: var(--d-font-display);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.focus-app[data-design="sketch"] .greet-line,
+.focus-app[data-design="sketch"] .field-hint,
+.focus-app[data-design="sketch"] .empty-copy,
+.focus-app[data-design="sketch"] .task-progress-foot em,
+.focus-app[data-design="sketch"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="sketch"] .timer-face {
+  transform: rotate(-0.5deg);
+}
+
+.focus-app[data-design="sketch"] .time-readout {
+  transform: rotate(-0.7deg);
+}
+
+.focus-app[data-design="sketch"] .timer-aura {
+  background: none;
+  filter: none;
+  opacity: 0;
+}
+
+.focus-app[data-design="sketch"] .micro-dots span {
+  width: 0.6rem;
+  height: 0.6rem;
+  background: transparent;
+  border: 2px solid rgba(43, 42, 38, 0.35);
+}
+
+.focus-app[data-design="sketch"] .micro-dots span.filled {
+  background: var(--d-accent-ink);
+  border-color: var(--d-accent-ink);
+}
+
+.focus-app[data-design="sketch"] .phase-copy {
+  font-size: 1.02rem;
+}
+
+.focus-app[data-design="sketch"] .start-control:hover {
+  transform: translate(2px, 2px) rotate(-0.6deg);
+  box-shadow: 1px 1px 0 #2b2a26;
+}
+
+.focus-app[data-design="sketch"] .panel-primary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #2b2a26;
+}
+
+.focus-app[data-design="sketch"] .fw-head {
+  border-bottom: 2px dashed rgba(43, 42, 38, 0.3);
+}
+
+.focus-app[data-design="sketch"] .field input:focus,
+.focus-app[data-design="sketch"] .notes:focus,
+.focus-app[data-design="sketch"] .util-bar input:focus {
+  box-shadow: 2px 2px 0 var(--d-accent-ink);
+  border-color: var(--d-accent-ink);
+}
+
+.focus-app[data-design="sketch"] .task-item.done span {
+  text-decoration: line-through wavy;
+}
+
+.focus-app[data-design="sketch"] .design-card.active {
+  box-shadow: 3px 3px 0 var(--d-accent-ink);
+}
+
+/* ============================================================================
+   PRESET — RETRO 95 (teal desktop, bevelled windows, pressed buttons)
+   ========================================================================== */
+
+.focus-app[data-design="retro"] {
+  color-scheme: light;
+  --ink: #101010;
+  --dim: rgba(16, 16, 16, 0.65);
+  --line: rgba(0, 0, 0, 0.3);
+  --danger: #a80000;
+
+  --d-shell-bg: #008080;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 86%, #101010);
+  --d-break-ink: color-mix(in srgb, var(--break) 60%, #101010);
+
+  --d-font-ui: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
+  --d-font-display: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
+  --d-font-mono: "Lucida Console", "Courier New", monospace;
+
+  --d-panel-bg: #c0c0c0;
+  --d-panel-border: 0;
+  --d-panel-radius: 0;
+  --d-panel-shadow: none;
+  --d-panel-blur: none;
+  --d-panel-head: transparent;
+  --d-title-ink: #ffffff;
+  --d-headbar-bg: var(--accent);
+
+  --d-util-bg: #c0c0c0;
+  --d-util-border: 0;
+  --d-util-shadow: none;
+  --d-util-blur: none;
+
+  --d-head-bg: #c0c0c0;
+  --d-bar-bg: #c0c0c0;
+  --d-hairline: rgba(0, 0, 0, 0.25);
+  --d-view-bg: #ffffff;
+
+  --d-surface-bg: #ffffff;
+  --d-surface-border: 0;
+  --d-surface-line: rgba(0, 0, 0, 0.3);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+  --d-input-inset: inset 1px 1px 0 #808080, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #000000, inset -2px -2px 0 #dfdfdf;
+
+  --d-card-bg: #c0c0c0;
+  --d-card-grad: #c0c0c0;
+  --d-card-border: 0;
+  --d-card-radius: 0;
+  --d-card-shadow: inset -1px -1px 0 #808080, inset 1px 1px 0 #ffffff;
+  --d-soft-bg: #b6b6b6;
+  --d-soft-ink: #101010;
+  --d-tab-ink: #101010;
+  --d-on-soft: #101010;
+  --d-body-ink: #101010;
+  --d-body-ink-strong: #000000;
+  --d-faint: rgba(16, 16, 16, 0.6);
+  --d-hover-bg: #d0d0d0;
+  --d-hover-soft: #d0d0d0;
+
+  --d-btn-grad: #c0c0c0;
+  --d-btn-text: #101010;
+  --d-btn-border: 0;
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+  --d-btn-shadow-sm: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff;
+  --d-btn-weight: 700;
+  --d-btn-spacing: 0;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #c0c0c0;
+  --d-ctl-border: 0;
+  --d-ctl-radius: 0;
+  --d-ctl-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+
+  --d-chip-bg: #c0c0c0;
+  --d-chip-border: 0;
+  --d-chip-radius: 0;
+  --d-chip-ink: #101010;
+
+  --d-mode-bg: #c0c0c0;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: #101010;
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0;
+  --d-mode-pad: 0.5rem 1rem;
+  --d-mode-hover: #d0d0d0;
+
+  --d-dock-bg: #c0c0c0;
+  --d-dock-border: 0;
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: #101010;
+  --d-toggle-radius: 0;
+
+  --d-readout-font: var(--d-font-mono);
+  --d-readout-weight: 700;
+  --d-readout-spacing: 0.02em;
+  --d-readout-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 700;
+  --d-title-spacing: 0;
+
+  --d-track-bg: rgba(0, 0, 0, 0.2);
+  --d-dot-bg: rgba(0, 0, 0, 0.3);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(0, 0, 0, 0.25);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #c0c0c0;
+
+  --d-greet-ink: #ffffff;
+  --d-date-ink: #d8f4f4;
+  --d-resize-line: rgba(0, 0, 0, 0.5);
+  --d-grip-line: rgba(0, 0, 0, 0.4);
+  --d-greet-shadow: 1px 1px 0 #004d4d;
+  --d-clock-shadow: 1px 1px 0 #004d4d;
+  --d-quote-ink: #ffffff;
+  --d-quote-shadow: 1px 1px 0 #004d4d;
+  --d-quote-font: var(--d-font-ui);
+
+  --d-danger-ink: #a80000;
+  --d-danger-bg: #ffd7d7;
+  --d-danger-border: 0;
+  --d-danger-radius: 0;
+
+  --d-toast-bg: #ffffe1;
+  --d-toast-border: 1px solid #000000;
+  --d-toast-radius: 0;
+  --d-toast-ink: #101010;
+
+  --d-misc-bg: rgba(0, 0, 0, 0.3);
+  --d-reset-radius: 0;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="retro"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="retro"] .visual-plane {
+  background-image: none;
+  background-color: #008080;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="retro"] .video-plane,
+.focus-app[data-design="retro"] .snow-layer,
+.focus-app[data-design="retro"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="retro"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="retro"] .greet-clock {
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.focus-app[data-design="retro"] .greet-line,
+.focus-app[data-design="retro"] .field-hint,
+.focus-app[data-design="retro"] .empty-copy,
+.focus-app[data-design="retro"] .task-progress-foot em,
+.focus-app[data-design="retro"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="retro"] :is(.float-win, .util-panel) {
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080, 3px 3px 0 rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="retro"] .fw-head {
+  background: var(--accent);
+  color: #ffffff;
+  border-bottom: 0;
+  padding: 0.32rem 0.35rem;
+}
+
+.focus-app[data-design="retro"] .fw-title {
+  color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.focus-app[data-design="retro"] .fw-title svg {
+  color: #ffffff;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.focus-app[data-design="retro"] .fw-actions .icon-button {
+  width: 1.15rem;
+  height: 1.1rem;
+  border-radius: 0;
+  color: #101010;
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff;
+}
+
+.focus-app[data-design="retro"] .fw-actions .icon-button svg {
+  width: 0.6rem;
+  height: 0.6rem;
+  stroke-width: 3;
+}
+
+.focus-app[data-design="retro"] .fw-body {
+  padding: 0.85rem;
+}
+
+.focus-app[data-design="retro"] :is(.start-control, .panel-primary, .util-go, .round-control, .task-chip, .bottom-dock, .study-toggle, .mode-choice, .theme-reset, .design-card, .scene-pick, .add-row button, .music-tabs, .reader-modes, .pdf-zoom) {
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+}
+
+.focus-app[data-design="retro"] :is(.mode-choice.active, .bottom-dock button.active, .music-tabs button.active, .reader-modes button.active, .util-tabs button.active) {
+  background: #b0b0b0;
+  color: #101010;
+  box-shadow: inset 1px 1px 0 #000000, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #808080, inset -2px -2px 0 #dfdfdf;
+}
+
+.focus-app[data-design="retro"] .start-control {
+  padding: 0.68rem 1.4rem;
+}
+
+.focus-app[data-design="retro"] .start-control:hover {
+  box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+}
+
+.focus-app[data-design="retro"] :is(.field input, .notes, .add-row input, .util-bar input) {
+  color: #101010;
+}
+
+.focus-app[data-design="retro"] .time-readout {
+  color: #ffffff;
+}
+
+.focus-app[data-design="retro"] .cycle-copy {
+  color: #cdeeee;
+}
+
+.focus-app[data-design="retro"] .phase-copy {
+  color: #eafafa;
+}
+
+.focus-app[data-design="retro"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="retro"] .micro-dots span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.focus-app[data-design="retro"] .micro-dots span.filled {
+  background: #ffffff;
+  box-shadow: 1px 1px 0 #004d4d;
+}
+
+.focus-app[data-design="retro"] .bottom-dock {
+  padding: 4px;
+}
+
+.focus-app[data-design="retro"] .design-card.active {
+  box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf, 0 0 0 2px var(--d-accent-ink);
+}
+
+/* ============================================================================
+   PRESET — CYBER (neon rails, cut corners, chromatic glow)
+   ========================================================================== */
+
+.focus-app[data-design="cyber"] {
+  color-scheme: dark;
+  --ink: #f6ecff;
+  --dim: rgba(220, 196, 255, 0.55);
+  --line: rgba(255, 62, 200, 0.4);
+  --danger: #ff5c8a;
+
+  --d-shell-bg: #05020a;
+  --d-accent-ink: var(--accent);
+  --d-break-ink: var(--break);
+
+  --d-font-ui: "JetBrains Mono", ui-monospace, monospace;
+  --d-font-display: "JetBrains Mono", ui-monospace, monospace;
+
+  --d-panel-bg: rgba(9, 3, 16, 0.92);
+  --d-panel-border: 1px solid rgba(255, 62, 200, 0.45);
+  --d-panel-radius: 0;
+  --d-panel-clip: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  --d-panel-shadow: 0 0 34px rgba(255, 62, 200, 0.16), 0 24px 70px rgba(0, 0, 0, 0.85);
+  --d-panel-blur: blur(4px);
+  --d-panel-head: rgba(255, 62, 200, 0.35);
+  --d-btn-clip: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+
+  --d-util-bg: rgba(9, 3, 16, 0.92);
+  --d-util-border: 1px solid rgba(255, 62, 200, 0.45);
+  --d-util-shadow: 0 0 34px rgba(255, 62, 200, 0.14), 0 24px 70px rgba(0, 0, 0, 0.85);
+  --d-util-blur: blur(4px);
+
+  --d-head-bg: rgba(255, 62, 200, 0.08);
+  --d-bar-bg: rgba(255, 62, 200, 0.06);
+  --d-hairline: rgba(255, 62, 200, 0.25);
+  --d-view-bg: #06010c;
+
+  --d-surface-bg: rgba(255, 62, 200, 0.06);
+  --d-surface-border: 1px solid rgba(255, 62, 200, 0.35);
+  --d-surface-line: rgba(255, 62, 200, 0.25);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: rgba(255, 62, 200, 0.05);
+  --d-card-grad: rgba(255, 62, 200, 0.07);
+  --d-card-border: 1px solid rgba(255, 62, 200, 0.28);
+  --d-card-radius: 0;
+  --d-soft-bg: rgba(255, 62, 200, 0.1);
+  --d-soft-ink: rgba(255, 200, 240, 0.72);
+  --d-tab-ink: rgba(255, 210, 245, 0.8);
+  --d-on-soft: #ffffff;
+  --d-body-ink: rgba(246, 236, 255, 0.85);
+  --d-body-ink-strong: #ffffff;
+  --d-faint: rgba(220, 196, 255, 0.45);
+  --d-hover-bg: rgba(255, 62, 200, 0.16);
+  --d-hover-soft: rgba(255, 62, 200, 0.1);
+
+  --d-btn-grad: rgba(255, 62, 200, 0.12);
+  --d-btn-text: var(--accent);
+  --d-btn-border: 1px solid var(--accent);
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: 0 0 26px rgba(255, 62, 200, 0.28);
+  --d-btn-shadow-sm: 0 0 16px rgba(255, 62, 200, 0.22);
+  --d-btn-weight: 700;
+  --d-btn-spacing: 0.16em;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: rgba(255, 62, 200, 0.06);
+  --d-ctl-border: 1px solid rgba(255, 62, 200, 0.45);
+  --d-ctl-radius: 0;
+  --d-ctl-shadow: 0 0 18px rgba(255, 62, 200, 0.18);
+
+  --d-chip-bg: rgba(255, 62, 200, 0.06);
+  --d-chip-border: 1px solid rgba(255, 62, 200, 0.4);
+  --d-chip-radius: 0;
+  --d-chip-ink: rgba(255, 210, 245, 0.85);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 1px solid rgba(255, 62, 200, 0.3);
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(255, 210, 245, 0.65);
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0.16em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.55rem 1rem;
+  --d-mode-hover: rgba(255, 62, 200, 0.12);
+
+  --d-dock-bg: rgba(9, 3, 16, 0.9);
+  --d-dock-border: 1px solid rgba(255, 62, 200, 0.4);
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: rgba(255, 210, 245, 0.7);
+  --d-toggle-radius: 0;
+
+  --d-readout-font: var(--d-font-mono);
+  --d-readout-weight: 700;
+  --d-readout-spacing: 0.02em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-mono);
+  --d-title-weight: 700;
+  --d-title-spacing: 0.14em;
+  --d-title-transform: uppercase;
+  --d-title-ink: var(--accent);
+
+  --d-track-bg: rgba(255, 62, 200, 0.16);
+  --d-dot-bg: rgba(255, 62, 200, 0.35);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(255, 62, 200, 0.2);
+  --d-switch-knob: var(--accent);
+  --d-dial-core: #06010c;
+
+  --d-greet-ink: rgba(255, 210, 245, 0.62);
+  --d-date-ink: rgba(255, 210, 245, 0.5);
+  --d-resize-line: rgba(255, 62, 200, 0.5);
+  --d-grip-line: rgba(255, 62, 200, 0.4);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 0 24px rgba(255, 62, 200, 0.45);
+  --d-quote-ink: rgba(255, 215, 248, 0.85);
+  --d-quote-shadow: none;
+  --d-quote-font: var(--d-font-mono);
+
+  --d-danger-ink: #ff5c8a;
+  --d-danger-bg: rgba(255, 92, 138, 0.12);
+  --d-danger-border: 1px solid rgba(255, 92, 138, 0.5);
+  --d-danger-radius: 0;
+
+  --d-toast-bg: rgba(14, 3, 22, 0.94);
+  --d-toast-border: 1px solid var(--accent);
+  --d-toast-radius: 0;
+  --d-toast-ink: var(--accent);
+
+  --d-misc-bg: rgba(255, 62, 200, 0.25);
+  --d-reset-radius: 0;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="cyber"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="cyber"] .visual-plane {
+  background-image:
+    linear-gradient(rgba(255, 62, 200, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px),
+    radial-gradient(circle at 50% 118%, rgba(255, 62, 200, 0.4), transparent 62%),
+    linear-gradient(180deg, #06010c, #03010a);
+  background-size: 100% 42px, 42px 100%, 100% 100%, 100% 100%;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="cyber"] .video-plane,
+.focus-app[data-design="cyber"] .snow-layer,
+.focus-app[data-design="cyber"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="cyber"] .scrim {
+  background: radial-gradient(circle at 50% 48%, transparent 0 30%, rgba(3, 0, 8, 0.55) 72%, rgba(2, 0, 6, 0.88) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="cyber"] .greet-line,
+.focus-app[data-design="cyber"] .top-quote,
+.focus-app[data-design="cyber"] .field-hint,
+.focus-app[data-design="cyber"] .empty-copy,
+.focus-app[data-design="cyber"] .task-progress-foot em,
+.focus-app[data-design="cyber"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="cyber"] .top-quote::before {
+  content: "// ";
+  color: var(--break);
+  opacity: 0.8;
+}
+
+.focus-app[data-design="cyber"] .cycle-copy::before {
+  content: "// ";
+  color: var(--break);
+}
+
+.focus-app[data-design="cyber"] .time-readout {
+  background-image: linear-gradient(180deg, #ffffff 5%, var(--accent) 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 26px rgba(255, 62, 200, 0.45));
+}
+
+.focus-app[data-design="cyber"] .tr-colon {
+  opacity: 0.35;
+}
+
+.focus-app[data-design="cyber"] .timer-aura {
+  background: conic-gradient(from -90deg, rgba(255, 62, 200, 0.5) var(--progress), rgba(0, 240, 255, 0.12) 0);
+  filter: blur(34px);
+  border-radius: 0;
+  opacity: 0.26;
+  animation: none;
+}
+
+.focus-app[data-design="cyber"] .mode-choice {
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="cyber"] .mode-choice.active {
+  background: rgba(255, 62, 200, 0.16);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 24px rgba(255, 62, 200, 0.28);
+}
+
+.focus-app[data-design="cyber"] .start-control:hover {
+  background: var(--accent);
+  color: #12000c;
+}
+
+.focus-app[data-design="cyber"] .panel-primary:hover,
+.focus-app[data-design="cyber"] .util-go:hover {
+  background: var(--accent);
+  color: #12000c;
+}
+
+.focus-app[data-design="cyber"] .panel-primary.subtle {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: var(--break);
+}
+
+.focus-app[data-design="cyber"] .micro-dots span {
+  width: 0.5rem;
+  height: 0.5rem;
+  transform: rotate(45deg);
+}
+
+.focus-app[data-design="cyber"] .task-chip::before {
+  content: "// ";
+  color: var(--break);
+  letter-spacing: 0.1em;
+}
+
+.focus-app[data-design="cyber"] :is(.util-tabs button.active, .music-tabs button.active, .reader-modes button.active, .bottom-dock button.active) {
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 20px rgba(255, 62, 200, 0.26);
+}
+
+.focus-app[data-design="cyber"] .design-card.active {
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 22px rgba(255, 62, 200, 0.3);
+}
+
+/* A clipped panel would lose its box-shadow, so shadow it with a filter that
+   follows the chamfered silhouette instead. */
+.focus-app[data-design="cyber"] :is(.float-win, .util-panel) {
+  box-shadow: none;
+  filter: drop-shadow(0 0 24px rgba(255, 62, 200, 0.22)) drop-shadow(0 16px 40px rgba(0, 0, 0, 0.7));
+}
+
+/* ============================================================================
+   PRESET — ART DECO (emerald, gold double rules, engraved caps)
+   ========================================================================== */
+
+.focus-app[data-design="deco"] {
+  color-scheme: dark;
+  --ink: #f3e9cd;
+  --dim: rgba(243, 233, 205, 0.55);
+  --line: rgba(212, 175, 55, 0.32);
+  --danger: #e08b7a;
+
+  --d-shell-bg: #08110e;
+  --d-accent-ink: var(--accent);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #0b1713;
+  --d-panel-border: 1px solid rgba(212, 175, 55, 0.5);
+  --d-panel-radius: 0;
+  --d-panel-shadow: 0 0 0 3px #08110e, 0 0 0 4px rgba(212, 175, 55, 0.35), 0 30px 70px rgba(0, 0, 0, 0.6);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(212, 175, 55, 0.28);
+
+  --d-util-bg: #0b1713;
+  --d-util-border: 1px solid rgba(212, 175, 55, 0.5);
+  --d-util-shadow: 0 0 0 3px #08110e, 0 0 0 4px rgba(212, 175, 55, 0.3), 0 30px 70px rgba(0, 0, 0, 0.6);
+  --d-util-blur: none;
+
+  --d-head-bg: rgba(212, 175, 55, 0.07);
+  --d-bar-bg: rgba(212, 175, 55, 0.05);
+  --d-hairline: rgba(212, 175, 55, 0.22);
+  --d-view-bg: #07100d;
+
+  --d-surface-bg: rgba(212, 175, 55, 0.05);
+  --d-surface-border: 1px solid rgba(212, 175, 55, 0.3);
+  --d-surface-line: rgba(212, 175, 55, 0.22);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: rgba(212, 175, 55, 0.04);
+  --d-card-grad: rgba(212, 175, 55, 0.05);
+  --d-card-border: 1px solid rgba(212, 175, 55, 0.22);
+  --d-card-radius: 0;
+  --d-soft-bg: rgba(212, 175, 55, 0.09);
+  --d-soft-ink: rgba(243, 233, 205, 0.75);
+  --d-tab-ink: rgba(243, 233, 205, 0.8);
+  --d-on-soft: #08110e;
+  --d-body-ink: rgba(243, 233, 205, 0.88);
+  --d-body-ink-strong: #f8f0da;
+  --d-faint: rgba(243, 233, 205, 0.45);
+  --d-hover-bg: rgba(212, 175, 55, 0.14);
+  --d-hover-soft: rgba(212, 175, 55, 0.09);
+
+  --d-btn-grad: transparent;
+  --d-btn-text: var(--accent);
+  --d-btn-border: 1px solid var(--accent);
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: none;
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.22em;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: transparent;
+  --d-ctl-border: 1px solid rgba(212, 175, 55, 0.4);
+  --d-ctl-radius: 0;
+
+  --d-chip-bg: transparent;
+  --d-chip-border: 1px solid rgba(212, 175, 55, 0.35);
+  --d-chip-radius: 0;
+  --d-chip-ink: rgba(243, 233, 205, 0.8);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(243, 233, 205, 0.5);
+  --d-mode-weight: 500;
+  --d-mode-spacing: 0.24em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.45rem 0.1rem;
+  --d-mode-hover: transparent;
+
+  --d-dock-bg: #0b1713;
+  --d-dock-border: 1px solid rgba(212, 175, 55, 0.4);
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: rgba(243, 233, 205, 0.7);
+  --d-toggle-radius: 0;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 300;
+  --d-readout-spacing: 0.05em;
+  --d-readout-shadow: 0 0 44px rgba(212, 175, 55, 0.25);
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 500;
+  --d-title-spacing: 0.18em;
+  --d-title-transform: uppercase;
+
+  --d-track-bg: rgba(212, 175, 55, 0.14);
+  --d-dot-bg: rgba(212, 175, 55, 0.3);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(212, 175, 55, 0.2);
+  --d-switch-knob: var(--accent);
+  --d-dial-core: #07100d;
+
+  --d-greet-ink: rgba(243, 233, 205, 0.55);
+  --d-date-ink: rgba(243, 233, 205, 0.42);
+  --d-resize-line: rgba(212, 175, 55, 0.45);
+  --d-grip-line: rgba(212, 175, 55, 0.35);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+  --d-quote-ink: rgba(243, 233, 205, 0.82);
+  --d-quote-shadow: none;
+  --d-quote-font: var(--d-font-display);
+
+  --d-danger-ink: #e08b7a;
+  --d-danger-bg: rgba(224, 139, 122, 0.1);
+  --d-danger-border: 1px solid rgba(224, 139, 122, 0.35);
+  --d-danger-radius: 0;
+
+  --d-toast-bg: #0b1713;
+  --d-toast-border: 1px solid var(--accent);
+  --d-toast-radius: 0;
+  --d-toast-ink: var(--accent);
+
+  --d-misc-bg: rgba(212, 175, 55, 0.22);
+  --d-reset-radius: 0;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="deco"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="deco"] .visual-plane {
+  background-image:
+    repeating-conic-gradient(from 0deg at 50% -14%, rgba(212, 175, 55, 0.075) 0deg 3deg, transparent 3deg 11deg),
+    radial-gradient(circle at 50% 0%, #14362a 0%, #08110e 64%);
+  background-size: 100% 100%, 100% 100%;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="deco"] .video-plane,
+.focus-app[data-design="deco"] .snow-layer,
+.focus-app[data-design="deco"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="deco"] .scrim {
+  background: radial-gradient(circle at 50% 42%, transparent 0 28%, rgba(4, 9, 7, 0.5) 70%, rgba(3, 7, 5, 0.9) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="deco"] :is(.float-win, .util-panel) {
+  outline: 1px solid rgba(212, 175, 55, 0.22);
+  outline-offset: -7px;
+}
+
+.focus-app[data-design="deco"] .greet-line,
+.focus-app[data-design="deco"] .top-quote,
+.focus-app[data-design="deco"] .field-hint,
+.focus-app[data-design="deco"] .empty-copy,
+.focus-app[data-design="deco"] .task-progress-foot em,
+.focus-app[data-design="deco"] .phase-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+}
+
+.focus-app[data-design="deco"] .greet-clock {
+  font-family: var(--d-font-display);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+.focus-app[data-design="deco"] .mode-row {
+  gap: 2.2rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.focus-app[data-design="deco"] .mode-choice {
+  border: 0;
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="deco"] .mode-choice.active {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 9px;
+}
+
+.focus-app[data-design="deco"] .tr-colon {
+  opacity: 0.5;
+  font-weight: 300;
+}
+
+.focus-app[data-design="deco"] .timer-aura {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.4), transparent 66%);
+  filter: blur(32px);
+  opacity: 0.2;
+  animation: none;
+}
+
+.focus-app[data-design="deco"] .micro-dots span {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 0;
+  transform: rotate(45deg);
+}
+
+.focus-app[data-design="deco"] .start-control {
+  box-shadow: inset 0 0 0 3px #0b1713, inset 0 0 0 4px rgba(212, 175, 55, 0.4);
+}
+
+.focus-app[data-design="deco"] .start-control:hover {
+  background: var(--accent);
+  color: #08110e;
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px #08110e;
+}
+
+.focus-app[data-design="deco"] .panel-primary:hover,
+.focus-app[data-design="deco"] .util-go:hover {
+  background: var(--accent);
+  color: #08110e;
+}
+
+.focus-app[data-design="deco"] .fw-head {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.28);
+}
+
+.focus-app[data-design="deco"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--accent), inset 0 0 0 3px #0b1713, inset 0 0 0 4px rgba(212, 175, 55, 0.3);
+}
+
+/* ============================================================================
+   PRESET — CLAY (puffy pastel, pressed-clay depth)
+   ========================================================================== */
+
+.focus-app[data-design="clay"] {
+  color-scheme: light;
+  --ink: #3b3350;
+  --dim: rgba(59, 51, 80, 0.56);
+  --line: rgba(59, 51, 80, 0.14);
+  --danger: #c2554e;
+
+  --d-shell-bg: #efe9f8;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 74%, #3b3350);
+  --d-break-ink: color-mix(in srgb, var(--break) 58%, #3b3350);
+
+  --d-panel-bg: #f8f3ff;
+  --d-panel-border: 0;
+  --d-panel-radius: 2rem;
+  --d-panel-shadow: 0 18px 38px rgba(96, 76, 140, 0.16), inset 0 -6px 12px rgba(150, 120, 190, 0.16), inset 0 6px 12px rgba(255, 255, 255, 0.9);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(59, 51, 80, 0.08);
+
+  --d-util-bg: #f8f3ff;
+  --d-util-border: 0;
+  --d-util-shadow: 0 18px 38px rgba(96, 76, 140, 0.16), inset 0 -6px 12px rgba(150, 120, 190, 0.16), inset 0 6px 12px rgba(255, 255, 255, 0.9);
+  --d-util-blur: none;
+
+  --d-head-bg: #f4eefd;
+  --d-bar-bg: #f4eefd;
+  --d-hairline: rgba(59, 51, 80, 0.08);
+  --d-view-bg: #fdfaff;
+
+  --d-surface-bg: #f4eefd;
+  --d-surface-border: 0;
+  --d-surface-line: rgba(59, 51, 80, 0.12);
+  --d-surface-radius: 1.3rem;
+  --d-field-radius: 1.2rem;
+  --d-field-radius-sm: 1rem;
+  --d-add-radius: 1.1rem;
+  --d-input-inset: inset 0 3px 8px rgba(120, 96, 160, 0.16), inset 0 -2px 0 rgba(255, 255, 255, 0.8);
+
+  --d-card-bg: #fbf7ff;
+  --d-card-grad: #fbf7ff;
+  --d-card-border: 0;
+  --d-card-radius: 1.4rem;
+  --d-card-shadow: 0 8px 18px rgba(96, 76, 140, 0.14), inset 0 -4px 8px rgba(150, 120, 190, 0.12), inset 0 4px 8px rgba(255, 255, 255, 0.9);
+  --d-soft-bg: #f1e9fd;
+  --d-soft-ink: rgba(59, 51, 80, 0.7);
+  --d-tab-ink: rgba(59, 51, 80, 0.75);
+  --d-on-soft: #3b3350;
+  --d-body-ink: rgba(59, 51, 80, 0.88);
+  --d-body-ink-strong: #352d47;
+  --d-faint: rgba(59, 51, 80, 0.48);
+  --d-hover-bg: #f1e9fd;
+  --d-hover-soft: #f3ecfd;
+
+  --d-btn-grad: linear-gradient(160deg, color-mix(in srgb, var(--accent) 78%, #ffffff), var(--accent-2));
+  --d-btn-text: #352d47;
+  --d-btn-radius: 1.5rem;
+  --d-btn-radius-sm: 1.1rem;
+  --d-btn-shadow: 0 10px 18px rgba(96, 76, 140, 0.24), inset 0 -4px 0 rgba(90, 60, 150, 0.18), inset 0 3px 0 rgba(255, 255, 255, 0.6);
+  --d-btn-shadow-sm: 0 6px 12px rgba(96, 76, 140, 0.2), inset 0 -3px 0 rgba(90, 60, 150, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.55);
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.01em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #f4eefd;
+  --d-ctl-border: 0;
+  --d-ctl-radius: 1.2rem;
+  --d-ctl-shadow: 0 6px 14px rgba(96, 76, 140, 0.18), inset 0 -3px 0 rgba(150, 120, 190, 0.18), inset 0 3px 0 rgba(255, 255, 255, 0.9);
+
+  --d-chip-bg: #fbf7ff;
+  --d-chip-border: 0;
+  --d-chip-radius: 999px;
+  --d-chip-ink: rgba(59, 51, 80, 0.8);
+
+  --d-mode-bg: #f4eefd;
+  --d-mode-border: 0;
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(59, 51, 80, 0.65);
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0.01em;
+  --d-mode-pad: 0.62rem 1.25rem;
+  --d-mode-hover: #f1e9fd;
+
+  --d-dock-bg: #f8f3ff;
+  --d-dock-border: 0;
+  --d-dock-radius: 999px;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: rgba(59, 51, 80, 0.7);
+  --d-toggle-radius: 999px;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.035em;
+  --d-readout-shadow: 0 4px 0 rgba(150, 120, 190, 0.25);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: rgba(120, 96, 160, 0.16);
+  --d-dot-bg: rgba(120, 96, 160, 0.3);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(120, 96, 160, 0.22);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #f8f3ff;
+
+  --d-greet-ink: rgba(59, 51, 80, 0.6);
+  --d-date-ink: rgba(59, 51, 80, 0.45);
+  --d-resize-line: rgba(96, 76, 140, 0.3);
+  --d-grip-line: rgba(96, 76, 140, 0.25);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 3px 0 rgba(255, 255, 255, 0.8);
+  --d-quote-ink: rgba(59, 51, 80, 0.8);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #b4443d;
+  --d-danger-bg: #ffe3e0;
+  --d-danger-border: 0;
+  --d-danger-radius: 1.1rem;
+
+  --d-toast-bg: #3b3350;
+  --d-toast-border: 0;
+  --d-toast-radius: 999px;
+  --d-toast-ink: #fdfaff;
+
+  --d-misc-bg: rgba(120, 96, 160, 0.28);
+  --d-reset-radius: 999px;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="clay"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="clay"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 16% 18%, #e2d3ff, transparent 46%),
+    radial-gradient(circle at 84% 22%, #d6ecff, transparent 44%),
+    radial-gradient(circle at 50% 94%, #ffe0ef, transparent 52%),
+    linear-gradient(180deg, #f5f0fd, #e9e2f6);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="clay"] .video-plane,
+.focus-app[data-design="clay"] .snow-layer,
+.focus-app[data-design="clay"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="clay"] .scrim {
+  background: linear-gradient(180deg, rgba(245, 240, 253, 0.45), rgba(233, 226, 246, 0.7));
+  box-shadow: none;
+}
+
+.focus-app[data-design="clay"] .greet-line,
+.focus-app[data-design="clay"] .field-hint,
+.focus-app[data-design="clay"] .empty-copy,
+.focus-app[data-design="clay"] .task-progress-foot em,
+.focus-app[data-design="clay"] .phase-copy,
+.focus-app[data-design="clay"] .top-quote {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="clay"] .greet-clock {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.focus-app[data-design="clay"] .timer-aura {
+  filter: blur(34px);
+  opacity: 0.3;
+}
+
+.focus-app[data-design="clay"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: var(--d-btn-shadow-sm);
+}
+
+.focus-app[data-design="clay"] .start-control:active,
+.focus-app[data-design="clay"] .panel-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 10px rgba(96, 76, 140, 0.24), inset 0 2px 6px rgba(90, 60, 150, 0.25);
+}
+
+.focus-app[data-design="clay"] .bottom-dock button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: var(--d-btn-shadow-sm);
+}
+
+.focus-app[data-design="clay"] .micro-dots span {
+  width: 0.6rem;
+  height: 0.6rem;
+  box-shadow: inset 0 -2px 2px rgba(150, 120, 190, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.9);
+}
+
+.focus-app[data-design="clay"] .micro-dots span.filled {
+  background: var(--d-accent-ink);
+}
+
+.focus-app[data-design="clay"] .notes {
+  border-radius: 1.6rem;
+}
+
+.focus-app[data-design="clay"] .design-card.active {
+  box-shadow: var(--d-card-shadow), 0 0 0 2px var(--d-accent-ink);
+}
+
+/* ============================================================================
+   PRESET — NEUMORPH (one surface colour, embossed and inset)
+   ========================================================================== */
+
+.focus-app[data-design="neu"] {
+  color-scheme: light;
+  --ink: #4a5266;
+  --dim: rgba(74, 82, 102, 0.7);
+  --line: rgba(120, 132, 156, 0.3);
+  --danger: #b5566b;
+
+  --d-shell-bg: #e6eaf2;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 72%, #4a5266);
+  --d-break-ink: color-mix(in srgb, var(--break) 55%, #4a5266);
+
+  --d-panel-bg: #e6eaf2;
+  --d-panel-border: 0;
+  --d-panel-radius: 1.6rem;
+  --d-panel-shadow: 14px 14px 30px #c3c9d6, -14px -14px 30px #ffffff;
+  --d-panel-blur: none;
+  --d-panel-head: rgba(163, 171, 188, 0.35);
+
+  --d-util-bg: #e6eaf2;
+  --d-util-border: 0;
+  --d-util-shadow: 14px 14px 30px #c3c9d6, -14px -14px 30px #ffffff;
+  --d-util-blur: none;
+
+  --d-head-bg: #e6eaf2;
+  --d-bar-bg: #e6eaf2;
+  --d-hairline: rgba(163, 171, 188, 0.4);
+  --d-view-bg: #e9edf4;
+
+  --d-surface-bg: #e6eaf2;
+  --d-surface-border: 0;
+  --d-surface-line: rgba(163, 171, 188, 0.4);
+  --d-surface-radius: 1.1rem;
+  --d-field-radius: 1.1rem;
+  --d-field-radius-sm: 0.9rem;
+  --d-add-radius: 1rem;
+  --d-input-inset: inset 4px 4px 8px #c3c9d6, inset -4px -4px 8px #ffffff;
+
+  --d-card-bg: #e6eaf2;
+  --d-card-grad: #e6eaf2;
+  --d-card-border: 0;
+  --d-card-radius: 1.2rem;
+  --d-card-shadow: 6px 6px 14px #c3c9d6, -6px -6px 14px #ffffff;
+  --d-soft-bg: #dfe4ee;
+  --d-soft-ink: rgba(74, 82, 102, 0.72);
+  --d-tab-ink: rgba(74, 82, 102, 0.78);
+  --d-on-soft: #4a5266;
+  --d-body-ink: rgba(74, 82, 102, 0.9);
+  --d-body-ink-strong: #3f4759;
+  --d-faint: rgba(74, 82, 102, 0.5);
+  --d-hover-bg: #dfe4ee;
+  --d-hover-soft: #e2e7f0;
+
+  --d-btn-grad: #e6eaf2;
+  --d-btn-text: #4a5266;
+  --d-btn-radius: 1.1rem;
+  --d-btn-radius-sm: 0.9rem;
+  --d-btn-shadow: 8px 8px 16px #c3c9d6, -8px -8px 16px #ffffff;
+  --d-btn-shadow-sm: 5px 5px 12px #c3c9d6, -5px -5px 12px #ffffff;
+  --d-btn-weight: 700;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #e6eaf2;
+  --d-ctl-border: 0;
+  --d-ctl-radius: 1.1rem;
+  --d-ctl-shadow: 6px 6px 14px #c3c9d6, -6px -6px 14px #ffffff;
+
+  --d-chip-bg: #e6eaf2;
+  --d-chip-border: 0;
+  --d-chip-radius: 999px;
+  --d-chip-ink: rgba(74, 82, 102, 0.85);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 1rem;
+  --d-mode-ink: rgba(74, 82, 102, 0.6);
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.6rem 1.2rem;
+  --d-mode-hover: #e9edf4;
+
+  --d-dock-bg: #e6eaf2;
+  --d-dock-border: 0;
+  --d-dock-radius: 1.6rem;
+  --d-dock-btn-radius: 1rem;
+  --d-dock-ink: rgba(74, 82, 102, 0.7);
+  --d-toggle-radius: 1.1rem;
+
+  --d-readout-weight: 700;
+  --d-readout-spacing: -0.045em;
+  --d-readout-shadow: 3px 3px 8px #c3c9d6, -3px -3px 8px #ffffff;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 700;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: #d8dee8;
+  --d-dot-bg: rgba(120, 132, 156, 0.4);
+  --d-dot-radius: 50%;
+  --d-switch-bg: #d8dee8;
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #e6eaf2;
+
+  --d-greet-ink: rgba(74, 82, 102, 0.62);
+  --d-date-ink: rgba(74, 82, 102, 0.5);
+  --d-resize-line: rgba(120, 132, 156, 0.45);
+  --d-grip-line: rgba(120, 132, 156, 0.35);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 2px 2px 5px #c3c9d6, -2px -2px 5px #ffffff;
+  --d-quote-ink: rgba(74, 82, 102, 0.85);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #a8495d;
+  --d-danger-bg: #f4dfe5;
+  --d-danger-border: 0;
+  --d-danger-radius: 1rem;
+
+  --d-toast-bg: #e6eaf2;
+  --d-toast-border: 0;
+  --d-toast-radius: 999px;
+  --d-toast-ink: #4a5266;
+
+  --d-misc-bg: rgba(120, 132, 156, 0.4);
+  --d-reset-radius: 0.9rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="neu"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="neu"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 24% 14%, #f2f5fb, transparent 52%),
+    radial-gradient(circle at 76% 88%, #d9dfea, transparent 56%),
+    linear-gradient(180deg, #e8ecf4, #e2e7f1);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="neu"] .video-plane,
+.focus-app[data-design="neu"] .snow-layer,
+.focus-app[data-design="neu"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="neu"] .scrim {
+  background: rgba(230, 234, 242, 0.5);
+  box-shadow: none;
+}
+
+.focus-app[data-design="neu"] .greet-line,
+.focus-app[data-design="neu"] .field-hint,
+.focus-app[data-design="neu"] .empty-copy,
+.focus-app[data-design="neu"] .task-progress-foot em,
+.focus-app[data-design="neu"] .phase-copy,
+.focus-app[data-design="neu"] .top-quote {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="neu"] .fw-head {
+  border-bottom: 1px solid rgba(163, 171, 188, 0.35);
+}
+
+.focus-app[data-design="neu"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="neu"] .start-control:hover,
+.focus-app[data-design="neu"] .panel-primary:hover {
+  box-shadow: 6px 6px 12px #c3c9d6, -6px -6px 12px #ffffff;
+}
+
+.focus-app[data-design="neu"] .start-control:active,
+.focus-app[data-design="neu"] .panel-primary:active {
+  transform: none;
+  box-shadow: inset 6px 6px 12px #c3c9d6, inset -6px -6px 12px #ffffff;
+}
+
+.focus-app[data-design="neu"] .mode-choice.active {
+  background: #e6eaf2;
+  color: var(--d-accent-ink);
+  box-shadow: inset 4px 4px 8px #c3c9d6, inset -4px -4px 8px #ffffff;
+}
+
+.focus-app[data-design="neu"] .bottom-dock button.active {
+  background: #e6eaf2;
+  color: var(--d-accent-ink);
+  box-shadow: inset 4px 4px 8px #c3c9d6, inset -4px -4px 8px #ffffff;
+}
+
+.focus-app[data-design="neu"] .micro-dots span {
+  box-shadow: inset 1px 1px 2px #c3c9d6, inset -1px -1px 2px #ffffff;
+}
+
+.focus-app[data-design="neu"] .micro-dots span.filled {
+  background: var(--d-accent-ink);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.focus-app[data-design="neu"] .notes {
+  border-radius: 1.3rem;
+}
+
+.focus-app[data-design="neu"] .design-card.active {
+  box-shadow: inset 3px 3px 8px #c3c9d6, inset -3px -3px 8px #ffffff, 0 0 0 2px var(--d-accent-ink);
+}
+
+.focus-app[data-design="neu"] .task-item.selected {
+  background: #e6eaf2;
+  border: 0;
+  box-shadow: inset 4px 4px 9px #c3c9d6, inset -4px -4px 9px #ffffff;
+}
+
+/* ============================================================================
+   PRESET — NORDIC (quiet sage and stone, barely-there depth)
+   ========================================================================== */
+
+.focus-app[data-design="nordic"] {
+  color-scheme: dark;
+  --ink: #e9e7df;
+  --dim: rgba(233, 231, 223, 0.52);
+  --line: rgba(233, 231, 223, 0.14);
+  --danger: #e08b7a;
+
+  --d-shell-bg: #1a211e;
+  --d-accent-ink: var(--accent);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #222b27;
+  --d-panel-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-panel-radius: 0.9rem;
+  --d-panel-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(233, 231, 223, 0.1);
+
+  --d-util-bg: #222b27;
+  --d-util-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-util-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --d-util-blur: none;
+
+  --d-head-bg: #1f2724;
+  --d-bar-bg: #1f2724;
+  --d-hairline: rgba(233, 231, 223, 0.1);
+  --d-view-bg: #1b2320;
+
+  --d-surface-bg: rgba(233, 231, 223, 0.05);
+  --d-surface-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-surface-line: rgba(233, 231, 223, 0.12);
+  --d-surface-radius: 0.7rem;
+  --d-field-radius: 0.7rem;
+  --d-field-radius-sm: 0.6rem;
+  --d-add-radius: 0.7rem;
+
+  --d-card-bg: rgba(233, 231, 223, 0.04);
+  --d-card-grad: rgba(233, 231, 223, 0.04);
+  --d-card-border: 1px solid rgba(233, 231, 223, 0.1);
+  --d-card-radius: 0.75rem;
+  --d-soft-bg: rgba(233, 231, 223, 0.08);
+  --d-soft-ink: rgba(233, 231, 223, 0.7);
+  --d-tab-ink: rgba(233, 231, 223, 0.72);
+  --d-on-soft: #131a17;
+  --d-body-ink: rgba(233, 231, 223, 0.85);
+  --d-body-ink-strong: #f4f2ec;
+  --d-faint: rgba(233, 231, 223, 0.42);
+  --d-hover-bg: rgba(233, 231, 223, 0.12);
+  --d-hover-soft: rgba(233, 231, 223, 0.08);
+
+  --d-btn-grad: color-mix(in srgb, var(--accent) 88%, #1a211e);
+  --d-btn-text: #131a17;
+  --d-btn-radius: 0.8rem;
+  --d-btn-radius-sm: 0.6rem;
+  --d-btn-shadow: none;
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 700;
+  --d-btn-spacing: 0.01em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(233, 231, 223, 0.06);
+  --d-ctl-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-ctl-radius: 0.8rem;
+
+  --d-chip-bg: rgba(233, 231, 223, 0.05);
+  --d-chip-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-chip-radius: 999px;
+  --d-chip-ink: rgba(233, 231, 223, 0.72);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-mode-radius: 0.8rem;
+  --d-mode-ink: rgba(233, 231, 223, 0.6);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.04em;
+  --d-mode-pad: 0.6rem 1.15rem;
+  --d-mode-hover: rgba(233, 231, 223, 0.1);
+
+  --d-dock-bg: #1f2724;
+  --d-dock-border: 1px solid rgba(233, 231, 223, 0.12);
+  --d-dock-radius: 0.9rem;
+  --d-dock-btn-radius: 0.7rem;
+  --d-dock-ink: rgba(233, 231, 223, 0.66);
+  --d-toggle-radius: 0.8rem;
+
+  --d-readout-weight: 300;
+  --d-readout-spacing: 0;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 500;
+  --d-title-spacing: 0.04em;
+
+  --d-track-bg: rgba(233, 231, 223, 0.12);
+  --d-dot-bg: rgba(233, 231, 223, 0.28);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(233, 231, 223, 0.18);
+  --d-switch-knob: #f4f2ec;
+  --d-dial-core: #1b2320;
+
+  --d-greet-ink: rgba(233, 231, 223, 0.55);
+  --d-date-ink: rgba(233, 231, 223, 0.42);
+  --d-resize-line: rgba(233, 231, 223, 0.28);
+  --d-grip-line: rgba(233, 231, 223, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(233, 231, 223, 0.78);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #e08b7a;
+  --d-danger-bg: rgba(224, 139, 122, 0.1);
+  --d-danger-border: 1px solid rgba(224, 139, 122, 0.32);
+  --d-danger-radius: 0.7rem;
+
+  --d-toast-bg: #1f2724;
+  --d-toast-border: 1px solid rgba(233, 231, 223, 0.18);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(233, 231, 223, 0.22);
+  --d-reset-radius: 0.6rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="nordic"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="nordic"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 22% 8%, rgba(126, 161, 127, 0.22), transparent 46%),
+    radial-gradient(circle at 82% 92%, rgba(46, 62, 58, 0.9), transparent 60%),
+    linear-gradient(180deg, #222b27, #121816 78%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="nordic"] .video-plane,
+.focus-app[data-design="nordic"] .snow-layer,
+.focus-app[data-design="nordic"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="nordic"] .scrim {
+  background: radial-gradient(circle at 50% 44%, transparent 0 34%, rgba(12, 17, 15, 0.45) 74%, rgba(9, 13, 11, 0.82) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="nordic"] .greet-clock {
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.focus-app[data-design="nordic"] .timer-aura {
+  filter: blur(38px);
+  opacity: 0.16;
+  animation: none;
+}
+
+.focus-app[data-design="nordic"] .phase-copy.break {
+  color: var(--d-break-ink);
+}
+
+.focus-app[data-design="nordic"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: none;
+}
+
+.focus-app[data-design="nordic"] .bottom-dock button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: none;
+}
+
+.focus-app[data-design="nordic"] .start-control:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+}
+
+.focus-app[data-design="nordic"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--d-accent-ink);
+}
+
+/* The card-shadow token is shared by many surfaces; the completed progress
+   card keeps its own glow on top of it. */
+.focus-app .task-progress.complete {
+  box-shadow: var(--d-card-shadow), 0 0 26px var(--accent-soft);
+}
+
+/* ---- progress fills for themes whose primary button is not a gradient ---- */
+
+.focus-app:is([data-design="retro"], [data-design="deco"], [data-design="neu"], [data-design="cyber"]) .task-progress-track i {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+}
+
+/* Neumorph has no colour blocks at all: active tabs read as pressed. */
+.focus-app[data-design="neu"] .util-tabs button.active,
+.focus-app[data-design="neu"] .music-tabs button.active,
+.focus-app[data-design="neu"] .reader-modes button.active,
+.focus-app[data-design="neu"] .bottom-dock button.active {
+  background: #e6eaf2;
+  color: var(--d-accent-ink);
+  box-shadow: inset 3px 3px 7px #c3c9d6, inset -3px -3px 7px #ffffff;
+}
+
+/* ---- the page behind the app follows the theme ---- */
+
+body:has(.focus-app[data-design="swiss"]) {
+  background: #fafaf7;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="sketch"]) {
+  background: #fdf8ea;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="retro"]) {
+  background: #008080;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="cyber"]) {
+  background: #05020a;
+}
+
+body:has(.focus-app[data-design="deco"]) {
+  background: #08110e;
+}
+
+body:has(.focus-app[data-design="clay"]) {
+  background: #efe9f8;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="neu"]) {
+  background: #e6eaf2;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="nordic"]) {
+  background: #1a211e;
+}
+
+/* ============================================================================
+   CURATED PALETTES
+   ----------------------------------------------------------------------------
+   Ten colour + type pairings, each pushed past a simple recolour: the button
+   shape, the rule weight, the depth model and the background treatment all
+   follow the palette's character.
+   ========================================================================== */
+
+/* ---- picker thumbnails -------------------------------------------------- */
+
+.focus-app .design-card[data-preview="ocean"] {
+  --pv-bg: #17293a;
+  --pv-ink: #eaf6f5;
+  --pv-accent: #2d8b8b;
+  --pv-radius: 0.55rem;
+  --pv-border: 1px solid rgba(168, 218, 220, 0.32);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 300;
+  --pv-tracking: 0.02em;
+  --pv-dot: 999px;
+  --pv-start: 0.45rem;
+}
+
+.focus-app .design-card[data-preview="sunset"] {
+  --pv-bg: #2b4049;
+  --pv-ink: #f7ece1;
+  --pv-accent: #e76f51;
+  --pv-radius: 0.8rem;
+  --pv-border: 0;
+  --pv-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
+  --pv-font: "Fraunces", serif;
+  --pv-weight: 400;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="forest"] {
+  --pv-bg: #fdfcf7;
+  --pv-ink: #2f3a2f;
+  --pv-accent: #4a7c59;
+  --pv-radius: 0.2rem;
+  --pv-border: 1px solid rgba(122, 138, 110, 0.55);
+  --pv-font: "Fraunces", serif;
+  --pv-weight: 500;
+  --pv-dot: 0;
+  --pv-start: 0.2rem;
+}
+
+.focus-app .design-card[data-preview="minimal"] {
+  --pv-bg: #ffffff;
+  --pv-ink: #36454f;
+  --pv-accent: #708090;
+  --pv-radius: 0.25rem;
+  --pv-border: 1px solid #d3d3d3;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 200;
+  --pv-tracking: 0.02em;
+  --pv-dot: 0;
+  --pv-start: 0.25rem;
+}
+
+.focus-app .design-card[data-preview="golden"] {
+  --pv-bg: #f7ecdb;
+  --pv-ink: #4a403a;
+  --pv-accent: #f4a900;
+  --pv-radius: 0.9rem;
+  --pv-border: 0;
+  --pv-shadow: 0 10px 20px rgba(180, 120, 20, 0.28);
+  --pv-font: "Fraunces", serif;
+  --pv-weight: 500;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="arctic"] {
+  --pv-bg: rgba(255, 255, 255, 0.78);
+  --pv-ink: #23364d;
+  --pv-accent: #4a6fa5;
+  --pv-radius: 0.6rem;
+  --pv-border: 1px solid rgba(192, 192, 192, 0.9);
+  --pv-shadow: 0 6px 16px rgba(74, 111, 165, 0.22);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 200;
+  --pv-dot: 50%;
+  --pv-start: 0.5rem;
+}
+
+.focus-app .design-card[data-preview="desert"] {
+  --pv-bg: #fbeee6;
+  --pv-ink: #5d2e46;
+  --pv-accent: #b87d6d;
+  --pv-radius: 1rem;
+  --pv-border: 1px solid rgba(212, 165, 165, 0.85);
+  --pv-font: "Fraunces", serif;
+  --pv-weight: 400;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="tech"] {
+  --pv-bg: #232427;
+  --pv-ink: #f2f6ff;
+  --pv-accent: #0066ff;
+  --pv-radius: 0.25rem;
+  --pv-border: 1px solid rgba(0, 102, 255, 0.5);
+  --pv-shadow: 0 0 14px rgba(0, 102, 255, 0.4);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 500;
+  --pv-tracking: 0.04em;
+  --pv-dot: 0;
+  --pv-start: 0.25rem;
+}
+
+.focus-app .design-card[data-preview="botanical"] {
+  --pv-bg: #fdfcf7;
+  --pv-ink: #2f3a2f;
+  --pv-accent: #f9a620;
+  --pv-radius: 0.4rem;
+  --pv-border: 1px solid rgba(122, 138, 110, 0.5);
+  --pv-font: "Fraunces", serif;
+  --pv-weight: 500;
+  --pv-dot: 0;
+  --pv-start: 0.3rem;
+}
+
+.focus-app .design-card[data-preview="galaxy"] {
+  --pv-bg: #33244c;
+  --pv-ink: #ece9f8;
+  --pv-accent: #a490c2;
+  --pv-radius: 0.8rem;
+  --pv-border: 1px solid rgba(164, 144, 194, 0.45);
+  --pv-shadow: 0 0 16px rgba(164, 144, 194, 0.35);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 300;
+  --pv-dot: 50%;
+  --pv-start: 0.7rem;
+}
+
+.focus-app .design-card[data-preview="forest"] .design-thumb,
+.focus-app .design-card[data-preview="arctic"] .design-thumb,
+.focus-app .design-card[data-preview="botanical"] .design-thumb {
+  border-top: 3px solid var(--pv-accent);
+}
+
+/* ============================================================================
+   PALETTE — OCEAN DEPTHS (deep water, teal light, seafoam hairlines)
+   ========================================================================== */
+
+.focus-app[data-design="ocean"] {
+  color-scheme: dark;
+  --ink: #eef6f5;
+  --dim: rgba(238, 246, 245, 0.55);
+  --line: rgba(168, 218, 220, 0.18);
+  --danger: #ff9b8a;
+
+  --d-shell-bg: #101c2b;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 58%, #f1faee);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #17293a;
+  --d-panel-border: 1px solid rgba(168, 218, 220, 0.16);
+  --d-panel-radius: 0.75rem;
+  --d-panel-shadow: 0 24px 52px rgba(2, 10, 18, 0.6);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(168, 218, 220, 0.06);
+
+  --d-util-bg: #17293a;
+  --d-util-border: 1px solid rgba(168, 218, 220, 0.16);
+  --d-util-shadow: 0 24px 52px rgba(2, 10, 18, 0.6);
+  --d-util-blur: none;
+
+  --d-head-bg: #14243a;
+  --d-bar-bg: #14243a;
+  --d-hairline: rgba(168, 218, 220, 0.12);
+  --d-view-bg: #0f1d2c;
+
+  --d-surface-bg: rgba(168, 218, 220, 0.05);
+  --d-surface-border: 1px solid rgba(168, 218, 220, 0.14);
+  --d-surface-line: rgba(168, 218, 220, 0.14);
+  --d-surface-radius: 0.6rem;
+  --d-field-radius: 0.55rem;
+  --d-field-radius-sm: 0.5rem;
+  --d-add-radius: 0.55rem;
+
+  --d-card-bg: rgba(168, 218, 220, 0.045);
+  --d-card-grad: rgba(168, 218, 220, 0.05);
+  --d-card-border: 1px solid rgba(168, 218, 220, 0.12);
+  --d-card-radius: 0.7rem;
+  --d-soft-bg: rgba(168, 218, 220, 0.09);
+  --d-soft-ink: rgba(238, 246, 245, 0.72);
+  --d-tab-ink: rgba(238, 246, 245, 0.7);
+  --d-on-soft: #0a1620;
+  --d-body-ink: rgba(238, 246, 245, 0.86);
+  --d-body-ink-strong: #f7fdfc;
+  --d-faint: rgba(238, 246, 245, 0.42);
+  --d-hover-bg: rgba(168, 218, 220, 0.14);
+  --d-hover-soft: rgba(168, 218, 220, 0.08);
+
+  --d-btn-grad: linear-gradient(180deg, color-mix(in srgb, var(--accent) 62%, #d7f2f0), var(--accent));
+  --d-btn-text: #05201f;
+  --d-btn-radius: 0.55rem;
+  --d-btn-radius-sm: 0.45rem;
+  --d-btn-shadow: 0 10px 24px rgba(3, 24, 30, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --d-btn-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.01em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(168, 218, 220, 0.07);
+  --d-ctl-border: 1px solid rgba(168, 218, 220, 0.18);
+  --d-ctl-radius: 0.55rem;
+
+  --d-chip-bg: rgba(45, 139, 139, 0.18);
+  --d-chip-border: 1px solid rgba(168, 218, 220, 0.3);
+  --d-chip-radius: 0.45rem;
+  --d-chip-ink: #d5eeee;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(238, 246, 245, 0.55);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.06em;
+  --d-mode-pad: 0.5rem 1rem;
+  --d-mode-hover: rgba(168, 218, 220, 0.1);
+
+  --d-dock-bg: rgba(20, 36, 54, 0.92);
+  --d-dock-border: 1px solid rgba(168, 218, 220, 0.16);
+  --d-dock-radius: 0.8rem;
+  --d-dock-btn-radius: 0.55rem;
+  --d-dock-ink: rgba(238, 246, 245, 0.62);
+  --d-toggle-radius: 0.55rem;
+
+  --d-readout-weight: 300;
+  --d-readout-spacing: 0.01em;
+  --d-readout-shadow: 0 20px 60px rgba(45, 139, 139, 0.5);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.06em;
+
+  --d-track-bg: rgba(168, 218, 220, 0.16);
+  --d-dot-bg: rgba(168, 218, 220, 0.42);
+  --d-dot-radius: 999px;
+  --d-switch-bg: rgba(168, 218, 220, 0.22);
+  --d-switch-knob: #f1faee;
+  --d-dial-core: #101c2b;
+
+  --d-greet-ink: rgba(238, 246, 245, 0.5);
+  --d-date-ink: rgba(168, 218, 220, 0.55);
+  --d-resize-line: rgba(168, 218, 220, 0.3);
+  --d-grip-line: rgba(168, 218, 220, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(238, 246, 245, 0.74);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #ff9b8a;
+  --d-danger-bg: rgba(255, 155, 138, 0.1);
+  --d-danger-border: 1px solid rgba(255, 155, 138, 0.32);
+  --d-danger-radius: 0.5rem;
+
+  --d-toast-bg: #17293a;
+  --d-toast-border: 1px solid rgba(168, 218, 220, 0.2);
+  --d-toast-radius: 0.55rem;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(168, 218, 220, 0.25);
+  --d-reset-radius: 0.45rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="ocean"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="ocean"] .visual-plane {
+  background-image:
+    radial-gradient(120% 62% at 50% 120%, rgba(45, 139, 139, 0.55), transparent 70%),
+    radial-gradient(90% 40% at 50% 136%, rgba(168, 218, 220, 0.3), transparent 72%),
+    linear-gradient(180deg, #15273b, #0a1521 76%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="ocean"] .video-plane,
+.focus-app[data-design="ocean"] .snow-layer,
+.focus-app[data-design="ocean"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="ocean"] .scrim {
+  background: radial-gradient(circle at 50% 42%, transparent 0 34%, rgba(4, 12, 20, 0.42) 76%, rgba(3, 9, 15, 0.78) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="ocean"] .mode-choice {
+  border-bottom: 2px solid transparent;
+  padding-bottom: 0.4rem;
+}
+
+.focus-app[data-design="ocean"] .mode-choice.active {
+  background: none;
+  color: var(--d-accent-ink);
+  border-bottom-color: var(--d-accent-ink);
+  box-shadow: none;
+}
+
+.focus-app[data-design="ocean"] .bottom-dock button.active {
+  background: rgba(168, 218, 220, 0.16);
+  color: #f1faee;
+  box-shadow: inset 0 0 0 1px rgba(168, 218, 220, 0.3);
+}
+
+.focus-app[data-design="ocean"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--d-accent-ink);
+}
+
+.focus-app[data-design="ocean"] .timer-aura {
+  filter: blur(46px);
+  opacity: 0.3;
+  animation: none;
+}
+
+.focus-app[data-design="ocean"] .fw-head {
+  border-bottom: 1px solid rgba(168, 218, 220, 0.14);
+}
+
+/* ============================================================================
+   PALETTE — SUNSET BOULEVARD (burnt orange, sand, serif voice)
+   ========================================================================== */
+
+.focus-app[data-design="sunset"] {
+  color-scheme: dark;
+  --ink: #f7ece1;
+  --dim: rgba(247, 236, 225, 0.58);
+  --line: rgba(233, 196, 106, 0.26);
+  --danger: #ff9d84;
+
+  --d-shell-bg: #20323a;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 74%, #ffe9d2);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: linear-gradient(180deg, #334a53, #283b43);
+  --d-panel-border: 1px solid rgba(233, 196, 106, 0.2);
+  --d-panel-radius: 1.05rem;
+  --d-panel-shadow: 0 28px 64px rgba(8, 18, 22, 0.6);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(233, 196, 106, 0.08);
+
+  --d-util-bg: #2b4049;
+  --d-util-border: 1px solid rgba(233, 196, 106, 0.2);
+  --d-util-shadow: 0 28px 64px rgba(8, 18, 22, 0.6);
+  --d-util-blur: none;
+
+  --d-head-bg: #2b4049;
+  --d-bar-bg: #2b4049;
+  --d-hairline: rgba(233, 196, 106, 0.18);
+  --d-view-bg: #22343c;
+
+  --d-surface-bg: rgba(247, 236, 225, 0.06);
+  --d-surface-border: 1px solid rgba(233, 196, 106, 0.18);
+  --d-surface-line: rgba(233, 196, 106, 0.18);
+  --d-surface-radius: 0.8rem;
+  --d-field-radius: 0.75rem;
+  --d-field-radius-sm: 0.65rem;
+  --d-add-radius: 0.8rem;
+
+  --d-card-bg: rgba(247, 236, 225, 0.05);
+  --d-card-grad: rgba(247, 236, 225, 0.06);
+  --d-card-border: 1px solid rgba(233, 196, 106, 0.16);
+  --d-card-radius: 0.9rem;
+  --d-soft-bg: rgba(233, 196, 106, 0.14);
+  --d-soft-ink: rgba(247, 236, 225, 0.74);
+  --d-tab-ink: rgba(247, 236, 225, 0.72);
+  --d-on-soft: #22343c;
+  --d-body-ink: rgba(247, 236, 225, 0.88);
+  --d-body-ink-strong: #fff6ee;
+  --d-faint: rgba(247, 236, 225, 0.45);
+  --d-hover-bg: rgba(247, 236, 225, 0.14);
+  --d-hover-soft: rgba(247, 236, 225, 0.08);
+
+  --d-btn-grad: linear-gradient(180deg, #f4a261, #e76f51);
+  --d-btn-text: #2a1710;
+  --d-btn-radius: 0.9rem;
+  --d-btn-radius-sm: 0.7rem;
+  --d-btn-shadow: 0 12px 28px rgba(231, 111, 81, 0.35);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(247, 236, 225, 0.08);
+  --d-ctl-border: 1px solid rgba(233, 196, 106, 0.22);
+  --d-ctl-radius: 0.9rem;
+
+  --d-chip-bg: rgba(233, 196, 106, 0.12);
+  --d-chip-border: 1px solid rgba(233, 196, 106, 0.3);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #f6e3c6;
+
+  --d-mode-bg: rgba(247, 236, 225, 0.05);
+  --d-mode-border: 1px solid rgba(233, 196, 106, 0.2);
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(247, 236, 225, 0.62);
+  --d-mode-weight: 500;
+  --d-mode-spacing: 0.01em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(247, 236, 225, 0.1);
+
+  --d-dock-bg: rgba(43, 64, 73, 0.92);
+  --d-dock-border: 1px solid rgba(233, 196, 106, 0.22);
+  --d-dock-radius: 1rem;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: rgba(247, 236, 225, 0.66);
+  --d-toggle-radius: 0.9rem;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 400;
+  --d-readout-spacing: -0.01em;
+  --d-readout-shadow: 0 22px 60px rgba(231, 111, 81, 0.35);
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 500;
+  --d-title-spacing: 0;
+  --d-mode-font: var(--d-font-ui);
+
+  --d-track-bg: rgba(233, 196, 106, 0.2);
+  --d-dot-bg: rgba(233, 196, 106, 0.55);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(233, 196, 106, 0.28);
+  --d-switch-knob: #f7ece1;
+  --d-dial-core: #22343c;
+
+  --d-greet-ink: rgba(247, 236, 225, 0.55);
+  --d-date-ink: rgba(233, 196, 106, 0.6);
+  --d-resize-line: rgba(247, 236, 225, 0.3);
+  --d-grip-line: rgba(247, 236, 225, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(255, 240, 226, 0.8);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #ff9d84;
+  --d-danger-bg: rgba(255, 157, 132, 0.12);
+  --d-danger-border: 1px solid rgba(255, 157, 132, 0.34);
+  --d-danger-radius: 0.7rem;
+
+  --d-toast-bg: #2b4049;
+  --d-toast-border: 1px solid rgba(233, 196, 106, 0.24);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(247, 236, 225, 0.28);
+  --d-reset-radius: 0.6rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="sunset"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="sunset"] .visual-plane {
+  background-image:
+    radial-gradient(70% 55% at 78% 4%, rgba(233, 196, 106, 0.5), transparent 66%),
+    radial-gradient(90% 60% at 10% 98%, rgba(231, 111, 81, 0.55), transparent 70%),
+    linear-gradient(180deg, #2d434c, #1b2a31 82%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="sunset"] .video-plane,
+.focus-app[data-design="sunset"] .snow-layer,
+.focus-app[data-design="sunset"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="sunset"] .scrim {
+  background: linear-gradient(180deg, rgba(20, 32, 38, 0.2), rgba(18, 28, 34, 0.55));
+  box-shadow: none;
+}
+
+.focus-app[data-design="sunset"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: 0 8px 20px rgba(231, 111, 81, 0.32);
+}
+
+.focus-app[data-design="sunset"] .bottom-dock button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: none;
+}
+
+.focus-app[data-design="sunset"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--d-accent-ink);
+}
+
+.focus-app[data-design="sunset"] .phase-copy,
+.focus-app[data-design="sunset"] .quote-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+}
+
+.focus-app[data-design="sunset"] .timer-aura {
+  filter: blur(52px);
+  opacity: 0.32;
+  animation: none;
+}
+
+/* ============================================================================
+   PALETTE — FOREST CANOPY (ivory paper, fern ink, olive rules)
+   ========================================================================== */
+
+.focus-app[data-design="forest"] {
+  color-scheme: light;
+  --ink: #2f3a2f;
+  --dim: rgba(47, 58, 47, 0.58);
+  --line: rgba(122, 138, 110, 0.42);
+  --danger: #a4442c;
+
+  --d-shell-bg: #f5f3ed;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 82%, #1d2b1e);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #fdfcf7;
+  --d-panel-border: 1px solid rgba(122, 138, 110, 0.42);
+  --d-panel-radius: 0.55rem;
+  --d-panel-shadow: 0 16px 34px rgba(74, 124, 89, 0.14);
+  --d-panel-blur: none;
+  --d-panel-head: #f1efe6;
+
+  --d-util-bg: #fdfcf7;
+  --d-util-border: 1px solid rgba(122, 138, 110, 0.42);
+  --d-util-shadow: 0 16px 34px rgba(74, 124, 89, 0.14);
+  --d-util-blur: none;
+
+  --d-head-bg: #f1efe6;
+  --d-bar-bg: #f1efe6;
+  --d-hairline: rgba(122, 138, 110, 0.34);
+  --d-view-bg: #f7f6f1;
+
+  --d-surface-bg: #f6f5ef;
+  --d-surface-border: 1px solid rgba(122, 138, 110, 0.32);
+  --d-surface-line: rgba(122, 138, 110, 0.3);
+  --d-surface-radius: 0.35rem;
+  --d-field-radius: 0.3rem;
+  --d-field-radius-sm: 0.25rem;
+  --d-add-radius: 0.3rem;
+
+  --d-card-bg: #fbfaf3;
+  --d-card-grad: #fbfaf3;
+  --d-card-border: 1px solid rgba(122, 138, 110, 0.3);
+  --d-card-radius: 0.4rem;
+  --d-soft-bg: rgba(122, 138, 110, 0.14);
+  --d-soft-ink: rgba(47, 58, 47, 0.72);
+  --d-tab-ink: rgba(47, 58, 47, 0.7);
+  --d-on-soft: #fdfcf7;
+  --d-body-ink: rgba(47, 58, 47, 0.88);
+  --d-body-ink-strong: #23301f;
+  --d-faint: rgba(47, 58, 47, 0.46);
+  --d-hover-bg: rgba(122, 138, 110, 0.16);
+  --d-hover-soft: rgba(122, 138, 110, 0.1);
+
+  --d-btn-grad: linear-gradient(180deg, #588b66, #3f6b4c);
+  --d-btn-text: #fbfaf6;
+  --d-btn-radius: 0.3rem;
+  --d-btn-radius-sm: 0.25rem;
+  --d-btn-shadow: 0 2px 0 rgba(45, 74, 43, 0.35);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.04em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #fdfcf7;
+  --d-ctl-border: 1px solid rgba(122, 138, 110, 0.45);
+  --d-ctl-radius: 0.3rem;
+
+  --d-chip-bg: rgba(122, 138, 110, 0.12);
+  --d-chip-border: 1px solid rgba(122, 138, 110, 0.4);
+  --d-chip-radius: 0.25rem;
+  --d-chip-ink: #3a4a38;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 1px solid rgba(122, 138, 110, 0.4);
+  --d-mode-radius: 0.2rem;
+  --d-mode-ink: rgba(47, 58, 47, 0.62);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.08em;
+  --d-mode-pad: 0.45rem 1rem;
+  --d-mode-hover: rgba(122, 138, 110, 0.12);
+
+  --d-dock-bg: #fdfcf7;
+  --d-dock-border: 1px solid rgba(122, 138, 110, 0.45);
+  --d-dock-radius: 0.4rem;
+  --d-dock-btn-radius: 0.25rem;
+  --d-dock-ink: rgba(47, 58, 47, 0.68);
+  --d-toggle-radius: 0.3rem;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 400;
+  --d-readout-spacing: -0.005em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 500;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: rgba(122, 138, 110, 0.26);
+  --d-dot-bg: #7d8471;
+  --d-dot-radius: 50% 0 50% 0;
+  --d-switch-bg: rgba(122, 138, 110, 0.35);
+  --d-switch-knob: #fdfcf7;
+  --d-dial-core: #f7f6f1;
+
+  --d-greet-ink: rgba(47, 58, 47, 0.55);
+  --d-date-ink: rgba(74, 124, 89, 0.8);
+  --d-resize-line: rgba(47, 58, 47, 0.3);
+  --d-grip-line: rgba(47, 58, 47, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(47, 58, 47, 0.72);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #a4442c;
+  --d-danger-bg: rgba(164, 68, 44, 0.08);
+  --d-danger-border: 1px solid rgba(164, 68, 44, 0.28);
+  --d-danger-radius: 0.3rem;
+
+  --d-toast-bg: #fdfcf7;
+  --d-toast-border: 1px solid rgba(122, 138, 110, 0.45);
+  --d-toast-radius: 0.3rem;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(122, 138, 110, 0.5);
+  --d-reset-radius: 0.25rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="forest"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="forest"] .visual-plane {
+  background-image:
+    radial-gradient(60% 50% at 80% 6%, rgba(164, 172, 134, 0.35), transparent 62%),
+    radial-gradient(70% 60% at 8% 98%, rgba(74, 124, 89, 0.2), transparent 66%),
+    linear-gradient(180deg, #f9f8f2, #eeede4 90%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="forest"] .video-plane,
+.focus-app[data-design="forest"] .snow-layer,
+.focus-app[data-design="forest"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="forest"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="forest"] .topbar {
+  border-bottom: 1px solid rgba(122, 138, 110, 0.5);
+  box-shadow: inset 0 -3px 0 -2px rgba(122, 138, 110, 0.35);
+}
+
+.focus-app[data-design="forest"] .mode-choice.active {
+  background: #4a7c59;
+  color: #fbfaf6;
+  border-color: #4a7c59;
+  box-shadow: none;
+}
+
+.focus-app[data-design="forest"] .bottom-dock button.active {
+  background: #4a7c59;
+  color: #fbfaf6;
+  box-shadow: none;
+}
+
+.focus-app[data-design="forest"] .design-card.active {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.focus-app[data-design="forest"] .time-readout {
+  color: #26311f;
+}
+
+.focus-app[data-design="forest"] .timer-aura {
+  opacity: 0.14;
+  animation: none;
+}
+
+.focus-app[data-design="forest"] .greet-clock {
+  font-family: var(--d-font-display);
+  font-weight: 500;
+}
+
+.focus-app[data-design="forest"] .greet-date {
+  letter-spacing: 0.16em;
+}
+
+/* ============================================================================
+   PALETTE — MODERN MINIMALIST (charcoal, slate, white hairlines)
+   ========================================================================== */
+
+.focus-app[data-design="minimal"] {
+  color-scheme: light;
+  --ink: #36454f;
+  --dim: rgba(54, 69, 79, 0.64);
+  --line: #d3d3d3;
+  --danger: #b3462f;
+
+  --d-shell-bg: #f4f5f6;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 88%, #10171c);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #ffffff;
+  --d-panel-border: 1px solid #d3d3d3;
+  --d-panel-radius: 0.3rem;
+  --d-panel-shadow: 0 1px 2px rgba(54, 69, 79, 0.07);
+  --d-panel-blur: none;
+  --d-panel-head: #f7f8f9;
+
+  --d-util-bg: #ffffff;
+  --d-util-border: 1px solid #d3d3d3;
+  --d-util-shadow: 0 1px 2px rgba(54, 69, 79, 0.07);
+  --d-util-blur: none;
+
+  --d-head-bg: #f7f8f9;
+  --d-bar-bg: #f7f8f9;
+  --d-hairline: #e3e4e6;
+  --d-view-bg: #fafbfb;
+
+  --d-surface-bg: #f7f8f9;
+  --d-surface-border: 1px solid #d3d3d3;
+  --d-surface-line: #d3d3d3;
+  --d-surface-radius: 0.25rem;
+  --d-field-radius: 0.25rem;
+  --d-field-radius-sm: 0.2rem;
+  --d-add-radius: 0.25rem;
+
+  --d-card-bg: #ffffff;
+  --d-card-grad: #ffffff;
+  --d-card-border: 1px solid #d3d3d3;
+  --d-card-radius: 0.25rem;
+  --d-soft-bg: #eef0f2;
+  --d-soft-ink: rgba(54, 69, 79, 0.72);
+  --d-tab-ink: rgba(54, 69, 79, 0.66);
+  --d-on-soft: #ffffff;
+  --d-body-ink: rgba(54, 69, 79, 0.9);
+  --d-body-ink-strong: #2b383f;
+  --d-faint: rgba(54, 69, 79, 0.45);
+  --d-hover-bg: #eef0f2;
+  --d-hover-soft: #f2f4f5;
+
+  --d-btn-grad: #36454f;
+  --d-btn-text: #ffffff;
+  --d-btn-radius: 0.25rem;
+  --d-btn-radius-sm: 0.2rem;
+  --d-btn-shadow: none;
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #ffffff;
+  --d-ctl-border: 1px solid #d3d3d3;
+  --d-ctl-radius: 0.25rem;
+
+  --d-chip-bg: #f7f8f9;
+  --d-chip-border: 1px solid #d3d3d3;
+  --d-chip-radius: 0.2rem;
+  --d-chip-ink: #4d5d68;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(54, 69, 79, 0.55);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.1em;
+  --d-mode-pad: 0.45rem 0.85rem;
+  --d-mode-hover: rgba(54, 69, 79, 0.06);
+
+  --d-dock-bg: #ffffff;
+  --d-dock-border: 1px solid #d3d3d3;
+  --d-dock-radius: 0.3rem;
+  --d-dock-btn-radius: 0.2rem;
+  --d-dock-ink: rgba(54, 69, 79, 0.68);
+  --d-toggle-radius: 0.25rem;
+
+  --d-readout-weight: 200;
+  --d-readout-spacing: -0.02em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.1em;
+
+  --d-track-bg: #e3e4e6;
+  --d-dot-bg: #708090;
+  --d-dot-radius: 0;
+  --d-switch-bg: #cfd2d5;
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #fafbfb;
+
+  --d-greet-ink: rgba(54, 69, 79, 0.58);
+  --d-date-ink: rgba(112, 128, 144, 0.9);
+  --d-resize-line: rgba(54, 69, 79, 0.25);
+  --d-grip-line: rgba(54, 69, 79, 0.2);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(54, 69, 79, 0.75);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #b3462f;
+  --d-danger-bg: rgba(179, 70, 47, 0.07);
+  --d-danger-border: 1px solid rgba(179, 70, 47, 0.24);
+  --d-danger-radius: 0.25rem;
+
+  --d-toast-bg: #ffffff;
+  --d-toast-border: 1px solid #d3d3d3;
+  --d-toast-radius: 0.25rem;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: #cfd2d5;
+  --d-reset-radius: 0.2rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="minimal"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="minimal"] .visual-plane {
+  background-image: linear-gradient(180deg, #f7f8f9, #eef0f2 92%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="minimal"] .video-plane,
+.focus-app[data-design="minimal"] .snow-layer,
+.focus-app[data-design="minimal"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="minimal"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="minimal"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="minimal"] .mode-choice {
+  border-bottom: 1px solid transparent;
+  padding-bottom: 0.35rem;
+}
+
+.focus-app[data-design="minimal"] .mode-choice.active {
+  background: none;
+  color: #2b383f;
+  border-bottom-color: #36454f;
+  box-shadow: none;
+}
+
+.focus-app[data-design="minimal"] .bottom-dock button.active {
+  background: #eef0f2;
+  color: #36454f;
+  box-shadow: inset 0 0 0 1px #d3d3d3;
+}
+
+.focus-app[data-design="minimal"] .design-card.active {
+  box-shadow: 0 0 0 2px #36454f;
+}
+
+.focus-app[data-design="minimal"] .micro-dots i {
+  width: 0.5rem;
+  height: 0.16rem;
+}
+
+.focus-app[data-design="minimal"] .phase-copy {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+}
+
+.focus-app[data-design="minimal"] .start-control {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ============================================================================
+   PALETTE — GOLDEN HOUR (mustard, terracotta, warm beige, pill shapes)
+   ========================================================================== */
+
+.focus-app[data-design="golden"] {
+  color-scheme: light;
+  --ink: #4a403a;
+  --dim: rgba(74, 64, 58, 0.6);
+  --line: rgba(74, 64, 58, 0.18);
+  --danger: #a8402b;
+
+  --d-shell-bg: linear-gradient(180deg, #efdfc4, #d4b896);
+  --d-accent-ink: color-mix(in srgb, var(--accent) 70%, #4a2f0b);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #f8eedd;
+  --d-panel-border: 1px solid rgba(74, 64, 58, 0.12);
+  --d-panel-radius: 1rem;
+  --d-panel-shadow: 0 26px 54px rgba(106, 84, 60, 0.24);
+  --d-panel-blur: none;
+  --d-panel-head: #f3e5d0;
+
+  --d-util-bg: #f8eedd;
+  --d-util-border: 1px solid rgba(74, 64, 58, 0.12);
+  --d-util-shadow: 0 26px 54px rgba(106, 84, 60, 0.24);
+  --d-util-blur: none;
+
+  --d-head-bg: #f3e5d0;
+  --d-bar-bg: #f3e5d0;
+  --d-hairline: rgba(74, 64, 58, 0.14);
+  --d-view-bg: #fbf3e6;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.55);
+  --d-surface-border: 1px solid rgba(74, 64, 58, 0.12);
+  --d-surface-line: rgba(74, 64, 58, 0.14);
+  --d-surface-radius: 0.85rem;
+  --d-field-radius: 999px;
+  --d-field-radius-sm: 999px;
+  --d-add-radius: 999px;
+
+  --d-card-bg: #fbf3e6;
+  --d-card-grad: #fbf3e6;
+  --d-card-border: 1px solid rgba(74, 64, 58, 0.1);
+  --d-card-radius: 0.9rem;
+  --d-soft-bg: rgba(244, 169, 0, 0.18);
+  --d-soft-ink: rgba(74, 64, 58, 0.74);
+  --d-tab-ink: rgba(74, 64, 58, 0.72);
+  --d-on-soft: #3a2a12;
+  --d-body-ink: rgba(74, 64, 58, 0.88);
+  --d-body-ink-strong: #392f28;
+  --d-faint: rgba(74, 64, 58, 0.46);
+  --d-hover-bg: rgba(74, 64, 58, 0.08);
+  --d-hover-soft: rgba(255, 255, 255, 0.5);
+
+  --d-btn-grad: linear-gradient(180deg, #f8ba2a, #e59a00);
+  --d-btn-text: #4a2f0b;
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-btn-shadow: 0 12px 26px rgba(180, 120, 20, 0.28);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.01em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.7);
+  --d-ctl-border: 1px solid rgba(74, 64, 58, 0.12);
+  --d-ctl-radius: 999px;
+
+  --d-chip-bg: rgba(193, 102, 107, 0.12);
+  --d-chip-border: 1px solid rgba(193, 102, 107, 0.3);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #6b3f36;
+
+  --d-mode-bg: rgba(255, 255, 255, 0.55);
+  --d-mode-border: 0;
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(74, 64, 58, 0.6);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.01em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(255, 255, 255, 0.8);
+
+  --d-dock-bg: rgba(248, 238, 221, 0.94);
+  --d-dock-border: 1px solid rgba(74, 64, 58, 0.12);
+  --d-dock-radius: 999px;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: rgba(74, 64, 58, 0.66);
+  --d-toggle-radius: 999px;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 500;
+  --d-readout-spacing: -0.01em;
+  --d-readout-shadow: 0 18px 44px rgba(193, 102, 107, 0.28);
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 600;
+  --d-title-spacing: 0;
+
+  --d-track-bg: rgba(74, 64, 58, 0.16);
+  --d-dot-bg: #c1666b;
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(74, 64, 58, 0.2);
+  --d-switch-knob: #fbf3e6;
+  --d-dial-core: #fbf3e6;
+
+  --d-greet-ink: rgba(74, 64, 58, 0.6);
+  --d-date-ink: rgba(164, 106, 12, 0.85);
+  --d-resize-line: rgba(74, 64, 58, 0.28);
+  --d-grip-line: rgba(74, 64, 58, 0.2);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(74, 64, 58, 0.74);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #a8402b;
+  --d-danger-bg: rgba(168, 64, 43, 0.08);
+  --d-danger-border: 1px solid rgba(168, 64, 43, 0.26);
+  --d-danger-radius: 999px;
+
+  --d-toast-bg: #f8eedd;
+  --d-toast-border: 1px solid rgba(74, 64, 58, 0.16);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(74, 64, 58, 0.3);
+  --d-reset-radius: 999px;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="golden"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="golden"] .visual-plane {
+  background-image:
+    radial-gradient(58% 46% at 78% 4%, rgba(244, 169, 0, 0.5), transparent 64%),
+    radial-gradient(70% 54% at 12% 96%, rgba(193, 102, 107, 0.35), transparent 70%),
+    linear-gradient(180deg, #f2e3c9, #d9bd9c 92%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="golden"] .video-plane,
+.focus-app[data-design="golden"] .snow-layer,
+.focus-app[data-design="golden"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="golden"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="golden"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: 0 8px 18px rgba(180, 120, 20, 0.28);
+}
+
+.focus-app[data-design="golden"] .bottom-dock button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: none;
+}
+
+.focus-app[data-design="golden"] .design-card.active {
+  box-shadow: 0 0 0 2px rgba(193, 102, 107, 0.75);
+}
+
+.focus-app[data-design="golden"] .timer-aura {
+  filter: blur(54px);
+  opacity: 0.34;
+  animation: none;
+}
+
+.focus-app[data-design="golden"] .phase-copy,
+.focus-app[data-design="golden"] .quote-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  color: rgba(74, 64, 58, 0.7);
+}
+
+.focus-app[data-design="golden"] .time-readout {
+  color: #4a403a;
+}
+
+.focus-app[data-design="golden"] .fw-head {
+  border-bottom: 1px solid rgba(74, 64, 58, 0.12);
+}
+
+/* ============================================================================
+   PALETTE — ARCTIC FROST (frosted glass, steel blue, silver hairlines)
+   ========================================================================== */
+
+.focus-app[data-design="arctic"] {
+  color-scheme: light;
+  --ink: #23364d;
+  --dim: rgba(35, 54, 77, 0.7);
+  --line: rgba(74, 111, 165, 0.24);
+  --danger: #b03a2e;
+
+  --d-shell-bg: linear-gradient(180deg, #f7fbff, #dfeaf7);
+  --d-accent-ink: color-mix(in srgb, var(--accent) 92%, #17324f);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: rgba(255, 255, 255, 0.62);
+  --d-panel-border: 1px solid rgba(192, 192, 192, 0.78);
+  --d-panel-radius: 0.8rem;
+  --d-panel-shadow: 0 22px 48px rgba(74, 111, 165, 0.18);
+  --d-panel-blur: blur(20px) saturate(130%);
+  --d-panel-head: rgba(255, 255, 255, 0.5);
+
+  --d-util-bg: rgba(255, 255, 255, 0.66);
+  --d-util-border: 1px solid rgba(192, 192, 192, 0.8);
+  --d-util-shadow: 0 22px 48px rgba(74, 111, 165, 0.18);
+  --d-util-blur: blur(20px) saturate(130%);
+
+  --d-head-bg: rgba(255, 255, 255, 0.55);
+  --d-bar-bg: rgba(255, 255, 255, 0.55);
+  --d-hairline: rgba(74, 111, 165, 0.2);
+  --d-view-bg: rgba(255, 255, 255, 0.45);
+
+  --d-surface-bg: rgba(255, 255, 255, 0.55);
+  --d-surface-border: 1px solid rgba(192, 192, 192, 0.6);
+  --d-surface-line: rgba(74, 111, 165, 0.2);
+  --d-surface-radius: 0.6rem;
+  --d-field-radius: 0.55rem;
+  --d-field-radius-sm: 0.5rem;
+  --d-add-radius: 0.55rem;
+
+  --d-card-bg: rgba(255, 255, 255, 0.5);
+  --d-card-grad: rgba(255, 255, 255, 0.55);
+  --d-card-border: 1px solid rgba(192, 192, 192, 0.58);
+  --d-card-radius: 0.65rem;
+  --d-soft-bg: rgba(74, 111, 165, 0.1);
+  --d-soft-ink: rgba(35, 54, 77, 0.72);
+  --d-tab-ink: rgba(35, 54, 77, 0.8);
+  --d-on-soft: #ffffff;
+  --d-body-ink: rgba(35, 54, 77, 0.93);
+  --d-body-ink-strong: #17293f;
+  --d-faint: rgba(35, 54, 77, 0.44);
+  --d-hover-bg: rgba(74, 111, 165, 0.12);
+  --d-hover-soft: rgba(255, 255, 255, 0.7);
+
+  --d-btn-grad: linear-gradient(180deg, #5f86bb, #4a6fa5);
+  --d-btn-text: #fafafa;
+  --d-btn-radius: 0.55rem;
+  --d-btn-radius-sm: 0.45rem;
+  --d-btn-shadow: 0 10px 22px rgba(74, 111, 165, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  --d-btn-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.72);
+  --d-ctl-border: 1px solid rgba(192, 192, 192, 0.8);
+  --d-ctl-radius: 0.55rem;
+
+  --d-chip-bg: rgba(255, 255, 255, 0.6);
+  --d-chip-border: 1px solid rgba(192, 192, 192, 0.7);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #3a5570;
+
+  --d-mode-bg: rgba(255, 255, 255, 0.5);
+  --d-mode-border: 1px solid rgba(192, 192, 192, 0.7);
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(35, 54, 77, 0.6);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(255, 255, 255, 0.85);
+
+  --d-dock-bg: rgba(255, 255, 255, 0.7);
+  --d-dock-border: 1px solid rgba(192, 192, 192, 0.85);
+  --d-dock-radius: 0.8rem;
+  --d-dock-btn-radius: 0.55rem;
+  --d-dock-ink: rgba(35, 54, 77, 0.66);
+  --d-toggle-radius: 0.6rem;
+
+  --d-readout-weight: 200;
+  --d-readout-spacing: 0.01em;
+  --d-readout-shadow: 0 20px 50px rgba(74, 111, 165, 0.24);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.03em;
+
+  --d-track-bg: rgba(74, 111, 165, 0.2);
+  --d-dot-bg: rgba(74, 111, 165, 0.5);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(74, 111, 165, 0.3);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: rgba(255, 255, 255, 0.6);
+
+  --d-greet-ink: rgba(35, 54, 77, 0.56);
+  --d-date-ink: rgba(74, 111, 165, 0.8);
+  --d-resize-line: rgba(74, 111, 165, 0.3);
+  --d-grip-line: rgba(74, 111, 165, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(35, 54, 77, 0.74);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #b03a2e;
+  --d-danger-bg: rgba(176, 58, 46, 0.08);
+  --d-danger-border: 1px solid rgba(176, 58, 46, 0.26);
+  --d-danger-radius: 0.5rem;
+
+  --d-toast-bg: rgba(255, 255, 255, 0.85);
+  --d-toast-border: 1px solid rgba(192, 192, 192, 0.85);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(74, 111, 165, 0.35);
+  --d-reset-radius: 0.45rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="arctic"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="arctic"] .visual-plane {
+  background-image:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.85) 0 22%, transparent 44%),
+    linear-gradient(298deg, rgba(212, 228, 247, 0.7) 0 18%, transparent 46%),
+    radial-gradient(60% 50% at 84% 6%, rgba(74, 111, 165, 0.18), transparent 62%),
+    linear-gradient(180deg, #f9fcff, #e2ecf8 92%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="arctic"] .video-plane,
+.focus-app[data-design="arctic"] .snow-layer,
+.focus-app[data-design="arctic"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="arctic"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="arctic"] .float-win,
+.focus-app[data-design="arctic"] .util-panel,
+.focus-app[data-design="arctic"] .bottom-dock,
+.focus-app[data-design="arctic"] .mode-choice {
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+.focus-app[data-design="arctic"] .mode-choice.active {
+  background: #4a6fa5;
+  color: #fafafa;
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(74, 111, 165, 0.28);
+}
+
+.focus-app[data-design="arctic"] .bottom-dock button.active {
+  background: rgba(74, 111, 165, 0.16);
+  color: #23405e;
+  box-shadow: inset 0 0 0 1px rgba(74, 111, 165, 0.3);
+}
+
+.focus-app[data-design="arctic"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--d-accent-ink);
+}
+
+.focus-app[data-design="arctic"] .time-readout {
+  color: #1d3450;
+}
+
+.focus-app[data-design="arctic"] .timer-aura {
+  filter: blur(50px);
+  opacity: 0.22;
+  animation: none;
+}
+
+.focus-app[data-design="arctic"] .micro-dots i {
+  background: rgba(74, 111, 165, 0.45);
+  box-shadow: 0 0 6px rgba(74, 111, 165, 0.4);
+}
+
+/* ============================================================================
+   PALETTE — DESERT ROSE (dusty rose, clay, sand, burgundy ink)
+   ========================================================================== */
+
+.focus-app[data-design="desert"] {
+  color-scheme: light;
+  --ink: #5d2e46;
+  --dim: rgba(93, 46, 70, 0.56);
+  --line: rgba(184, 125, 109, 0.42);
+  --danger: #9c3527;
+
+  --d-shell-bg: #e8d5c4;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 62%, #5d2e46);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #fbeee6;
+  --d-panel-border: 1px solid rgba(212, 165, 165, 0.7);
+  --d-panel-radius: 1.15rem;
+  --d-panel-shadow: 0 24px 48px rgba(93, 46, 70, 0.16);
+  --d-panel-blur: none;
+  --d-panel-head: #f6e3d8;
+
+  --d-util-bg: #fbeee6;
+  --d-util-border: 1px solid rgba(212, 165, 165, 0.7);
+  --d-util-shadow: 0 24px 48px rgba(93, 46, 70, 0.16);
+  --d-util-blur: none;
+
+  --d-head-bg: #f6e3d8;
+  --d-bar-bg: #f6e3d8;
+  --d-hairline: rgba(184, 125, 109, 0.3);
+  --d-view-bg: #fdf4ec;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.5);
+  --d-surface-border: 1px solid rgba(212, 165, 165, 0.6);
+  --d-surface-line: rgba(184, 125, 109, 0.3);
+  --d-surface-radius: 0.9rem;
+  --d-field-radius: 999px;
+  --d-field-radius-sm: 999px;
+  --d-add-radius: 999px;
+
+  --d-card-bg: #fdf4ec;
+  --d-card-grad: #fdf4ec;
+  --d-card-border: 1px solid rgba(212, 165, 165, 0.6);
+  --d-card-radius: 1rem;
+  --d-soft-bg: rgba(212, 165, 165, 0.3);
+  --d-soft-ink: rgba(93, 46, 70, 0.74);
+  --d-tab-ink: rgba(93, 46, 70, 0.7);
+  --d-on-soft: #fdf4ec;
+  --d-body-ink: rgba(93, 46, 70, 0.86);
+  --d-body-ink-strong: #4a2337;
+  --d-faint: rgba(93, 46, 70, 0.46);
+  --d-hover-bg: rgba(212, 165, 165, 0.3);
+  --d-hover-soft: rgba(255, 255, 255, 0.5);
+
+  --d-btn-grad: linear-gradient(180deg, #c98d7c, #b87d6d);
+  --d-btn-text: #fdf4ec;
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-btn-shadow: 0 12px 24px rgba(93, 46, 70, 0.2);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.6);
+  --d-ctl-border: 1px solid rgba(212, 165, 165, 0.7);
+  --d-ctl-radius: 999px;
+
+  --d-chip-bg: rgba(212, 165, 165, 0.24);
+  --d-chip-border: 1px solid rgba(184, 125, 109, 0.45);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #5d2e46;
+
+  --d-mode-bg: rgba(255, 255, 255, 0.45);
+  --d-mode-border: 1px solid rgba(212, 165, 165, 0.6);
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(93, 46, 70, 0.6);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(255, 255, 255, 0.75);
+
+  --d-dock-bg: rgba(251, 238, 230, 0.94);
+  --d-dock-border: 1px solid rgba(212, 165, 165, 0.75);
+  --d-dock-radius: 999px;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: rgba(93, 46, 70, 0.64);
+  --d-toggle-radius: 999px;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 400;
+  --d-readout-spacing: 0;
+  --d-readout-shadow: 0 18px 44px rgba(184, 125, 109, 0.35);
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 500;
+  --d-title-spacing: 0;
+
+  --d-track-bg: rgba(184, 125, 109, 0.28);
+  --d-dot-bg: #b87d6d;
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(184, 125, 109, 0.4);
+  --d-switch-knob: #fdf4ec;
+  --d-dial-core: #fdf4ec;
+
+  --d-greet-ink: rgba(93, 46, 70, 0.58);
+  --d-date-ink: rgba(184, 125, 109, 0.95);
+  --d-resize-line: rgba(93, 46, 70, 0.28);
+  --d-grip-line: rgba(93, 46, 70, 0.2);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(93, 46, 70, 0.74);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #9c3527;
+  --d-danger-bg: rgba(156, 53, 39, 0.08);
+  --d-danger-border: 1px solid rgba(156, 53, 39, 0.26);
+  --d-danger-radius: 999px;
+
+  --d-toast-bg: #fbeee6;
+  --d-toast-border: 1px solid rgba(212, 165, 165, 0.8);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(184, 125, 109, 0.45);
+  --d-reset-radius: 999px;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="desert"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="desert"] .visual-plane {
+  background-image:
+    radial-gradient(58% 46% at 82% 4%, rgba(212, 165, 165, 0.55), transparent 66%),
+    radial-gradient(70% 56% at 10% 98%, rgba(184, 125, 109, 0.4), transparent 70%),
+    linear-gradient(180deg, #efdfcf, #e0c9b7 92%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="desert"] .video-plane,
+.focus-app[data-design="desert"] .snow-layer,
+.focus-app[data-design="desert"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="desert"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="desert"] .mode-choice.active {
+  background: linear-gradient(180deg, #c98d7c, #b87d6d);
+  color: #fdf4ec;
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(93, 46, 70, 0.2);
+}
+
+.focus-app[data-design="desert"] .bottom-dock button.active {
+  background: rgba(184, 125, 109, 0.24);
+  color: #5d2e46;
+  box-shadow: inset 0 0 0 1px rgba(184, 125, 109, 0.4);
+}
+
+.focus-app[data-design="desert"] .design-card.active {
+  box-shadow: 0 0 0 2px rgba(184, 125, 109, 0.85);
+}
+
+.focus-app[data-design="desert"] .time-readout {
+  color: #4f2239;
+}
+
+.focus-app[data-design="desert"] .timer-aura {
+  filter: blur(54px);
+  opacity: 0.24;
+  animation: none;
+}
+
+.focus-app[data-design="desert"] .phase-copy,
+.focus-app[data-design="desert"] .quote-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  color: rgba(93, 46, 70, 0.68);
+}
+
+/* ============================================================================
+   PALETTE — TECH INNOVATION (graphite, electric blue, cyan edges)
+   ========================================================================== */
+
+.focus-app[data-design="tech"] {
+  color-scheme: dark;
+  --ink: #f2f6ff;
+  --dim: rgba(242, 246, 255, 0.56);
+  --line: rgba(0, 102, 255, 0.3);
+  --danger: #ff6b5e;
+
+  --d-shell-bg: #1e1e1e;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 62%, #66e0ff);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #232427;
+  --d-panel-border: 1px solid rgba(0, 102, 255, 0.4);
+  --d-panel-radius: 0.4rem;
+  --d-panel-shadow: 0 22px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 170, 255, 0.12);
+  --d-panel-blur: none;
+  --d-panel-head: #26282c;
+
+  --d-util-bg: #232427;
+  --d-util-border: 1px solid rgba(0, 102, 255, 0.4);
+  --d-util-shadow: 0 22px 48px rgba(0, 0, 0, 0.55);
+  --d-util-blur: none;
+
+  --d-head-bg: #26282c;
+  --d-bar-bg: #26282c;
+  --d-hairline: rgba(0, 102, 255, 0.28);
+  --d-view-bg: #1a1b1e;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.04);
+  --d-surface-border: 1px solid rgba(0, 102, 255, 0.24);
+  --d-surface-line: rgba(0, 102, 255, 0.24);
+  --d-surface-radius: 0.35rem;
+  --d-field-radius: 0.3rem;
+  --d-field-radius-sm: 0.25rem;
+  --d-add-radius: 0.3rem;
+
+  --d-card-bg: rgba(255, 255, 255, 0.035);
+  --d-card-grad: rgba(255, 255, 255, 0.04);
+  --d-card-border: 1px solid rgba(0, 102, 255, 0.24);
+  --d-card-radius: 0.4rem;
+  --d-soft-bg: rgba(0, 102, 255, 0.16);
+  --d-soft-ink: rgba(242, 246, 255, 0.74);
+  --d-tab-ink: rgba(242, 246, 255, 0.72);
+  --d-on-soft: #0a1220;
+  --d-body-ink: rgba(242, 246, 255, 0.88);
+  --d-body-ink-strong: #ffffff;
+  --d-faint: rgba(242, 246, 255, 0.44);
+  --d-hover-bg: rgba(0, 102, 255, 0.18);
+  --d-hover-soft: rgba(255, 255, 255, 0.05);
+
+  --d-btn-grad: linear-gradient(180deg, #2b7dff, #0066ff);
+  --d-btn-text: #ffffff;
+  --d-btn-radius: 0.35rem;
+  --d-btn-radius-sm: 0.25rem;
+  --d-btn-shadow: 0 0 0 1px rgba(0, 255, 255, 0.28), 0 12px 26px rgba(0, 102, 255, 0.4);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.05em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.05);
+  --d-ctl-border: 1px solid rgba(0, 102, 255, 0.32);
+  --d-ctl-radius: 0.35rem;
+
+  --d-chip-bg: rgba(0, 102, 255, 0.14);
+  --d-chip-border: 1px solid rgba(0, 170, 255, 0.34);
+  --d-chip-radius: 0.3rem;
+  --d-chip-ink: #b9dcff;
+
+  --d-mode-bg: rgba(255, 255, 255, 0.04);
+  --d-mode-border: 1px solid rgba(0, 102, 255, 0.3);
+  --d-mode-radius: 0.3rem;
+  --d-mode-ink: rgba(242, 246, 255, 0.58);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.08em;
+  --d-mode-pad: 0.5rem 1rem;
+  --d-mode-hover: rgba(0, 102, 255, 0.16);
+
+  --d-dock-bg: rgba(28, 29, 32, 0.95);
+  --d-dock-border: 1px solid rgba(0, 102, 255, 0.36);
+  --d-dock-radius: 0.4rem;
+  --d-dock-btn-radius: 0.3rem;
+  --d-dock-ink: rgba(242, 246, 255, 0.64);
+  --d-toggle-radius: 0.35rem;
+
+  --d-readout-weight: 500;
+  --d-readout-spacing: -0.01em;
+  --d-readout-shadow: 0 0 34px rgba(0, 102, 255, 0.55);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.08em;
+
+  --d-track-bg: rgba(0, 102, 255, 0.2);
+  --d-dot-bg: #26a7ff;
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(0, 102, 255, 0.34);
+  --d-switch-knob: #66e0ff;
+  --d-dial-core: #1a1b1e;
+
+  --d-greet-ink: rgba(242, 246, 255, 0.58);
+  --d-date-ink: rgba(0, 200, 255, 0.8);
+  --d-resize-line: rgba(0, 170, 255, 0.4);
+  --d-grip-line: rgba(0, 170, 255, 0.3);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 0 22px rgba(0, 102, 255, 0.45);
+  --d-quote-ink: rgba(242, 246, 255, 0.78);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #ff6b5e;
+  --d-danger-bg: rgba(255, 107, 94, 0.1);
+  --d-danger-border: 1px solid rgba(255, 107, 94, 0.32);
+  --d-danger-radius: 0.3rem;
+
+  --d-toast-bg: #232427;
+  --d-toast-border: 1px solid rgba(0, 170, 255, 0.4);
+  --d-toast-radius: 0.35rem;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(0, 170, 255, 0.5);
+  --d-reset-radius: 0.25rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="tech"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="tech"] .visual-plane {
+  background-image:
+    linear-gradient(122deg, rgba(0, 102, 255, 0.3), transparent 58%),
+    radial-gradient(60% 44% at 96% 0%, rgba(0, 200, 255, 0.22), transparent 62%),
+    linear-gradient(180deg, #202124, #141416 88%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="tech"] .video-plane,
+.focus-app[data-design="tech"] .snow-layer,
+.focus-app[data-design="tech"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="tech"] .scrim {
+  background: radial-gradient(circle at 50% 40%, transparent 0 36%, rgba(8, 10, 14, 0.5) 78%, rgba(5, 6, 9, 0.85) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="tech"] .float-win,
+.focus-app[data-design="tech"] .util-panel {
+  border-top: 2px solid rgba(0, 170, 255, 0.75);
+}
+
+.focus-app[data-design="tech"] .mode-choice.active {
+  background: linear-gradient(180deg, #2b7dff, #0066ff);
+  color: #ffffff;
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 16px rgba(0, 102, 255, 0.55);
+}
+
+.focus-app[data-design="tech"] .bottom-dock button.active {
+  background: rgba(0, 102, 255, 0.26);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(0, 200, 255, 0.5), 0 0 14px rgba(0, 102, 255, 0.4);
+}
+
+.focus-app[data-design="tech"] .design-card.active {
+  box-shadow: 0 0 0 1px #26a7ff, 0 0 18px rgba(0, 102, 255, 0.4);
+}
+
+.focus-app[data-design="tech"] .timer-aura {
+  filter: blur(46px);
+  opacity: 0.34;
+  animation: none;
+}
+
+.focus-app[data-design="tech"] .micro-dots i {
+  width: 0.4rem;
+  height: 0.14rem;
+  background: #26a7ff;
+}
+
+.focus-app[data-design="tech"] .greet-date {
+  letter-spacing: 0.14em;
+}
+
+/* ============================================================================
+   PALETTE — BOTANICAL GARDEN (cream, fern green, marigold)
+   ========================================================================== */
+
+.focus-app[data-design="botanical"] {
+  color-scheme: light;
+  --ink: #2f3a2f;
+  --dim: rgba(47, 58, 47, 0.58);
+  --line: rgba(122, 138, 110, 0.42);
+  --danger: #a4442c;
+
+  --d-shell-bg: #f5f3ed;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 68%, #6b3a06);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #fdfcf7;
+  --d-panel-border: 1px solid rgba(122, 138, 110, 0.4);
+  --d-panel-radius: 0.6rem;
+  --d-panel-shadow: 0 16px 36px rgba(74, 124, 89, 0.14);
+  --d-panel-blur: none;
+  --d-panel-head: #f1efe6;
+
+  --d-util-bg: #fdfcf7;
+  --d-util-border: 1px solid rgba(122, 138, 110, 0.4);
+  --d-util-shadow: 0 16px 36px rgba(74, 124, 89, 0.14);
+  --d-util-blur: none;
+
+  --d-head-bg: #f1efe6;
+  --d-bar-bg: #f1efe6;
+  --d-hairline: rgba(122, 138, 110, 0.32);
+  --d-view-bg: #f8f7f1;
+
+  --d-surface-bg: #f8f7f1;
+  --d-surface-border: 1px solid rgba(122, 138, 110, 0.3);
+  --d-surface-line: rgba(122, 138, 110, 0.28);
+  --d-surface-radius: 0.45rem;
+  --d-field-radius: 0.4rem;
+  --d-field-radius-sm: 0.35rem;
+  --d-add-radius: 0.4rem;
+
+  --d-card-bg: #fbfaf3;
+  --d-card-grad: #fbfaf3;
+  --d-card-border: 1px solid rgba(122, 138, 110, 0.28);
+  --d-card-radius: 0.45rem;
+  --d-soft-bg: rgba(74, 124, 89, 0.12);
+  --d-soft-ink: rgba(47, 58, 47, 0.72);
+  --d-tab-ink: rgba(47, 58, 47, 0.7);
+  --d-on-soft: #fdfcf7;
+  --d-body-ink: rgba(47, 58, 47, 0.88);
+  --d-body-ink-strong: #23301f;
+  --d-faint: rgba(47, 58, 47, 0.46);
+  --d-hover-bg: rgba(74, 124, 89, 0.14);
+  --d-hover-soft: rgba(122, 138, 110, 0.1);
+
+  --d-btn-grad: linear-gradient(180deg, #578a64, #3f6b4c);
+  --d-btn-text: #fbfaf6;
+  --d-btn-radius: 0.35rem;
+  --d-btn-radius-sm: 0.3rem;
+  --d-btn-shadow: 0 8px 18px rgba(74, 124, 89, 0.24);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.03em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: #fdfcf7;
+  --d-ctl-border: 1px solid rgba(122, 138, 110, 0.42);
+  --d-ctl-radius: 0.35rem;
+
+  --d-chip-bg: rgba(249, 166, 32, 0.16);
+  --d-chip-border: 1px solid rgba(249, 166, 32, 0.45);
+  --d-chip-radius: 0.3rem;
+  --d-chip-ink: #6b4a10;
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(47, 58, 47, 0.58);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.06em;
+  --d-mode-pad: 0.5rem 1rem;
+  --d-mode-hover: rgba(74, 124, 89, 0.1);
+
+  --d-dock-bg: #fdfcf7;
+  --d-dock-border: 1px solid rgba(122, 138, 110, 0.42);
+  --d-dock-radius: 0.5rem;
+  --d-dock-btn-radius: 0.3rem;
+  --d-dock-ink: rgba(47, 58, 47, 0.66);
+  --d-toggle-radius: 0.35rem;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 500;
+  --d-readout-spacing: -0.01em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: rgba(122, 138, 110, 0.24);
+  --d-dot-bg: #f9a620;
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(122, 138, 110, 0.36);
+  --d-switch-knob: #fdfcf7;
+  --d-dial-core: #f8f7f1;
+
+  --d-greet-ink: rgba(47, 58, 47, 0.55);
+  --d-date-ink: rgba(74, 124, 89, 0.85);
+  --d-resize-line: rgba(47, 58, 47, 0.28);
+  --d-grip-line: rgba(47, 58, 47, 0.2);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(47, 58, 47, 0.74);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #a4442c;
+  --d-danger-bg: rgba(164, 68, 44, 0.08);
+  --d-danger-border: 1px solid rgba(164, 68, 44, 0.26);
+  --d-danger-radius: 0.3rem;
+
+  --d-toast-bg: #fdfcf7;
+  --d-toast-border: 1px solid rgba(122, 138, 110, 0.42);
+  --d-toast-radius: 0.4rem;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(122, 138, 110, 0.5);
+  --d-reset-radius: 0.3rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="botanical"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="botanical"] .visual-plane {
+  background-image:
+    radial-gradient(64% 52% at 84% 4%, rgba(249, 166, 32, 0.16), transparent 64%),
+    radial-gradient(70% 58% at 8% 98%, rgba(74, 124, 89, 0.18), transparent 68%),
+    linear-gradient(180deg, #f8f7f1, #eceae0 92%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="botanical"] .video-plane,
+.focus-app[data-design="botanical"] .snow-layer,
+.focus-app[data-design="botanical"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="botanical"] .scrim {
+  background: none;
+  box-shadow: none;
+}
+
+.focus-app[data-design="botanical"] .mode-choice {
+  border-bottom: 3px solid transparent;
+  padding-bottom: 0.35rem;
+}
+
+.focus-app[data-design="botanical"] .mode-choice.active {
+  background: none;
+  color: #26311f;
+  border-bottom-color: var(--accent);
+  box-shadow: none;
+}
+
+.focus-app[data-design="botanical"] .bottom-dock button.active {
+  background: rgba(74, 124, 89, 0.16);
+  color: #2f3a2f;
+  box-shadow: inset 0 0 0 1px rgba(122, 138, 110, 0.4);
+}
+
+.focus-app[data-design="botanical"] .design-card.active {
+  box-shadow: 0 0 0 2px rgba(74, 124, 89, 0.7);
+}
+
+.focus-app[data-design="botanical"] .time-readout {
+  color: #26311f;
+}
+
+.focus-app[data-design="botanical"] .timer-aura {
+  filter: blur(52px);
+  opacity: 0.18;
+  animation: none;
+}
+
+.focus-app[data-design="botanical"] .phase-copy,
+.focus-app[data-design="botanical"] .quote-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  color: rgba(47, 58, 47, 0.7);
+}
+
+.focus-app[data-design="botanical"] .greet-clock {
+  font-family: var(--d-font-display);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   PALETTE — MIDNIGHT GALAXY (deep purple night, lavender stars)
+   ========================================================================== */
+
+.focus-app[data-design="galaxy"] {
+  color-scheme: dark;
+  --ink: #ece9f8;
+  --dim: rgba(236, 233, 248, 0.56);
+  --line: rgba(164, 144, 194, 0.32);
+  --danger: #ff8fa3;
+
+  --d-shell-bg: #2b1e3e;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 66%, #f2eeff);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: rgba(52, 38, 74, 0.86);
+  --d-panel-border: 1px solid rgba(164, 144, 194, 0.4);
+  --d-panel-radius: 1rem;
+  --d-panel-shadow: 0 26px 60px rgba(9, 5, 18, 0.65);
+  --d-panel-blur: blur(10px);
+  --d-panel-head: rgba(164, 144, 194, 0.16);
+
+  --d-util-bg: rgba(52, 38, 74, 0.9);
+  --d-util-border: 1px solid rgba(164, 144, 194, 0.4);
+  --d-util-shadow: 0 26px 60px rgba(9, 5, 18, 0.65);
+  --d-util-blur: blur(10px);
+
+  --d-head-bg: rgba(74, 78, 143, 0.28);
+  --d-bar-bg: rgba(74, 78, 143, 0.28);
+  --d-hairline: rgba(164, 144, 194, 0.26);
+  --d-view-bg: #241a35;
+
+  --d-surface-bg: rgba(230, 230, 250, 0.06);
+  --d-surface-border: 1px solid rgba(164, 144, 194, 0.3);
+  --d-surface-line: rgba(164, 144, 194, 0.28);
+  --d-surface-radius: 0.65rem;
+  --d-field-radius: 0.6rem;
+  --d-field-radius-sm: 0.5rem;
+  --d-add-radius: 0.6rem;
+
+  --d-card-bg: rgba(230, 230, 250, 0.05);
+  --d-card-grad: rgba(230, 230, 250, 0.06);
+  --d-card-border: 1px solid rgba(164, 144, 194, 0.26);
+  --d-card-radius: 0.75rem;
+  --d-soft-bg: rgba(164, 144, 194, 0.2);
+  --d-soft-ink: rgba(236, 233, 248, 0.74);
+  --d-tab-ink: rgba(236, 233, 248, 0.72);
+  --d-on-soft: #1b1226;
+  --d-body-ink: rgba(236, 233, 248, 0.88);
+  --d-body-ink-strong: #f7f4ff;
+  --d-faint: rgba(236, 233, 248, 0.44);
+  --d-hover-bg: rgba(164, 144, 194, 0.24);
+  --d-hover-soft: rgba(230, 230, 250, 0.07);
+
+  --d-btn-grad: linear-gradient(180deg, color-mix(in srgb, var(--accent) 74%, #ffffff), var(--accent));
+  --d-btn-text: #241636;
+  --d-btn-radius: 0.65rem;
+  --d-btn-radius-sm: 0.5rem;
+  --d-btn-shadow: 0 12px 30px rgba(164, 144, 194, 0.4);
+  --d-btn-shadow-sm: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(230, 230, 250, 0.08);
+  --d-ctl-border: 1px solid rgba(164, 144, 194, 0.32);
+  --d-ctl-radius: 0.6rem;
+
+  --d-chip-bg: rgba(164, 144, 194, 0.18);
+  --d-chip-border: 1px solid rgba(164, 144, 194, 0.4);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #ded6f5;
+
+  --d-mode-bg: rgba(230, 230, 250, 0.06);
+  --d-mode-border: 1px solid rgba(164, 144, 194, 0.3);
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(236, 233, 248, 0.6);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.03em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(164, 144, 194, 0.2);
+
+  --d-dock-bg: rgba(43, 30, 62, 0.92);
+  --d-dock-border: 1px solid rgba(164, 144, 194, 0.34);
+  --d-dock-radius: 1rem;
+  --d-dock-btn-radius: 0.6rem;
+  --d-dock-ink: rgba(236, 233, 248, 0.66);
+  --d-toggle-radius: 0.7rem;
+
+  --d-readout-weight: 300;
+  --d-readout-spacing: 0.02em;
+  --d-readout-shadow: 0 0 44px rgba(164, 144, 194, 0.55);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 500;
+  --d-title-spacing: 0.06em;
+
+  --d-track-bg: rgba(164, 144, 194, 0.26);
+  --d-dot-bg: rgba(230, 230, 250, 0.6);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(164, 144, 194, 0.36);
+  --d-switch-knob: #e6e6fa;
+  --d-dial-core: #241a35;
+
+  --d-greet-ink: rgba(236, 233, 248, 0.58);
+  --d-date-ink: rgba(164, 144, 194, 0.9);
+  --d-resize-line: rgba(164, 144, 194, 0.38);
+  --d-grip-line: rgba(164, 144, 194, 0.28);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 0 26px rgba(164, 144, 194, 0.45);
+  --d-quote-ink: rgba(236, 233, 248, 0.78);
+  --d-quote-shadow: 0 0 26px rgba(164, 144, 194, 0.3);
+
+  --d-danger-ink: #ff8fa3;
+  --d-danger-bg: rgba(255, 143, 163, 0.1);
+  --d-danger-border: 1px solid rgba(255, 143, 163, 0.32);
+  --d-danger-radius: 0.6rem;
+
+  --d-toast-bg: rgba(52, 38, 74, 0.95);
+  --d-toast-border: 1px solid rgba(164, 144, 194, 0.4);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  --d-misc-bg: rgba(230, 230, 250, 0.35);
+  --d-reset-radius: 0.5rem;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="galaxy"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="galaxy"] .visual-plane {
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, rgba(255, 255, 255, 0.9), transparent 100%),
+    radial-gradient(1.4px 1.4px at 28% 62%, rgba(230, 230, 250, 0.8), transparent 100%),
+    radial-gradient(1.8px 1.8px at 46% 12%, rgba(255, 255, 255, 0.85), transparent 100%),
+    radial-gradient(1.3px 1.3px at 62% 74%, rgba(230, 230, 250, 0.7), transparent 100%),
+    radial-gradient(1.7px 1.7px at 78% 34%, rgba(255, 255, 255, 0.85), transparent 100%),
+    radial-gradient(1.4px 1.4px at 88% 82%, rgba(230, 230, 250, 0.75), transparent 100%),
+    radial-gradient(1.5px 1.5px at 6% 88%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1.2px 1.2px at 20% 40%, rgba(255, 255, 255, 0.75), transparent 100%),
+    radial-gradient(1.2px 1.2px at 34% 86%, rgba(230, 230, 250, 0.7), transparent 100%),
+    radial-gradient(1.6px 1.6px at 52% 46%, rgba(255, 255, 255, 0.8), transparent 100%),
+    radial-gradient(1.2px 1.2px at 68% 20%, rgba(230, 230, 250, 0.65), transparent 100%),
+    radial-gradient(1.4px 1.4px at 74% 58%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1.2px 1.2px at 92% 54%, rgba(230, 230, 250, 0.62), transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 28%, rgba(255, 255, 255, 0.72), transparent 100%),
+    radial-gradient(1.3px 1.3px at 96% 16%, rgba(255, 255, 255, 0.6), transparent 100%),
+    radial-gradient(1.3px 1.3px at 16% 66%, rgba(230, 230, 250, 0.6), transparent 100%),
+    radial-gradient(56% 46% at 76% 10%, rgba(74, 78, 143, 0.55), transparent 66%),
+    radial-gradient(64% 50% at 14% 92%, rgba(164, 144, 194, 0.3), transparent 70%),
+    linear-gradient(180deg, #33244c, #1b1226 88%);
+  background-repeat: no-repeat;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="galaxy"] .video-plane,
+.focus-app[data-design="galaxy"] .snow-layer,
+.focus-app[data-design="galaxy"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="galaxy"] .scrim {
+  background: radial-gradient(circle at 50% 42%, transparent 0 34%, rgba(14, 8, 24, 0.45) 78%, rgba(9, 5, 16, 0.8) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="galaxy"] .float-win,
+.focus-app[data-design="galaxy"] .util-panel,
+.focus-app[data-design="galaxy"] .bottom-dock {
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+.focus-app[data-design="galaxy"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(164, 144, 194, 0.36);
+}
+
+.focus-app[data-design="galaxy"] .bottom-dock button.active {
+  background: rgba(164, 144, 194, 0.28);
+  color: #f7f4ff;
+  box-shadow: inset 0 0 0 1px rgba(230, 230, 250, 0.3);
+}
+
+.focus-app[data-design="galaxy"] .design-card.active {
+  box-shadow: 0 0 0 1px var(--d-accent-ink), 0 0 20px rgba(164, 144, 194, 0.4);
+}
+
+.focus-app[data-design="galaxy"] .timer-aura {
+  filter: blur(48px);
+  opacity: 0.34;
+  animation: none;
+}
+
+.focus-app[data-design="galaxy"] .micro-dots i {
+  width: 0.2rem;
+  height: 0.2rem;
+  box-shadow: 0 0 6px rgba(230, 230, 250, 0.8);
+}
+
+/* ---- page backgrounds for the palette themes ---------------------------- */
+
+body:has(.focus-app[data-design="ocean"]) {
+  background: #0a1521;
+}
+
+body:has(.focus-app[data-design="sunset"]) {
+  background: #1b2a31;
+}
+
+body:has(.focus-app[data-design="forest"]),
+body:has(.focus-app[data-design="botanical"]) {
+  background: #f5f3ed;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="minimal"]) {
+  background: #f4f5f6;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="golden"]) {
+  background: #d4b896;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="arctic"]) {
+  background: #dfeaf7;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="desert"]) {
+  background: #e8d5c4;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="tech"]) {
+  background: #17181a;
+}
+
+body:has(.focus-app[data-design="galaxy"]) {
+  background: #1b1226;
+}
+
+/* ---- progress fills for themes whose primary button is not a gradient ---- */
+
+.focus-app:is([data-design="golden"], [data-design="desert"], [data-design="galaxy"], [data-design="arctic"], [data-design="ocean"]) .task-progress-track i {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+}
+
+.focus-app[data-design="retro"] .start-control {
+  box-shadow:
+    inset 0 0 0 1px #101010,
+    inset -1px -1px #000000,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+
+/* Pill-shaped fields are a theme signature, but a multi-line note area has to
+   stay a rectangle — cap the radius regardless of how round the theme is. */
+.focus-app .notes {
+  border-radius: min(var(--d-field-radius, 0.85rem), 1.6rem);
 }
