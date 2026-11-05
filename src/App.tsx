@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 import MotionFx from "./MotionFx";
+import { inkOn, lightnessFor, luminance } from "./accent";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -791,23 +792,41 @@ function App() {
 
   // Priority: your manual pick > the theme's own palette > the hue sampled off
   // the current background > the scene's default. Never static, intentional.
-  const hue = customHue ?? preset.accent?.hue ?? sampledHue ?? SCENE_HUES[effectiveScene];
-  // A hand-picked hue only replaces the hue: the theme keeps its own saturation
-  // and lightness, so gold stays rich, neon stays neon and every accent-derived
-  // surface keeps the contrast its text colour was designed against.
   const accentSat = preset.accent?.sat ?? 66;
   const accentLight = preset.accent?.light ?? 60;
-  const breakHue = preset.breakHue ?? (hue + 140) % 360;
+  // The hue (and therefore the brightness) the preset was designed around.
+  const designedHue = preset.accent?.hue ?? SCENE_HUES[effectiveScene];
+  const hue = customHue ?? preset.accent?.hue ?? sampledHue ?? SCENE_HUES[effectiveScene];
+  // A hand-picked hue replaces the hue and nothing else: saturation stays put
+  // and the colour is re-lit to the preset's own brightness, so every surface
+  // that leans on the accent keeps the contrast its text was designed against
+  // whichever hue you land on.
+  const accentLightFit =
+    Math.abs(hue - designedHue) < 0.5
+      ? accentLight
+      : lightnessFor(luminance({ h: designedHue, s: accentSat, l: accentLight }), hue, accentSat, accentLight);
+  // The break phase is designed as an offset from the accent, so it travels with
+  // your pick instead of staying on the old hue.
+  const breakOffset =
+    preset.breakHue == null ? 140 : (((preset.breakHue - designedHue) % 360) + 360) % 360;
+  const breakHue = customHue != null ? (customHue + breakOffset) % 360 : preset.breakHue ?? (hue + 140) % 360;
+  const breakLight = lightnessFor(
+    luminance({ h: preset.breakHue ?? (designedHue + 140) % 360, s: 62, l: 64 }),
+    breakHue,
+    62,
+    64,
+  );
   const themeVars = useMemo(
     () =>
       ({
-        "--accent": `hsl(${hue} ${accentSat}% ${accentLight}%)`,
-        "--accent-2": `hsl(${hue} ${clamp(accentSat + 6, 0, 100)}% ${clamp(accentLight - 14, 0, 100)}%)`,
-        "--accent-glow": `hsla(${hue}, ${clamp(accentSat + 9, 0, 100)}%, ${accentLight}%, 0.45)`,
-        "--accent-soft": `hsla(${hue}, ${clamp(accentSat + 4, 0, 100)}%, ${accentLight}%, 0.15)`,
-        "--break": `hsl(${breakHue} 62% 64%)`,
+        "--accent": `hsl(${hue} ${accentSat}% ${accentLightFit}%)`,
+        "--accent-2": `hsl(${hue} ${clamp(accentSat + 6, 0, 100)}% ${clamp(accentLightFit - 14, 0, 100)}%)`,
+        "--accent-glow": `hsla(${hue}, ${clamp(accentSat + 9, 0, 100)}%, ${accentLightFit}%, 0.45)`,
+        "--accent-soft": `hsla(${hue}, ${clamp(accentSat + 4, 0, 100)}%, ${accentLightFit}%, 0.15)`,
+        "--accent-ink": inkOn({ h: hue, s: accentSat, l: accentLightFit }),
+        "--break": `hsl(${breakHue} 62% ${breakLight}%)`,
       }) as React.CSSProperties,
-    [hue, accentSat, accentLight, breakHue],
+    [hue, accentSat, accentLightFit, breakHue, breakLight],
   );
 
   /* ---- persistence ----

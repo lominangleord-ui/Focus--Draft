@@ -30,9 +30,13 @@ each theme remembers its own override (`designHues` in app state). Accent defaul
 come from the theme's own palette when it has one, otherwise from the sampled
 scene.
 
-A hue pick only replaces the **hue** — the preset keeps its own saturation and
-lightness (`accent.sat` / `accent.light`), so a picker change stays on-palette
-while still being unmistakable. Themes that used to paint fixed colours now
+A hue pick only replaces the **hue**. The preset keeps its saturation and the
+colour is re-lit to the same *perceived brightness* it was designed around
+(`src/accent.ts`), so white-on-accent text stays legible whether you land on
+yellow or indigo, and no theme has to hardcode a text colour that only works for
+one hue. `--accent-ink` (auto white or near-black) backs the primary button.
+The break phase is stored as an offset from the accent, so it travels with your
+pick instead of staying on the old hue. Themes that used to paint fixed colours now
 derive them: `--d-btn-grad`, `--d-btn-shadow`, active tabs, dock chips, session
 dots, progress fills, card rings, glows and borders are all `color-mix(...)` over
 `var(--accent)`. Nothing in a preset is hard-coded to a hex any more, so the
