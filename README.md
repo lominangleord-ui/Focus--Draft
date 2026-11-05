@@ -12,7 +12,7 @@ npm run build    # single-file bundle in dist/
 
 ## Themes
 
-`Personalization` in the dock holds 24 presets. A preset is not a colour scheme:
+`Personalization` in the dock holds 28 presets. A preset is not a colour scheme:
 it re-skins typography, button shape and press states, surfaces, corner language,
 border weight, depth model and the background treatment, so the app reads as a
 different product. The original look (`classic`) is the default and untouched.
@@ -23,7 +23,7 @@ different product. The original look (`classic`) is the default and untouched.
 | Retro & neon | Terminal, Retro 95, Cyber, Art Deco |
 | Soft & sculpted | Aurora, Clay, Neumorph, Nordic |
 | Curated palettes | Ocean Depths, Sunset Boulevard, Forest Canopy, Minimalist, Golden Hour, Arctic Frost, Desert Rose, Tech Innovation, Botanical Garden, Midnight Galaxy |
-| Illustrated & motion | Anime |
+| Illustrated & motion | Kaleido, Manga, Pop Art, Bubblegum, Vaporwave |
 
 Every theme exposes the accent-hue slider (12 swatches + a full hue ramp), and
 each theme remembers its own override (`designHues` in app state). Accent defaults
@@ -77,10 +77,22 @@ Only `Pure Black` opts out — it is the "no wallpaper" choice.
 
 ## Anime theme
 
-`Anime` is cel-shaded: ink outlines, hard offset shadows, a dusk sky and a
-halftone screen. Its speed-line fan, drifting petals and start-of-session impact
-ring are driven by **Anime.js v4** in `src/AnimeFx.tsx`; the layer only mounts for
-that theme, is `aria-hidden`, and stays still when reduced motion is requested.
+The illustrated group is the animated one. Each preset declares a `motion`
+variant in `src/designs.ts` and mounts that layer from `src/MotionFx.tsx`
+(**Anime.js v4**):
+
+| Preset | Look | Layer |
+| --- | --- | --- |
+| Kaleido | cel-shaded panels, ink outlines, dusk sky | speed-line fan, drifting petals, impact ring |
+| Manga | screentone paper, ink panel borders, hard offsets | drifting screentone, rake of ink action lines, ink ring |
+| Pop Art | Ben-Day dots, canary field, fat outlines | breathing dot field, starburst, confetti on start |
+| Bubblegum | glossy pastel pills, lilac and mint | rising bubbles, twinkling sparkles |
+| Vaporwave | chrome sunset, neon grid, scanlines | setting sun, scrolling grid, horizon glow, scan band |
+
+Layers are decorative: `aria-hidden`, `pointer-events: none`, mounted only for a
+preset with `motion`, and static when `prefers-reduced-motion` is set. Adding a
+variant means a new `MotionVariant` member in `src/designs.ts`, a branch in
+`MotionFx.tsx` and a `.fx-<variant>` block in `src/index.css`.
 
 ## Credits
 

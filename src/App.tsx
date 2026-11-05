@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
-import AnimeFx from "./AnimeFx";
+import MotionFx from "./MotionFx";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -54,6 +54,9 @@ type AppState = {
   stats: Record<string, DayStat>;
   scene: SceneId;
   sceneAuto: boolean;
+  /** True once the user has actually picked a scene, so picking "cabin" (the
+      default) still counts as choosing a wallpaper. */
+  sceneExplicit: boolean;
   customImage: string;
   customYoutube: string;
   studyVideo: string;
@@ -105,6 +108,10 @@ const SCENE_IMAGES: Record<SceneId, string> = {
   dawn: "https://images.pexels.com/photos/210186/pexels-photo-210186.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
   pure: "",
 };
+
+/* Preset ids that have been renamed. Saved state is rewritten on load so an
+   existing theme pick (and its accent override) survives. */
+const LEGACY_DESIGN_IDS: Record<string, DesignId> = { anime: "kaleido" };
 
 /* The scene that ships with the app; picking anything else counts as choosing a
    wallpaper, which is shown behind every theme. */
@@ -260,6 +267,7 @@ const defaultState = (): AppState => ({
   stats: {},
   scene: DEFAULT_SCENE,
   sceneAuto: false,
+  sceneExplicit: false,
   customImage: "",
   customYoutube: "",
   studyVideo: DEFAULT_STUDY_VIDEO,
@@ -324,8 +332,16 @@ function loadState(): AppState {
       spotify: parsed.spotify ?? null,
       youtubeMusicUrl: parsed.youtubeMusicUrl ?? "",
       mode: (MODE_IDS.includes(parsed.mode as ModeId) ? parsed.mode : "focus") as ModeId,
-      // Unknown/removed presets fall back to the original design.
-      design: isDesignId(parsed.design) ? parsed.design : DEFAULT_DESIGN,
+      // Presets get renamed occasionally — map the old ids across.
+      design: isDesignId(LEGACY_DESIGN_IDS[parsed.design as string] ?? parsed.design)
+        ? LEGACY_DESIGN_IDS[parsed.design as string] ?? (parsed.design as DesignId)
+        : DEFAULT_DESIGN,
+      // A scene the user picked survives reload as a wallpaper, even if it is
+      // the default one; older saves only recorded the id.
+      sceneExplicit:
+        typeof parsed.sceneExplicit === "boolean"
+          ? parsed.sceneExplicit
+          : Boolean(parsed.scene && parsed.scene !== DEFAULT_SCENE),
     };
     if (!Number.isFinite(merged.remaining) || merged.remaining <= 0) {
       merged.remaining = secondsFor(merged.mode, merged);
@@ -337,8 +353,10 @@ function loadState(): AppState {
     const legacyHue = (parsed as { customHue?: number | null }).customHue;
     const hues: Partial<Record<DesignId, number>> = {};
     for (const [key, value] of Object.entries(parsed.designHues ?? {})) {
-      if (isDesignId(key) && typeof value === "number" && Number.isFinite(value)) {
-        hues[key] = ((value % 360) + 360) % 360;
+      // Renamed presets keep their manual accent override.
+      const id = LEGACY_DESIGN_IDS[key] ?? key;
+      if (isDesignId(id) && typeof value === "number" && Number.isFinite(value)) {
+        hues[id] = ((value % 360) + 360) % 360;
       }
     }
     if (legacyHue != null && Number.isFinite(legacyHue) && hues[merged.design] == null) {
@@ -745,7 +763,7 @@ function App() {
      YouTube background or a scene they picked. It shows behind every theme; the
      theme only decides how it is tinted and how legible the type stays. */
   const ytId = state.customYoutube ? youtubeId(state.customYoutube) || state.customYoutube : "";
-  const scenePicked = state.sceneAuto || state.scene !== DEFAULT_SCENE;
+  const scenePicked = state.sceneAuto || state.sceneExplicit;
   const wallpaper: "image" | "video" | "scene" | "" = state.customImage
     ? "image"
     : ytId
@@ -1456,7 +1474,16 @@ function App() {
             <button
               key={scene}
               className={`scene-pick mini-${scene} ${!state.sceneAuto && state.scene === scene ? "active" : ""}`}
-              onClick={() => setState((prev) => ({ ...prev, scene, sceneAuto: false, customImage: "", customYoutube: "" }))}
+              onClick={() =>
+                setState((prev) => ({
+                  ...prev,
+                  scene,
+                  sceneExplicit: scene !== "pure" || prev.sceneExplicit,
+                  sceneAuto: false,
+                  customImage: "",
+                  customYoutube: "",
+                }))
+              }
             >
               {sceneLabels[scene]}
             </button>
@@ -1526,7 +1553,7 @@ function App() {
         <div className="theme-block">
           <div className="theme-head">
             <span>Accent color</span>
-            <i className="theme-preview" style={{ background: hslToHex(hue, 66, 60) }} aria-hidden="true" />
+            <i className="theme-preview" style={{ background: hslToHex(hue, accentSat, accentLight) }} aria-hidden="true" />
           </div>
 
           <div className="swatch-grid">
@@ -1708,7 +1735,7 @@ function App() {
       <div className="rain-layer" />
       <div className="snow-layer" />
       <div className="scrim" />
-      {state.design === "anime" && <AnimeFx running={running} />}
+      {preset.motion && <MotionFx variant={preset.motion} running={running} />}
 
       <header className="topbar">
         <div className="greeting">

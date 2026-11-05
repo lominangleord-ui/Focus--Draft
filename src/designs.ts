@@ -32,9 +32,17 @@ export type DesignId =
   | "tech"
   | "botanical"
   | "galaxy"
-  | "anime";
+  | "kaleido"
+  | "manga"
+  | "pop"
+  | "bubblegum"
+  | "vaporwave";
 
 export type DesignGroupId = "paper" | "retro" | "soft" | "palette" | "motion";
+
+/** Illustration/motion layers available to the "Illustrated & motion" group.
+    Each one is a variant of the Anime.js layer in src/MotionFx.tsx. */
+export type MotionVariant = "kaleido" | "manga" | "pop" | "bubblegum" | "vaporwave";
 
 export type DesignPreset = {
   id: DesignId;
@@ -50,6 +58,8 @@ export type DesignPreset = {
   breakHue: number | null;
   /** Whether scene photography / custom backgrounds still show through. */
   backdrop: boolean;
+  /** Illustration/motion layer this preset mounts (see src/MotionFx.tsx). */
+  motion?: MotionVariant;
 };
 
 export const DESIGN_GROUPS: { id: DesignGroupId; label: string; note: string }[] = [
@@ -57,7 +67,7 @@ export const DESIGN_GROUPS: { id: DesignGroupId; label: string; note: string }[]
   { id: "retro", label: "Retro & neon", note: "screens, bevels, glow" },
   { id: "soft", label: "Soft & sculpted", note: "light, depth, tactility" },
   { id: "palette", label: "Curated palettes", note: "colour + type pairings" },
-  { id: "motion", label: "Illustrated & motion", note: "ink, cel shading, animation" },
+  { id: "motion", label: "Illustrated & motion", note: "ink, halftone, animated layers" },
 ];
 
 export const DESIGNS: DesignPreset[] = [
@@ -292,14 +302,59 @@ export const DESIGNS: DesignPreset[] = [
     backdrop: false,
   },
   {
-    id: "anime",
-    name: "Anime",
-    tagline: "Cel-shaded panels, ink outlines, anime.js speed lines.",
+    id: "kaleido",
+    name: "Kaleido",
+    tagline: "Cel-shaded panels, ink outlines, a colour burst of speed lines.",
     group: "motion",
     tone: "light",
     accent: { hue: 350, sat: 100, light: 62 },
     breakHue: 190,
     backdrop: false,
+    motion: "kaleido",
+  },
+  {
+    id: "manga",
+    name: "Manga",
+    tagline: "Black ink on screentone paper, hard panels, inked pane borders.",
+    group: "motion",
+    tone: "light",
+    accent: { hue: 3, sat: 84, light: 50 },
+    breakHue: 205,
+    backdrop: false,
+    motion: "manga",
+  },
+  {
+    id: "pop",
+    name: "Pop Art",
+    tagline: "Ben-Day dots, canary yellow, primary blocks and fat outlines.",
+    group: "motion",
+    tone: "light",
+    accent: { hue: 354, sat: 92, light: 54 },
+    breakHue: 220,
+    backdrop: false,
+    motion: "pop",
+  },
+  {
+    id: "bubblegum",
+    name: "Bubblegum",
+    tagline: "Glossy pastel pills, mint and lilac, bubbles drifting up.",
+    group: "motion",
+    tone: "light",
+    accent: { hue: 328, sat: 92, light: 66 },
+    breakHue: 190,
+    backdrop: false,
+    motion: "bubblegum",
+  },
+  {
+    id: "vaporwave",
+    name: "Vaporwave",
+    tagline: "Chrome sunset, neon grid, scanlines and a slow breathing horizon.",
+    group: "motion",
+    tone: "dark",
+    accent: { hue: 316, sat: 100, light: 66 },
+    breakHue: 185,
+    backdrop: false,
+    motion: "vaporwave",
   },
 ];
 

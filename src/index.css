@@ -8761,13 +8761,13 @@ body:has(.focus-app[data-design="galaxy"]) {
 }
 
 /* ============================================================================
-   PRESET — ANIME (cel-shaded manga panels, ink outlines, animated speed lines)
+   PRESET — KALEIDO (cel-shaded panels, ink outlines, colour-burst speed lines)
    ----------------------------------------------------------------------------
-   The one theme with a motion layer: src/AnimeFx.tsx drives the speed-line fan,
-   the drifting petals and the start-of-session impact ring with Anime.js.
+   Illustrated & motion group: src/MotionFx.tsx drives one layered scene per
+   preset — this one is the speed-line fan, drifting petals and impact ring.
    ========================================================================== */
 
-.focus-app .design-card[data-preview="anime"] {
+.focus-app .design-card[data-preview="kaleido"] {
   --pv-bg: linear-gradient(180deg, #2a1449, #7b2f56 52%, #ff9b63);
   --pv-ink: #fff6ee;
   --pv-accent: #ff3d5a;
@@ -8781,7 +8781,7 @@ body:has(.focus-app[data-design="galaxy"]) {
   --pv-start: 999px;
 }
 
-.focus-app[data-design="anime"] {
+.focus-app[data-design="kaleido"] {
   color-scheme: light;
   --ink: #14121c;
   --dim: rgba(20, 18, 28, 0.66);
@@ -8913,12 +8913,12 @@ body:has(.focus-app[data-design="galaxy"]) {
   --d-visual-opacity: 0;
 }
 
-.focus-app[data-design="anime"] {
+.focus-app[data-design="kaleido"] {
   background: var(--d-shell-bg);
 }
 
 /* Dusk sky with a hard-edged sun behind the timer. */
-.focus-app[data-design="anime"] .visual-plane {
+.focus-app[data-design="kaleido"] .visual-plane {
   background-image:
     radial-gradient(circle at 50% 20%, #fff3d6 0 17vmin, rgba(255, 214, 170, 0.5) 17.3vmin, transparent 27vmin),
     repeating-linear-gradient(114deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 30px),
@@ -8928,31 +8928,31 @@ body:has(.focus-app[data-design="galaxy"]) {
   opacity: 1;
 }
 
-.focus-app[data-design="anime"] .video-plane,
-.focus-app[data-design="anime"] .snow-layer,
-.focus-app[data-design="anime"] .rain-layer {
+.focus-app[data-design="kaleido"] .video-plane,
+.focus-app[data-design="kaleido"] .snow-layer,
+.focus-app[data-design="kaleido"] .rain-layer {
   display: none;
 }
 
-.focus-app[data-design="anime"] .scrim {
+.focus-app[data-design="kaleido"] .scrim {
   background: linear-gradient(180deg, rgba(18, 10, 32, 0.34), rgba(18, 10, 32, 0.06) 42%, rgba(18, 10, 32, 0.5));
   box-shadow: none;
 }
 
 /* Cel outlines on the big type. */
-.focus-app[data-design="anime"] .time-readout {
+.focus-app[data-design="kaleido"] .time-readout {
   color: #fff8ef;
   -webkit-text-stroke: 3px #14121c;
   paint-order: stroke fill;
 }
 
-.focus-app[data-design="anime"] .tr-colon {
+.focus-app[data-design="kaleido"] .tr-colon {
   color: #fff8ef;
   -webkit-text-stroke: 2px #14121c;
   paint-order: stroke fill;
 }
 
-.focus-app[data-design="anime"] .phase-copy {
+.focus-app[data-design="kaleido"] .phase-copy {
   font-family: var(--d-font-display);
   font-style: italic;
   font-weight: 600;
@@ -8960,29 +8960,29 @@ body:has(.focus-app[data-design="galaxy"]) {
   text-shadow: 2px 2px 0 rgba(20, 18, 28, 0.65);
 }
 
-.focus-app[data-design="anime"] .cycle-copy {
+.focus-app[data-design="kaleido"] .cycle-copy {
   color: rgba(255, 246, 238, 0.86);
   text-shadow: 0 1px 0 rgba(20, 18, 28, 0.6);
   letter-spacing: 0.18em;
 }
 
-.focus-app[data-design="anime"] .micro-dots span {
+.focus-app[data-design="kaleido"] .micro-dots span {
   background: rgba(255, 246, 238, 0.45);
   box-shadow: 0 0 0 1.5px #14121c;
 }
 
-.focus-app[data-design="anime"] .micro-dots span.filled {
+.focus-app[data-design="kaleido"] .micro-dots span.filled {
   background: var(--accent);
   box-shadow: 0 0 0 1.5px #14121c;
 }
 
-.focus-app[data-design="anime"] .top-quote {
+.focus-app[data-design="kaleido"] .top-quote {
   font-family: var(--d-font-display);
   font-style: italic;
   font-weight: 600;
 }
 
-.focus-app[data-design="anime"] .greet-clock {
+.focus-app[data-design="kaleido"] .greet-clock {
   color: #fff6ee;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -8990,37 +8990,37 @@ body:has(.focus-app[data-design="galaxy"]) {
 }
 
 /* Chunky, hand-placed buttons. */
-.focus-app[data-design="anime"] .start-control,
-.focus-app[data-design="anime"] .panel-primary,
-.focus-app[data-design="anime"] .util-go {
+.focus-app[data-design="kaleido"] .start-control,
+.focus-app[data-design="kaleido"] .panel-primary,
+.focus-app[data-design="kaleido"] .util-go {
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.focus-app[data-design="anime"] .start-control:hover,
-.focus-app[data-design="anime"] .panel-primary:hover,
-.focus-app[data-design="anime"] .util-go:hover {
+.focus-app[data-design="kaleido"] .start-control:hover,
+.focus-app[data-design="kaleido"] .panel-primary:hover,
+.focus-app[data-design="kaleido"] .util-go:hover {
   transform: translate(-1px, -1px);
   box-shadow: 7px 7px 0 #14121c;
 }
 
-.focus-app[data-design="anime"] .start-control:active,
-.focus-app[data-design="anime"] .panel-primary:active,
-.focus-app[data-design="anime"] .util-go:active {
+.focus-app[data-design="kaleido"] .start-control:active,
+.focus-app[data-design="kaleido"] .panel-primary:active,
+.focus-app[data-design="kaleido"] .util-go:active {
   transform: translate(3px, 3px);
   box-shadow: 2px 2px 0 #14121c;
 }
 
-.focus-app[data-design="anime"] .round-control:hover {
+.focus-app[data-design="kaleido"] .round-control:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 #14121c;
 }
 
-.focus-app[data-design="anime"] .round-control:active {
+.focus-app[data-design="kaleido"] .round-control:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 #14121c;
 }
 
-.focus-app[data-design="anime"] .mode-choice.active {
+.focus-app[data-design="kaleido"] .mode-choice.active {
   background: var(--d-btn-grad);
   color: var(--d-btn-text);
   border-color: #14121c;
@@ -9028,40 +9028,40 @@ body:has(.focus-app[data-design="galaxy"]) {
   transform: translate(-1px, -1px);
 }
 
-.focus-app[data-design="anime"] .bottom-dock button.active {
+.focus-app[data-design="kaleido"] .bottom-dock button.active {
   background: var(--accent);
   color: #17040a;
   box-shadow: inset 0 0 0 2px #14121c;
 }
 
-.focus-app[data-design="anime"] .task-chip {
+.focus-app[data-design="kaleido"] .task-chip {
   box-shadow: 3px 3px 0 #14121c;
 }
 
 /* The dock casts one hard shadow as a unit; per-button shadows would collide. */
-.focus-app[data-design="anime"] .bottom-dock button {
+.focus-app[data-design="kaleido"] .bottom-dock button {
   box-shadow: none;
 }
 
-.focus-app[data-design="anime"] .design-card.active {
+.focus-app[data-design="kaleido"] .design-card.active {
   box-shadow: 4px 4px 0 #14121c, 0 0 0 2px var(--accent);
 }
 
-.focus-app[data-design="anime"] .fw-head {
+.focus-app[data-design="kaleido"] .fw-head {
   border-bottom: 2px solid #14121c;
 }
 
-.focus-app[data-design="anime"] .timer-aura {
+.focus-app[data-design="kaleido"] .timer-aura {
   display: none;
 }
 
-.focus-app[data-design="anime"] .task-progress-track i {
+.focus-app[data-design="kaleido"] .task-progress-track i {
   background: var(--accent);
 }
 
 /* ---- the motion layer --------------------------------------------------- */
 
-.anime-fx {
+.motion-fx {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -9070,7 +9070,7 @@ body:has(.focus-app[data-design="galaxy"]) {
 }
 
 /* Manga halftone screen, kept away from the centre so the timer stays clean. */
-.anime-halftone {
+.fx-halftone {
   position: absolute;
   inset: 0;
   background-image: radial-gradient(rgba(20, 18, 28, 0.55) 1.3px, transparent 1.4px);
@@ -9080,7 +9080,7 @@ body:has(.focus-app[data-design="galaxy"]) {
   mask-image: radial-gradient(circle at 50% 48%, transparent 0 30vmin, #000 46vmin);
 }
 
-.anime-rays {
+.fx-rays {
   position: absolute;
   inset: 0;
   transform-origin: 50% 50%;
@@ -9090,7 +9090,7 @@ body:has(.focus-app[data-design="galaxy"]) {
   mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 86%, transparent 100%);
 }
 
-.anime-ray {
+.fx-ray {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -9099,7 +9099,7 @@ body:has(.focus-app[data-design="galaxy"]) {
   transform-origin: 0 0;
 }
 
-.anime-ray-bar {
+.fx-ray-bar {
   position: absolute;
   left: 0;
   top: 0;
@@ -9118,12 +9118,12 @@ body:has(.focus-app[data-design="galaxy"]) {
   );
 }
 
-.anime-fx[data-reduced="true"] .anime-ray-bar {
+.motion-fx[data-reduced="true"] .fx-ray-bar {
   transform: scaleX(1);
   opacity: 0.45;
 }
 
-.anime-impact {
+.fx-impact {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -9136,12 +9136,12 @@ body:has(.focus-app[data-design="galaxy"]) {
   opacity: 0;
 }
 
-.anime-petals {
+.fx-petals {
   position: absolute;
   inset: 0;
 }
 
-.anime-petal {
+.fx-petal {
   position: absolute;
   top: -40px;
   border-radius: 62% 38% 55% 45%;
@@ -9150,18 +9150,1137 @@ body:has(.focus-app[data-design="galaxy"]) {
   will-change: transform, opacity;
 }
 
-.anime-fx[data-reduced="true"] .anime-petal {
+.motion-fx[data-reduced="true"] .fx-petal {
   display: none;
 }
 
-body:has(.focus-app[data-design="anime"]) {
+body:has(.focus-app[data-design="kaleido"]) {
   background: #17102a;
 }
 
 /* ---- progress fills for themes whose primary button is not a gradient ---- */
 
-.focus-app:is([data-design="anime"]) .task-progress-track i {
+.focus-app:is([data-design="kaleido"]) .task-progress-track i {
   background: var(--accent);
+}
+
+
+/* ==========================================================================
+   PRESET — MANGA (screentone paper, ink panels, a rake of action lines)
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="manga"] {
+  --pv-bg: repeating-radial-gradient(circle at 50% 50%, #cfccc3 0 1.1px, #fbfaf6 1.1px 6px);
+  --pv-ink: #0c0c0c;
+  --pv-accent: #d81f2a;
+  --pv-radius: 0;
+  --pv-border: 2px solid #0c0c0c;
+  --pv-shadow: 4px 4px 0 #0c0c0c;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: 0.03em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app[data-design="manga"] {
+  color-scheme: light;
+  --ink: #0c0c0c;
+  --dim: rgba(12, 12, 12, 0.62);
+  --line: #0c0c0c;
+  --danger: #c4141f;
+
+  --d-shell-bg: #fbfaf6;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 88%, #0c0c0c);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #ffffff;
+  --d-panel-border: 2px solid #0c0c0c;
+  --d-panel-radius: 0;
+  --d-panel-shadow: 6px 6px 0 #0c0c0c;
+  --d-panel-blur: none;
+  --d-panel-head: #f1efe7;
+
+  --d-util-bg: #ffffff;
+  --d-util-border: 2px solid #0c0c0c;
+  --d-util-shadow: 6px 6px 0 #0c0c0c;
+  --d-util-blur: none;
+
+  --d-head-bg: #f1efe7;
+  --d-bar-bg: #f1efe7;
+  --d-hairline: rgba(12, 12, 12, 0.22);
+  --d-view-bg: #ffffff;
+
+  --d-surface-bg: #ffffff;
+  --d-surface-border: 2px solid #0c0c0c;
+  --d-surface-line: rgba(12, 12, 12, 0.16);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: #ffffff;
+  --d-card-grad: #ffffff;
+  --d-card-border: 2px solid #0c0c0c;
+  --d-card-radius: 0;
+  --d-card-shadow: 4px 4px 0 #0c0c0c;
+  --d-soft-bg: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  --d-soft-ink: rgba(12, 12, 12, 0.74);
+  --d-tab-ink: rgba(12, 12, 12, 0.66);
+  --d-on-soft: #0c0c0c;
+  --d-body-ink: rgba(12, 12, 12, 0.9);
+  --d-body-ink-strong: #0c0c0c;
+  --d-faint: rgba(12, 12, 12, 0.45);
+  --d-hover-bg: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  --d-hover-soft: color-mix(in srgb, var(--accent) 8%, #ffffff);
+
+  --d-btn-grad: linear-gradient(180deg, #ffffff, #f2f0e8);
+  --d-btn-text: #0c0c0c;
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: 4px 4px 0 color-mix(in srgb, var(--accent) 90%, #0c0c0c);
+  --d-btn-shadow-sm: 2px 2px 0 color-mix(in srgb, var(--accent) 90%, #0c0c0c);
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.08em;
+  --d-btn-transform: uppercase;
+  --d-btn-border: 2px solid #0c0c0c;
+  --d-btn-clip: none;
+
+  --d-ctl-bg: #ffffff;
+  --d-ctl-border: 2px solid #0c0c0c;
+  --d-ctl-radius: 0;
+  --d-ctl-shadow: 2px 2px 0 #0c0c0c;
+
+  --d-chip-bg: #ffffff;
+  --d-chip-border: 2px solid #0c0c0c;
+  --d-chip-radius: 0;
+  --d-chip-ink: #0c0c0c;
+
+  --d-mode-bg: #ffffff;
+  --d-mode-border: 2px solid #0c0c0c;
+  --d-mode-radius: 0;
+  --d-mode-ink: #0c0c0c;
+  --d-mode-weight: 800;
+  --d-mode-spacing: 0.08em;
+  --d-mode-pad: 0.5rem 1rem;
+  --d-mode-hover: #efece2;
+
+  --d-dock-bg: #ffffff;
+  --d-dock-border: 2px solid #0c0c0c;
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: #0c0c0c;
+  --d-toggle-radius: 0;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.03em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: 0.08em;
+
+  --d-track-bg: color-mix(in srgb, var(--accent) 18%, transparent);
+  --d-dot-bg: var(--accent);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(12, 12, 12, 0.24);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #0c0c0c;
+
+  --d-greet-ink: rgba(12, 12, 12, 0.62);
+  --d-date-ink: rgba(12, 12, 12, 0.45);
+  --d-resize-line: rgba(12, 12, 12, 0.3);
+  --d-grip-line: rgba(12, 12, 12, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: #0c0c0c;
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #c4141f;
+  --d-danger-bg: rgba(196, 20, 31, 0.08);
+  --d-danger-border: 2px solid #c4141f;
+  --d-danger-radius: 0;
+
+  --d-toast-bg: #ffffff;
+  --d-toast-border: 2px solid #0c0c0c;
+  --d-toast-radius: 0;
+  --d-toast-ink: #0c0c0c;
+
+  --d-misc-bg: rgba(12, 12, 12, 0.45);
+  --d-reset-radius: 0;
+  --d-input-inset: none;
+  --d-panel-clip: none;
+  --d-title-ink: #0c0c0c;
+  --d-headbar-bg: #f1efe7;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="manga"] {
+  background: var(--d-shell-bg);
+}
+
+/* Screentone paper with a faint focus burst behind the timer. */
+.focus-app[data-design="manga"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 50% 44%, rgba(12, 12, 12, 0.05) 0 24vmin, transparent 58vmin),
+    repeating-conic-gradient(from 0deg at 50% 44%, rgba(12, 12, 12, 0.045) 0 1deg, transparent 1deg 6deg),
+    repeating-radial-gradient(circle at 50% 44%, rgba(12, 12, 12, 0.16) 0 1.1px, transparent 1.2px 7px),
+    linear-gradient(180deg, #fbfaf6, #f1efe6);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="manga"] .video-plane,
+.focus-app[data-design="manga"] .snow-layer,
+.focus-app[data-design="manga"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="manga"] .scrim {
+  background: radial-gradient(circle at 50% 46%, transparent 0 34%, rgba(251, 250, 246, 0.55) 78%, rgba(251, 250, 246, 0.9) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="manga"] .time-readout {
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.focus-app[data-design="manga"] .phase-copy,
+.focus-app[data-design="manga"] .top-quote {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.focus-app[data-design="manga"] .mode-choice.active {
+  background: #0c0c0c;
+  color: #fbfaf6;
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--accent) 88%, #0c0c0c);
+}
+
+.focus-app[data-design="manga"] .bottom-dock button.active {
+  background: #0c0c0c;
+  color: #fbfaf6;
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.focus-app[data-design="manga"] .start-control:hover,
+.focus-app[data-design="manga"] .panel-primary:hover {
+  background: color-mix(in srgb, var(--accent) 14%, #ffffff);
+}
+
+.focus-app[data-design="manga"] .start-control:hover,
+.focus-app[data-design="manga"] .panel-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 #0c0c0c;
+}
+
+.focus-app[data-design="manga"] .start-control:active,
+.focus-app[data-design="manga"] .panel-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #0c0c0c;
+}
+
+.focus-app[data-design="manga"] .design-card.active {
+  box-shadow: 4px 4px 0 #0c0c0c, 0 0 0 3px var(--accent);
+}
+
+.focus-app[data-design="manga"] .timer-aura,
+.focus-app[data-design="manga"] .fw-head {
+  display: none;
+}
+
+.focus-app[data-design="manga"] .task-progress-track i {
+  background: var(--accent);
+}
+
+body:has(.focus-app[data-design="manga"]) {
+  background: #fbfaf6;
+}
+
+/* ==========================================================================
+   PRESET — POP ART (Ben-Day dots, canary field, fat outlines, hard offsets)
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="pop"] {
+  --pv-bg: repeating-radial-gradient(circle at 50% 50%, #ef4a5a 0 3px, #ffe14d 3px 11px);
+  --pv-ink: #14121c;
+  --pv-accent: #14121c;
+  --pv-radius: 2px;
+  --pv-border: 3px solid #14121c;
+  --pv-shadow: 5px 5px 0 #14121c;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 900;
+  --pv-tracking: 0.01em;
+  --pv-dot: 0;
+  --pv-start: 4px;
+}
+
+.focus-app[data-design="pop"] {
+  color-scheme: light;
+  --ink: #14121c;
+  --dim: rgba(20, 18, 28, 0.68);
+  --line: #14121c;
+  --danger: #d21a2b;
+
+  --d-shell-bg: #ffe14d;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 92%, #14121c);
+  --d-break-ink: #1a45c8;
+
+  --d-panel-bg: #fffdf5;
+  --d-panel-border: 3px solid #14121c;
+  --d-panel-radius: 0.25rem;
+  --d-panel-shadow: 9px 9px 0 #14121c;
+  --d-panel-blur: none;
+  --d-panel-head: #ffe14d;
+
+  --d-util-bg: #fffdf5;
+  --d-util-border: 3px solid #14121c;
+  --d-util-shadow: 9px 9px 0 #14121c;
+  --d-util-blur: none;
+
+  --d-head-bg: #ffe14d;
+  --d-bar-bg: #ffe14d;
+  --d-hairline: rgba(20, 18, 28, 0.24);
+  --d-view-bg: #fffdf5;
+
+  --d-surface-bg: #fffdf5;
+  --d-surface-border: 3px solid #14121c;
+  --d-surface-line: rgba(20, 18, 28, 0.18);
+  --d-surface-radius: 0.25rem;
+  --d-field-radius: 0.2rem;
+  --d-field-radius-sm: 0.15rem;
+  --d-add-radius: 0.2rem;
+
+  --d-card-bg: #fffdf5;
+  --d-card-grad: #fffdf5;
+  --d-card-border: 3px solid #14121c;
+  --d-card-radius: 0.25rem;
+  --d-card-shadow: 5px 5px 0 #14121c;
+  --d-soft-bg: color-mix(in srgb, var(--accent) 16%, #fffdf5);
+  --d-soft-ink: rgba(20, 18, 28, 0.78);
+  --d-tab-ink: rgba(20, 18, 28, 0.7);
+  --d-on-soft: #14121c;
+  --d-body-ink: rgba(20, 18, 28, 0.92);
+  --d-body-ink-strong: #14121c;
+  --d-faint: rgba(20, 18, 28, 0.5);
+  --d-hover-bg: color-mix(in srgb, var(--accent) 22%, #fffdf5);
+  --d-hover-soft: color-mix(in srgb, var(--accent) 12%, #fffdf5);
+
+  --d-btn-grad: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, #ffffff), var(--accent));
+  --d-btn-text: #14121c;
+  --d-btn-radius: 0.2rem;
+  --d-btn-radius-sm: 0.15rem;
+  --d-btn-shadow: 6px 6px 0 #14121c;
+  --d-btn-shadow-sm: 4px 4px 0 #14121c;
+  --d-btn-weight: 900;
+  --d-btn-spacing: 0.06em;
+  --d-btn-transform: uppercase;
+  --d-btn-border: 3px solid #14121c;
+  --d-btn-clip: none;
+
+  --d-ctl-bg: #fffdf5;
+  --d-ctl-border: 3px solid #14121c;
+  --d-ctl-radius: 0.2rem;
+  --d-ctl-shadow: 3px 3px 0 #14121c;
+
+  --d-chip-bg: #ffffff;
+  --d-chip-border: 3px solid #14121c;
+  --d-chip-radius: 999px;
+  --d-chip-ink: #14121c;
+
+  --d-mode-bg: #fffdf5;
+  --d-mode-border: 3px solid #14121c;
+  --d-mode-radius: 0.2rem;
+  --d-mode-ink: #14121c;
+  --d-mode-weight: 900;
+  --d-mode-spacing: 0.06em;
+  --d-mode-pad: 0.45rem 0.95rem;
+  --d-mode-hover: #fff3b8;
+
+  --d-dock-bg: #fffdf5;
+  --d-dock-border: 3px solid #14121c;
+  --d-dock-radius: 0.3rem;
+  --d-dock-btn-radius: 0.2rem;
+  --d-dock-ink: #14121c;
+  --d-toggle-radius: 0.2rem;
+
+  --d-readout-weight: 900;
+  --d-readout-spacing: -0.04em;
+  --d-readout-shadow: 7px 7px 0 rgba(20, 18, 28, 0.9);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 900;
+  --d-title-spacing: 0.06em;
+
+  --d-track-bg: rgba(20, 18, 28, 0.16);
+  --d-dot-bg: var(--accent);
+  --d-dot-radius: 999px;
+  --d-switch-bg: rgba(20, 18, 28, 0.3);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #fffdf5;
+
+  --d-greet-ink: rgba(20, 18, 28, 0.72);
+  --d-date-ink: rgba(20, 18, 28, 0.55);
+  --d-resize-line: rgba(20, 18, 28, 0.32);
+  --d-grip-line: rgba(20, 18, 28, 0.24);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 3px 3px 0 rgba(255, 255, 255, 0.85);
+  --d-quote-ink: #14121c;
+  --d-quote-shadow: 2px 2px 0 rgba(255, 255, 255, 0.9);
+
+  --d-danger-ink: #d21a2b;
+  --d-danger-bg: rgba(210, 26, 43, 0.1);
+  --d-danger-border: 3px solid #d21a2b;
+  --d-danger-radius: 0.2rem;
+
+  --d-toast-bg: #fffdf5;
+  --d-toast-border: 3px solid #14121c;
+  --d-toast-radius: 0.2rem;
+  --d-toast-ink: #14121c;
+
+  --d-misc-bg: rgba(20, 18, 28, 0.5);
+  --d-reset-radius: 0.15rem;
+  --d-input-inset: none;
+  --d-panel-clip: none;
+  --d-title-ink: #14121c;
+  --d-headbar-bg: #ffe14d;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="pop"] {
+  background: var(--d-shell-bg);
+}
+
+/* Canary field, Ben-Day dots, one big cut-out sun. */
+.focus-app[data-design="pop"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 76% 16%, #fff6d0 0 13vmin, #14121c 13vmin 13.6vmin, transparent 13.6vmin),
+    radial-gradient(circle at 50% 50%, rgba(239, 74, 90, 0.55) 0 2.6px, transparent 2.8px),
+    linear-gradient(180deg, #ffe14d, #ffd21f);
+  background-size: 100% 100%, 16px 16px, 100% 100%;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="pop"] .video-plane,
+.focus-app[data-design="pop"] .snow-layer,
+.focus-app[data-design="pop"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="pop"] .scrim {
+  background: radial-gradient(circle at 50% 46%, transparent 0 32%, rgba(255, 225, 77, 0.5) 76%, rgba(255, 210, 31, 0.88) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="pop"] .time-readout {
+  color: #fffbef;
+  -webkit-text-stroke: 4px #14121c;
+  paint-order: stroke fill;
+}
+
+.focus-app[data-design="pop"] .tr-colon {
+  -webkit-text-stroke: 3px #14121c;
+  paint-order: stroke fill;
+}
+
+.focus-app[data-design="pop"] .mode-choice.active {
+  background: var(--accent);
+  color: #fffbef;
+  box-shadow: 4px 4px 0 #14121c;
+  transform: translate(-1px, -1px);
+}
+
+.focus-app[data-design="pop"] .bottom-dock button.active {
+  background: var(--accent);
+  color: #fffbef;
+  box-shadow: inset 0 0 0 3px #14121c;
+}
+
+.focus-app[data-design="pop"] .start-control:hover,
+.focus-app[data-design="pop"] .panel-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 #14121c;
+}
+
+.focus-app[data-design="pop"] .start-control:active,
+.focus-app[data-design="pop"] .panel-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 #14121c;
+}
+
+.focus-app[data-design="pop"] .design-card.active {
+  box-shadow: 5px 5px 0 #14121c, 0 0 0 3px var(--accent);
+}
+
+.focus-app[data-design="pop"] .fw-head {
+  border-bottom: 3px solid #14121c;
+}
+
+.focus-app[data-design="pop"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="pop"] .task-progress-track i {
+  background: var(--accent);
+}
+
+body:has(.focus-app[data-design="pop"]) {
+  background: #ffe14d;
+}
+
+/* ==========================================================================
+   PRESET — BUBBLEGUM (glossy pastel pills, lilac and mint, floating bubbles)
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="bubblegum"] {
+  --pv-bg: linear-gradient(160deg, #ffe3f2, #e7dcff 52%, #d6f6ef);
+  --pv-ink: #5b2a4c;
+  --pv-accent: #ff5fa8;
+  --pv-radius: 1.1rem;
+  --pv-border: 1px solid rgba(255, 255, 255, 0.9);
+  --pv-shadow: 0 10px 22px rgba(214, 120, 170, 0.32);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.01em;
+  --pv-dot: 999px;
+  --pv-start: 999px;
+}
+
+.focus-app[data-design="bubblegum"] {
+  color-scheme: light;
+  --ink: #5b2a4c;
+  --dim: rgba(91, 42, 76, 0.62);
+  --line: rgba(91, 42, 76, 0.18);
+  --danger: #d63a6a;
+
+  --d-shell-bg: #fff1f8;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 80%, #7a1d4f);
+  --d-break-ink: #2f9d94;
+
+  --d-panel-bg: rgba(255, 255, 255, 0.86);
+  --d-panel-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-panel-radius: 1.6rem;
+  --d-panel-shadow: 0 22px 48px rgba(214, 120, 170, 0.28);
+  --d-panel-blur: blur(22px) saturate(1.2);
+  --d-panel-head: rgba(255, 236, 246, 0.9);
+
+  --d-util-bg: rgba(255, 255, 255, 0.82);
+  --d-util-border: 1px solid rgba(255, 255, 255, 0.9);
+  --d-util-shadow: 0 18px 40px rgba(214, 120, 170, 0.24);
+  --d-util-blur: blur(20px) saturate(1.15);
+
+  --d-head-bg: rgba(255, 236, 246, 0.9);
+  --d-bar-bg: rgba(255, 236, 246, 0.9);
+  --d-hairline: rgba(91, 42, 76, 0.12);
+  --d-view-bg: #fffdfe;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.9);
+  --d-surface-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-surface-line: rgba(91, 42, 76, 0.1);
+  --d-surface-radius: 1.3rem;
+  --d-field-radius: 999px;
+  --d-field-radius-sm: 999px;
+  --d-add-radius: 999px;
+
+  --d-card-bg: rgba(255, 255, 255, 0.92);
+  --d-card-grad: rgba(255, 255, 255, 0.92);
+  --d-card-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-card-radius: 1.2rem;
+  --d-card-shadow: 0 12px 26px rgba(214, 120, 170, 0.22);
+  --d-soft-bg: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  --d-soft-ink: rgba(91, 42, 76, 0.78);
+  --d-tab-ink: rgba(91, 42, 76, 0.66);
+  --d-on-soft: #5b2a4c;
+  --d-body-ink: rgba(91, 42, 76, 0.88);
+  --d-body-ink-strong: #5b2a4c;
+  --d-faint: rgba(91, 42, 76, 0.45);
+  --d-hover-bg: color-mix(in srgb, var(--accent) 18%, #ffffff);
+  --d-hover-soft: color-mix(in srgb, var(--accent) 10%, #ffffff);
+
+  --d-btn-grad: linear-gradient(170deg, color-mix(in srgb, var(--accent) 62%, #ffffff), var(--accent));
+  --d-btn-text: #ffffff;
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-btn-shadow: 0 14px 26px color-mix(in srgb, var(--accent) 34%, transparent), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+  --d-btn-shadow-sm: 0 8px 18px color-mix(in srgb, var(--accent) 28%, transparent);
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.02em;
+  --d-btn-transform: none;
+  --d-btn-border: none;
+  --d-btn-clip: none;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.95);
+  --d-ctl-border: 1px solid rgba(91, 42, 76, 0.12);
+  --d-ctl-radius: 999px;
+  --d-ctl-shadow: 0 6px 14px rgba(214, 120, 170, 0.18);
+
+  --d-chip-bg: rgba(255, 255, 255, 0.9);
+  --d-chip-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-chip-radius: 999px;
+  --d-chip-ink: #5b2a4c;
+
+  --d-mode-bg: rgba(255, 255, 255, 0.78);
+  --d-mode-border: 1px solid rgba(255, 255, 255, 0.9);
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(91, 42, 76, 0.78);
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.5rem 1.15rem;
+  --d-mode-hover: rgba(255, 236, 246, 0.95);
+
+  --d-dock-bg: rgba(255, 255, 255, 0.92);
+  --d-dock-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-dock-radius: 999px;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: #5b2a4c;
+  --d-toggle-radius: 999px;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.03em;
+  --d-readout-shadow: 0 8px 24px rgba(214, 120, 170, 0.28);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: color-mix(in srgb, var(--accent) 18%, transparent);
+  --d-dot-bg: var(--accent);
+  --d-dot-radius: 999px;
+  --d-switch-bg: rgba(91, 42, 76, 0.18);
+  --d-switch-knob: #ffffff;
+  --d-dial-core: #ffffff;
+
+  --d-greet-ink: rgba(91, 42, 76, 0.6);
+  --d-date-ink: rgba(91, 42, 76, 0.45);
+  --d-resize-line: rgba(255, 255, 255, 0.7);
+  --d-grip-line: rgba(255, 255, 255, 0.6);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 4px 16px rgba(255, 255, 255, 0.9);
+  --d-quote-ink: rgba(91, 42, 76, 0.8);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #d63a6a;
+  --d-danger-bg: rgba(214, 58, 106, 0.1);
+  --d-danger-border: 1px solid rgba(214, 58, 106, 0.4);
+  --d-danger-radius: 999px;
+
+  --d-toast-bg: rgba(255, 255, 255, 0.94);
+  --d-toast-border: 1px solid rgba(255, 255, 255, 0.95);
+  --d-toast-radius: 999px;
+  --d-toast-ink: #5b2a4c;
+
+  --d-misc-bg: rgba(255, 255, 255, 0.7);
+  --d-reset-radius: 999px;
+  --d-input-inset: inset 0 1px 2px rgba(91, 42, 76, 0.08);
+  --d-panel-clip: none;
+  --d-title-ink: #5b2a4c;
+  --d-headbar-bg: rgba(255, 236, 246, 0.9);
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="bubblegum"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="bubblegum"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 18% 14%, #ffd7ec 0 26vmin, transparent 46vmin),
+    radial-gradient(circle at 84% 20%, #e2d6ff 0 24vmin, transparent 44vmin),
+    radial-gradient(circle at 50% 96%, #d4f7ee 0 30vmin, transparent 52vmin),
+    linear-gradient(180deg, #fff4fa, #f6ecff 70%, #eefbf7);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="bubblegum"] .video-plane,
+.focus-app[data-design="bubblegum"] .snow-layer,
+.focus-app[data-design="bubblegum"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="bubblegum"] .scrim {
+  background: radial-gradient(circle at 50% 46%, transparent 0 40%, rgba(255, 244, 250, 0.5) 82%, rgba(255, 244, 250, 0.8) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="bubblegum"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: #ffffff;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.focus-app[data-design="bubblegum"] .bottom-dock button.active {
+  background: color-mix(in srgb, var(--accent) 20%, #ffffff);
+  color: color-mix(in srgb, var(--accent) 70%, #5b2a4c);
+}
+
+.focus-app[data-design="bubblegum"] .start-control:hover,
+.focus-app[data-design="bubblegum"] .panel-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.focus-app[data-design="bubblegum"] .design-card.active {
+  box-shadow: 0 12px 26px rgba(214, 120, 170, 0.22), 0 0 0 2px var(--accent);
+}
+
+.focus-app[data-design="bubblegum"] .timer-aura {
+  background: conic-gradient(from -90deg, color-mix(in srgb, var(--accent) 42%, transparent) var(--progress), transparent 0);
+  filter: blur(28px);
+}
+
+.focus-app[data-design="bubblegum"] .task-progress-track i {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, #b39dff), var(--accent));
+}
+
+body:has(.focus-app[data-design="bubblegum"]) {
+  background: #fff1f8;
+}
+
+/* ==========================================================================
+   PRESET — VAPORWAVE (chrome sunset, neon grid, scanlines, dark indigo)
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="vaporwave"] {
+  --pv-bg: linear-gradient(180deg, #12073a 0%, #4a1a6b 46%, #ff5fa8 76%, #ffb46b 100%);
+  --pv-ink: #f6e9ff;
+  --pv-accent: #39f2e2;
+  --pv-radius: 2px;
+  --pv-border: 1px solid rgba(255, 95, 168, 0.7);
+  --pv-shadow: 0 0 20px rgba(255, 95, 168, 0.45);
+  --pv-font: "JetBrains Mono", monospace;
+  --pv-weight: 700;
+  --pv-tracking: 0.16em;
+  --pv-dot: 0;
+  --pv-start: 2px;
+}
+
+.focus-app[data-design="vaporwave"] {
+  color-scheme: dark;
+  --ink: #f6e9ff;
+  --dim: rgba(246, 233, 255, 0.6);
+  --line: rgba(255, 95, 168, 0.42);
+  --danger: #ff5f7a;
+
+  --d-shell-bg: #0b0620;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 80%, #ff5fa8);
+  --d-break-ink: var(--accent);
+
+  --d-panel-bg: rgba(18, 7, 44, 0.82);
+  --d-panel-border: 1px solid rgba(255, 95, 168, 0.38);
+  --d-panel-radius: 0.25rem;
+  --d-panel-shadow: 0 0 46px rgba(255, 60, 200, 0.22), inset 0 0 0 1px rgba(57, 242, 226, 0.08);
+  --d-panel-blur: blur(18px) saturate(1.2);
+  --d-panel-head: rgba(255, 95, 168, 0.12);
+
+  --d-util-bg: rgba(13, 6, 34, 0.86);
+  --d-util-border: 1px solid rgba(57, 242, 226, 0.24);
+  --d-util-shadow: 0 0 40px rgba(255, 60, 200, 0.18);
+  --d-util-blur: blur(16px);
+
+  --d-head-bg: rgba(255, 95, 168, 0.12);
+  --d-bar-bg: rgba(255, 95, 168, 0.12);
+  --d-hairline: rgba(255, 95, 168, 0.24);
+  --d-view-bg: rgba(10, 4, 26, 0.9);
+
+  --d-surface-bg: rgba(20, 8, 48, 0.78);
+  --d-surface-border: 1px solid rgba(255, 95, 168, 0.28);
+  --d-surface-line: rgba(255, 95, 168, 0.18);
+  --d-surface-radius: 0.2rem;
+  --d-field-radius: 0.15rem;
+  --d-field-radius-sm: 0.1rem;
+  --d-add-radius: 0.15rem;
+
+  --d-card-bg: rgba(20, 8, 48, 0.82);
+  --d-card-grad: rgba(20, 8, 48, 0.82);
+  --d-card-border: 1px solid rgba(255, 95, 168, 0.32);
+  --d-card-radius: 0.2rem;
+  --d-card-shadow: 0 0 22px rgba(255, 60, 200, 0.22);
+  --d-soft-bg: color-mix(in srgb, var(--accent) 16%, transparent);
+  --d-soft-ink: rgba(246, 233, 255, 0.88);
+  --d-tab-ink: rgba(246, 233, 255, 0.66);
+  --d-on-soft: #f6e9ff;
+  --d-body-ink: rgba(246, 233, 255, 0.88);
+  --d-body-ink-strong: #ffffff;
+  --d-faint: rgba(246, 233, 255, 0.44);
+  --d-hover-bg: color-mix(in srgb, var(--accent) 18%, transparent);
+  --d-hover-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+
+  --d-btn-grad: linear-gradient(90deg, #ff5fa8, color-mix(in srgb, var(--accent) 88%, #ff7ad0));
+  --d-btn-text: #12062e;
+  --d-btn-radius: 0.15rem;
+  --d-btn-radius-sm: 0.1rem;
+  --d-btn-shadow: 0 0 26px rgba(255, 95, 168, 0.5);
+  --d-btn-shadow-sm: 0 0 18px rgba(255, 95, 168, 0.4);
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.18em;
+  --d-btn-transform: uppercase;
+  --d-btn-border: none;
+  --d-btn-clip: none;
+
+  --d-ctl-bg: rgba(20, 8, 48, 0.8);
+  --d-ctl-border: 1px solid rgba(57, 242, 226, 0.3);
+  --d-ctl-radius: 0.15rem;
+  --d-ctl-shadow: 0 0 18px rgba(57, 242, 226, 0.2);
+
+  --d-chip-bg: rgba(57, 242, 226, 0.1);
+  --d-chip-border: 1px solid rgba(57, 242, 226, 0.4);
+  --d-chip-radius: 0.15rem;
+  --d-chip-ink: var(--accent);
+
+  --d-mode-bg: rgba(20, 8, 48, 0.7);
+  --d-mode-border: 1px solid rgba(255, 95, 168, 0.34);
+  --d-mode-radius: 0.15rem;
+  --d-mode-ink: rgba(246, 233, 255, 0.72);
+  --d-mode-weight: 700;
+  --d-mode-spacing: 0.18em;
+  --d-mode-pad: 0.45rem 1rem;
+  --d-mode-hover: rgba(255, 95, 168, 0.18);
+
+  --d-dock-bg: rgba(13, 6, 34, 0.86);
+  --d-dock-border: 1px solid rgba(255, 95, 168, 0.32);
+  --d-dock-radius: 0.25rem;
+  --d-dock-btn-radius: 0.15rem;
+  --d-dock-ink: rgba(246, 233, 255, 0.86);
+  --d-toggle-radius: 0.15rem;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: 0.02em;
+  --d-readout-shadow: 0 0 34px rgba(255, 95, 168, 0.55);
+
+  --d-title-font: var(--d-font-mono);
+  --d-title-weight: 700;
+  --d-title-spacing: 0.24em;
+
+  --d-track-bg: rgba(57, 242, 226, 0.18);
+  --d-dot-bg: var(--accent);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(255, 95, 168, 0.3);
+  --d-switch-knob: var(--accent);
+  --d-dial-core: var(--accent);
+
+  --d-greet-ink: rgba(246, 233, 255, 0.6);
+  --d-date-ink: rgba(57, 242, 226, 0.8);
+  --d-resize-line: rgba(246, 233, 255, 0.3);
+  --d-grip-line: rgba(246, 233, 255, 0.22);
+  --d-greet-shadow: 0 0 18px rgba(255, 95, 168, 0.5);
+  --d-clock-shadow: 0 0 26px rgba(57, 242, 226, 0.45);
+  --d-quote-ink: rgba(246, 233, 255, 0.9);
+  --d-quote-shadow: 0 0 20px rgba(255, 95, 168, 0.5);
+
+  --d-danger-ink: #ff5f7a;
+  --d-danger-bg: rgba(255, 95, 122, 0.12);
+  --d-danger-border: 1px solid rgba(255, 95, 122, 0.5);
+  --d-danger-radius: 0.15rem;
+
+  --d-toast-bg: rgba(18, 7, 44, 0.94);
+  --d-toast-border: 1px solid rgba(57, 242, 226, 0.4);
+  --d-toast-radius: 0.15rem;
+  --d-toast-ink: var(--accent);
+
+  --d-misc-bg: rgba(6, 2, 16, 0.7);
+  --d-reset-radius: 0.1rem;
+  --d-input-inset: inset 0 0 0 1px rgba(57, 242, 226, 0.16);
+  --d-panel-clip: none;
+  --d-title-ink: #f6e9ff;
+  --d-headbar-bg: rgba(255, 95, 168, 0.12);
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="vaporwave"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="vaporwave"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 50% 62%, rgba(255, 180, 107, 0.55) 0 9vmin, transparent 30vmin),
+    repeating-linear-gradient(0deg, rgba(57, 242, 226, 0.09) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, #12073a 0%, #2a0c53 40%, #6b1c6f 62%, #ff5fa8 78%, #ffb46b 88%, #12073a 89%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="vaporwave"] .video-plane,
+.focus-app[data-design="vaporwave"] .snow-layer,
+.focus-app[data-design="vaporwave"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="vaporwave"] .scrim {
+  background: radial-gradient(circle at 50% 44%, transparent 0 30%, rgba(9, 3, 28, 0.5) 74%, rgba(6, 2, 18, 0.9) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="vaporwave"] .time-readout {
+  color: #ffffff;
+  text-shadow: 0 0 18px rgba(255, 95, 168, 0.75), 0 0 46px rgba(57, 242, 226, 0.35);
+}
+
+.focus-app[data-design="vaporwave"] .phase-copy {
+  font-family: var(--d-font-mono);
+  color: #ffe6f7;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 14px rgba(11, 6, 32, 0.9), 0 0 26px rgba(255, 95, 168, 0.55);
+}
+
+.focus-app[data-design="vaporwave"] .cycle-copy {
+  color: #b9fff8;
+  background: rgba(9, 3, 28, 0.74);
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  text-shadow: 0 0 10px rgba(9, 3, 28, 0.9);
+}
+
+.focus-app[data-design="vaporwave"] .task-chip {
+  background: rgba(11, 6, 32, 0.78);
+  border-color: rgba(57, 242, 226, 0.4);
+  color: #f6e9ff;
+  box-shadow: 0 0 20px rgba(255, 95, 168, 0.24);
+}
+
+.focus-app[data-design="vaporwave"] .task-chip.empty {
+  color: rgba(246, 233, 255, 0.82);
+}
+
+.focus-app[data-design="vaporwave"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  box-shadow: 0 0 22px rgba(255, 95, 168, 0.55);
+}
+
+.focus-app[data-design="vaporwave"] .bottom-dock button.active {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(57, 242, 226, 0.45);
+}
+
+.focus-app[data-design="vaporwave"] .design-card.active {
+  box-shadow: 0 0 22px rgba(255, 95, 168, 0.45), 0 0 0 1px var(--accent);
+}
+
+.focus-app[data-design="vaporwave"] .timer-aura {
+  background: conic-gradient(from -90deg, color-mix(in srgb, var(--accent) 50%, transparent) var(--progress), transparent 0);
+  filter: blur(32px);
+}
+
+.focus-app[data-design="vaporwave"] .task-progress-track i {
+  background: linear-gradient(90deg, #ff5fa8, var(--accent));
+}
+
+.focus-app[data-design="vaporwave"] .fw-head {
+  border-bottom: 1px solid rgba(57, 242, 226, 0.3);
+}
+
+body:has(.focus-app[data-design="vaporwave"]) {
+  background: #0b0620;
+}
+
+/* ---- illustrated layers for the new presets ----------------------------- */
+
+/* Manga: a slow screentone drift and a rake of ink action lines. */
+.fx-tone {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(12, 12, 12, 0.5) 1.2px, transparent 1.3px);
+  background-size: 9px 9px;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(circle at 50% 46%, transparent 0 28vmin, #000 52vmin);
+  mask-image: radial-gradient(circle at 50% 46%, transparent 0 28vmin, #000 52vmin);
+}
+
+.fx-rake {
+  position: absolute;
+  inset: -12% 0;
+  overflow: hidden;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(180deg, #000 0, transparent 46%, transparent 62%, #000 100%);
+  mask-image: linear-gradient(180deg, #000 0, transparent 46%, transparent 62%, #000 100%);
+}
+
+.fx-rake-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: block;
+  background: linear-gradient(180deg, transparent, rgba(12, 12, 12, 0.75), transparent);
+  transform: scaleY(0.2);
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+
+.fx-manga .fx-impact {
+  border-color: rgba(12, 12, 12, 0.85);
+  box-shadow: 0 0 0 12px rgba(12, 12, 12, 0.12), inset 0 0 0 12px rgba(12, 12, 12, 0.12);
+}
+
+/* Pop Art: Ben-Day dots that breathe, a starburst, confetti on start. */
+.fx-pop .fx-halftone {
+  background-image: radial-gradient(rgba(20, 18, 28, 0.4) 2.2px, transparent 2.4px);
+  background-size: 18px 18px;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(circle at 50% 48%, transparent 0 26vmin, #000 54vmin);
+  mask-image: radial-gradient(circle at 50% 48%, transparent 0 26vmin, #000 54vmin);
+}
+
+.fx-benday {
+  position: absolute;
+  inset: -6%;
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 45%, transparent) 3.2px, transparent 3.4px);
+  background-size: 26px 26px;
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.fx-starburst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  opacity: 0.6;
+}
+
+.fx-star-ray {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+}
+
+.fx-star-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 58vmax;
+  height: 26px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(20, 18, 28, 0) 0%, rgba(20, 18, 28, 0.18) 24%, rgba(255, 255, 255, 0.55) 100%);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.fx-confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.fx-confetti-bit {
+  position: absolute;
+  display: block;
+  border: 2px solid #14121c;
+  opacity: 0;
+}
+
+/* Bubblegum: glossy bubbles rising, twinkles breathing. */
+.fx-bubble {
+  position: absolute;
+  bottom: 8%;
+  display: block;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0 12%, rgba(255, 255, 255, 0.25) 26%, transparent 46%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.55), color-mix(in srgb, var(--accent) 42%, transparent));
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 0 22px rgba(255, 255, 255, 0.5), 0 6px 18px color-mix(in srgb, var(--accent) 18%, transparent);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.fx-twinkle {
+  position: absolute;
+  display: block;
+  background: radial-gradient(circle, #ffffff 0 22%, color-mix(in srgb, var(--accent) 70%, #ffffff) 46%, transparent 72%);
+  opacity: 0;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+
+/* Vaporwave: setting sun, perspective grid, horizon glow, scan band. */
+.fx-sun {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 30vmin;
+  height: 30vmin;
+  margin: -15vmin 0 0 -15vmin;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(180deg, rgba(18, 7, 58, 0.55) 0 6px, transparent 6px 14px),
+    linear-gradient(180deg, #ffe6a6 0%, #ffb46b 42%, #ff5fa8 76%, #b53bd0 100%);
+  box-shadow: 0 0 90px rgba(255, 120, 190, 0.55);
+  opacity: 0.92;
+}
+
+.fx-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(57, 242, 226, 0.28) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(0deg, rgba(255, 95, 168, 0.24) 0 1px, transparent 1px 56px);
+  transform: perspective(420px) rotateX(66deg);
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 46%, #000 78%);
+  mask-image: linear-gradient(180deg, transparent 46%, #000 78%);
+  opacity: 0.75;
+  will-change: background-position;
+}
+
+.fx-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(57, 242, 226, 0.9), rgba(255, 95, 168, 0.9), transparent);
+  box-shadow: 0 0 26px rgba(255, 95, 168, 0.7);
+}
+
+.fx-scan-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22vh;
+  background: linear-gradient(180deg, transparent, rgba(57, 242, 226, 0.07) 42%, rgba(255, 95, 168, 0.09) 60%, transparent);
+  will-change: transform;
+}
+
+.fx-vaporwave .fx-impact {
+  border-color: rgba(57, 242, 226, 0.9);
+  box-shadow: 0 0 0 12px rgba(255, 95, 168, 0.28), inset 0 0 0 12px rgba(57, 242, 226, 0.22);
+}
+
+/* Static rest state when the OS asks for reduced motion. */
+.motion-fx[data-reduced="true"] .fx-rake-bar {
+  transform: scaleY(1);
+  opacity: 0.4;
+}
+
+.motion-fx[data-reduced="true"] .fx-star-bar {
+  transform: scaleX(1);
+  opacity: 0.5;
+}
+
+.motion-fx[data-reduced="true"] .fx-bubble,
+.motion-fx[data-reduced="true"] .fx-twinkle,
+.motion-fx[data-reduced="true"] .fx-confetti-bit {
+  display: none;
+}
+
+.motion-fx[data-reduced="true"] .fx-sun,
+.motion-fx[data-reduced="true"] .fx-grid,
+.motion-fx[data-reduced="true"] .fx-horizon {
+  opacity: 0.55;
 }
 
 /* ================= WALLPAPERS — EVERY PRESET ================= */
@@ -9236,7 +10355,7 @@ body:has(.focus-app[data-design="anime"]) {
 
 /* Anime and Retro keep near-white type on the backdrop, so their veil stays
    dusk-tinted instead of following the light-tone wash. */
-.focus-app[data-design="anime"][data-wallpaper] {
+.focus-app[data-design="kaleido"][data-wallpaper] {
   --wall-veil: linear-gradient(180deg, rgba(24, 15, 46, 0.52) 0%, rgba(58, 27, 58, 0.3) 34%, rgba(118, 53, 68, 0.26) 66%, rgba(24, 15, 46, 0.54) 100%);
   --wall-scrim: 0.5;
   --wall-text-halo: rgba(0, 0, 0, 0.55);
