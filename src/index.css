@@ -8759,3 +8759,407 @@ body:has(.focus-app[data-design="galaxy"]) {
 .focus-app .notes {
   border-radius: min(var(--d-field-radius, 0.85rem), 1.6rem);
 }
+
+/* ============================================================================
+   PRESET — ANIME (cel-shaded manga panels, ink outlines, animated speed lines)
+   ----------------------------------------------------------------------------
+   The one theme with a motion layer: src/AnimeFx.tsx drives the speed-line fan,
+   the drifting petals and the start-of-session impact ring with Anime.js.
+   ========================================================================== */
+
+.focus-app .design-card[data-preview="anime"] {
+  --pv-bg: linear-gradient(180deg, #2a1449, #7b2f56 52%, #ff9b63);
+  --pv-ink: #fff6ee;
+  --pv-accent: #ff3d5a;
+  --pv-radius: 0.3rem;
+  --pv-border: 2px solid #14121c;
+  --pv-shadow: 4px 4px 0 #14121c;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.01em;
+  --pv-dot: 0;
+  --pv-start: 999px;
+}
+
+.focus-app[data-design="anime"] {
+  color-scheme: light;
+  --ink: #14121c;
+  --dim: rgba(20, 18, 28, 0.66);
+  --line: rgba(20, 18, 28, 0.9);
+  --danger: #c81f36;
+
+  --d-shell-bg: #17102a;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 86%, #7a1024);
+  --d-break-ink: var(--break);
+
+  --d-panel-bg: #fdfaf1;
+  --d-panel-border: 2px solid #14121c;
+  --d-panel-radius: 0.4rem;
+  --d-panel-shadow: 8px 8px 0 #14121c;
+  --d-panel-blur: none;
+  --d-panel-head: #f4ecdc;
+
+  --d-util-bg: #fdfaf1;
+  --d-util-border: 2px solid #14121c;
+  --d-util-shadow: 8px 8px 0 #14121c;
+  --d-util-blur: none;
+
+  --d-head-bg: #f4ecdc;
+  --d-bar-bg: #f4ecdc;
+  --d-hairline: rgba(20, 18, 28, 0.18);
+  --d-view-bg: #fffdf7;
+
+  --d-surface-bg: #fffdf7;
+  --d-surface-border: 2px solid #14121c;
+  --d-surface-line: rgba(20, 18, 28, 0.16);
+  --d-surface-radius: 0.3rem;
+  --d-field-radius: 0.25rem;
+  --d-field-radius-sm: 0.2rem;
+  --d-add-radius: 0.25rem;
+
+  --d-card-bg: #fffdf7;
+  --d-card-grad: #fffdf7;
+  --d-card-border: 2px solid #14121c;
+  --d-card-radius: 0.3rem;
+  --d-card-shadow: 4px 4px 0 #14121c;
+  --d-soft-bg: rgba(255, 61, 90, 0.14);
+  --d-soft-ink: rgba(20, 18, 28, 0.72);
+  --d-tab-ink: rgba(20, 18, 28, 0.7);
+  --d-on-soft: #14121c;
+  --d-body-ink: rgba(20, 18, 28, 0.9);
+  --d-body-ink-strong: #14121c;
+  --d-faint: rgba(20, 18, 28, 0.5);
+  --d-hover-bg: rgba(255, 61, 90, 0.16);
+  --d-hover-soft: rgba(255, 61, 90, 0.1);
+
+  --d-btn-grad: linear-gradient(180deg, #ff6074, #ff2f4f);
+  --d-btn-text: #17040a;
+  --d-btn-radius: 0.3rem;
+  --d-btn-radius-sm: 0.25rem;
+  --d-btn-shadow: 5px 5px 0 #14121c;
+  --d-btn-shadow-sm: 3px 3px 0 #14121c;
+  --d-btn-weight: 800;
+  --d-btn-spacing: 0.05em;
+  --d-btn-transform: uppercase;
+  --d-btn-border: 2px solid #14121c;
+  --d-btn-clip: none;
+
+  --d-ctl-bg: #fffdf7;
+  --d-ctl-border: 2px solid #14121c;
+  --d-ctl-radius: 0.3rem;
+  --d-ctl-shadow: 3px 3px 0 #14121c;
+
+  --d-chip-bg: #fffdf7;
+  --d-chip-border: 2px solid #14121c;
+  --d-chip-radius: 999px;
+  --d-chip-ink: #14121c;
+
+  --d-mode-bg: #fffaf2;
+  --d-mode-border: 2px solid #14121c;
+  --d-mode-radius: 0.25rem;
+  --d-mode-ink: #14121c;
+  --d-mode-weight: 800;
+  --d-mode-spacing: 0.06em;
+  --d-mode-pad: 0.5rem 1.05rem;
+  --d-mode-hover: #ffe9ee;
+
+  --d-dock-bg: #fdfaf1;
+  --d-dock-border: 2px solid #14121c;
+  --d-dock-radius: 0.5rem;
+  --d-dock-btn-radius: 0.3rem;
+  --d-dock-ink: #14121c;
+  --d-toggle-radius: 0.3rem;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.02em;
+  --d-readout-shadow: 5px 6px 0 rgba(20, 18, 28, 0.5);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: 0.05em;
+
+  --d-track-bg: rgba(20, 18, 28, 0.16);
+  --d-dot-bg: #14121c;
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(20, 18, 28, 0.25);
+  --d-switch-knob: #fffdf7;
+  --d-dial-core: #fffdf7;
+
+  --d-greet-ink: rgba(255, 248, 240, 0.82);
+  --d-date-ink: rgba(255, 206, 120, 0.95);
+  --d-resize-line: rgba(255, 253, 247, 0.42);
+  --d-grip-line: rgba(255, 253, 247, 0.3);
+  --d-greet-shadow: 0 2px 0 rgba(20, 18, 28, 0.55);
+  --d-clock-shadow: 3px 4px 0 rgba(20, 18, 28, 0.55);
+  --d-quote-ink: #fff6ee;
+  --d-quote-shadow: 3px 3px 0 rgba(20, 18, 28, 0.7);
+
+  --d-danger-ink: #c81f36;
+  --d-danger-bg: rgba(200, 31, 54, 0.1);
+  --d-danger-border: 2px solid #c81f36;
+  --d-danger-radius: 0.25rem;
+
+  --d-toast-bg: #fdfaf1;
+  --d-toast-border: 2px solid #14121c;
+  --d-toast-radius: 0.3rem;
+  --d-toast-ink: #14121c;
+
+  --d-misc-bg: rgba(20, 18, 28, 0.5);
+  --d-reset-radius: 0.2rem;
+  --d-input-inset: none;
+  --d-panel-clip: none;
+  --d-title-ink: #14121c;
+  --d-headbar-bg: #f4ecdc;
+  --d-visual-opacity: 0;
+}
+
+.focus-app[data-design="anime"] {
+  background: var(--d-shell-bg);
+}
+
+/* Dusk sky with a hard-edged sun behind the timer. */
+.focus-app[data-design="anime"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 50% 20%, #fff3d6 0 17vmin, rgba(255, 214, 170, 0.5) 17.3vmin, transparent 27vmin),
+    repeating-linear-gradient(114deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 30px),
+    linear-gradient(180deg, #180f2e 0%, #2a1449 24%, #52225f 46%, #8c3555 64%, #d4614d 80%, #ff9b63 92%, #ffc98a 100%);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="anime"] .video-plane,
+.focus-app[data-design="anime"] .snow-layer,
+.focus-app[data-design="anime"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="anime"] .scrim {
+  background: linear-gradient(180deg, rgba(18, 10, 32, 0.34), rgba(18, 10, 32, 0.06) 42%, rgba(18, 10, 32, 0.5));
+  box-shadow: none;
+}
+
+/* Cel outlines on the big type. */
+.focus-app[data-design="anime"] .time-readout {
+  color: #fff8ef;
+  -webkit-text-stroke: 3px #14121c;
+  paint-order: stroke fill;
+}
+
+.focus-app[data-design="anime"] .tr-colon {
+  color: #fff8ef;
+  -webkit-text-stroke: 2px #14121c;
+  paint-order: stroke fill;
+}
+
+.focus-app[data-design="anime"] .phase-copy {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  font-weight: 600;
+  color: #fff6ee;
+  text-shadow: 2px 2px 0 rgba(20, 18, 28, 0.65);
+}
+
+.focus-app[data-design="anime"] .cycle-copy {
+  color: rgba(255, 246, 238, 0.86);
+  text-shadow: 0 1px 0 rgba(20, 18, 28, 0.6);
+  letter-spacing: 0.18em;
+}
+
+.focus-app[data-design="anime"] .micro-dots span {
+  background: rgba(255, 246, 238, 0.45);
+  box-shadow: 0 0 0 1.5px #14121c;
+}
+
+.focus-app[data-design="anime"] .micro-dots span.filled {
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px #14121c;
+}
+
+.focus-app[data-design="anime"] .top-quote {
+  font-family: var(--d-font-display);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.focus-app[data-design="anime"] .greet-clock {
+  color: #fff6ee;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-shadow: 3px 3px 0 rgba(20, 18, 28, 0.55);
+}
+
+/* Chunky, hand-placed buttons. */
+.focus-app[data-design="anime"] .start-control,
+.focus-app[data-design="anime"] .panel-primary,
+.focus-app[data-design="anime"] .util-go {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.focus-app[data-design="anime"] .start-control:hover,
+.focus-app[data-design="anime"] .panel-primary:hover,
+.focus-app[data-design="anime"] .util-go:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 7px 7px 0 #14121c;
+}
+
+.focus-app[data-design="anime"] .start-control:active,
+.focus-app[data-design="anime"] .panel-primary:active,
+.focus-app[data-design="anime"] .util-go:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 #14121c;
+}
+
+.focus-app[data-design="anime"] .round-control:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #14121c;
+}
+
+.focus-app[data-design="anime"] .round-control:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #14121c;
+}
+
+.focus-app[data-design="anime"] .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  border-color: #14121c;
+  box-shadow: 4px 4px 0 #14121c;
+  transform: translate(-1px, -1px);
+}
+
+.focus-app[data-design="anime"] .bottom-dock button.active {
+  background: var(--accent);
+  color: #17040a;
+  box-shadow: inset 0 0 0 2px #14121c;
+}
+
+.focus-app[data-design="anime"] .task-chip {
+  box-shadow: 3px 3px 0 #14121c;
+}
+
+/* The dock casts one hard shadow as a unit; per-button shadows would collide. */
+.focus-app[data-design="anime"] .bottom-dock button {
+  box-shadow: none;
+}
+
+.focus-app[data-design="anime"] .design-card.active {
+  box-shadow: 4px 4px 0 #14121c, 0 0 0 2px var(--accent);
+}
+
+.focus-app[data-design="anime"] .fw-head {
+  border-bottom: 2px solid #14121c;
+}
+
+.focus-app[data-design="anime"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="anime"] .task-progress-track i {
+  background: var(--accent);
+}
+
+/* ---- the motion layer --------------------------------------------------- */
+
+.anime-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Manga halftone screen, kept away from the centre so the timer stays clean. */
+.anime-halftone {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(20, 18, 28, 0.55) 1.3px, transparent 1.4px);
+  background-size: 11px 11px;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(circle at 50% 48%, transparent 0 30vmin, #000 46vmin);
+  mask-image: radial-gradient(circle at 50% 48%, transparent 0 30vmin, #000 46vmin);
+}
+
+.anime-rays {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  opacity: 0.92;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 86%, transparent 100%);
+}
+
+.anime-ray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+}
+
+.anime-ray-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: calc(54vmax * var(--ray-len, 1));
+  border-radius: 999px;
+  transform: scaleX(0.05);
+  transform-origin: 0 50%;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 61, 90, 0) 0%,
+    rgba(255, 61, 90, 0.45) 16%,
+    rgba(255, 122, 142, 0.72) 68%,
+    rgba(255, 247, 236, 0.86) 100%
+  );
+}
+
+.anime-fx[data-reduced="true"] .anime-ray-bar {
+  transform: scaleX(1);
+  opacity: 0.45;
+}
+
+.anime-impact {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44vmin;
+  height: 44vmin;
+  margin: -22vmin 0 0 -22vmin;
+  border-radius: 50%;
+  border: 8px solid rgba(255, 247, 236, 0.9);
+  box-shadow: 0 0 0 12px rgba(255, 61, 90, 0.35), inset 0 0 0 12px rgba(255, 61, 90, 0.35);
+  opacity: 0;
+}
+
+.anime-petals {
+  position: absolute;
+  inset: 0;
+}
+
+.anime-petal {
+  position: absolute;
+  top: -40px;
+  border-radius: 62% 38% 55% 45%;
+  border: 1px solid rgba(20, 18, 28, 0.32);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.anime-fx[data-reduced="true"] .anime-petal {
+  display: none;
+}
+
+body:has(.focus-app[data-design="anime"]) {
+  background: #17102a;
+}
+
+/* ---- progress fills for themes whose primary button is not a gradient ---- */
+
+.focus-app:is([data-design="anime"]) .task-progress-track i {
+  background: var(--accent);
+}

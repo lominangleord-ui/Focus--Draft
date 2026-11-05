@@ -31,9 +31,10 @@ export type DesignId =
   | "desert"
   | "tech"
   | "botanical"
-  | "galaxy";
+  | "galaxy"
+  | "anime";
 
-export type DesignGroupId = "paper" | "retro" | "soft" | "palette";
+export type DesignGroupId = "paper" | "retro" | "soft" | "palette" | "motion";
 
 export type DesignPreset = {
   id: DesignId;
@@ -56,6 +57,7 @@ export const DESIGN_GROUPS: { id: DesignGroupId; label: string; note: string }[]
   { id: "retro", label: "Retro & neon", note: "screens, bevels, glow" },
   { id: "soft", label: "Soft & sculpted", note: "light, depth, tactility" },
   { id: "palette", label: "Curated palettes", note: "colour + type pairings" },
+  { id: "motion", label: "Illustrated & motion", note: "ink, cel shading, animation" },
 ];
 
 export const DESIGNS: DesignPreset[] = [
@@ -286,6 +288,16 @@ export const DESIGNS: DesignPreset[] = [
     group: "palette",
     tone: "dark",
     accent: { hue: 266, sat: 27, light: 66 },
+    breakHue: 190,
+    backdrop: false,
+  },
+  {
+    id: "anime",
+    name: "Anime",
+    tagline: "Cel-shaded panels, ink outlines, anime.js speed lines.",
+    group: "motion",
+    tone: "light",
+    accent: { hue: 350, sat: 100, light: 62 },
     breakHue: 190,
     backdrop: false,
   },

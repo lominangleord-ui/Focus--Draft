@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
+import AnimeFx from "./AnimeFx";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -1681,6 +1682,7 @@ function App() {
       <div className="rain-layer" />
       <div className="snow-layer" />
       <div className="scrim" />
+      {state.design === "anime" && <AnimeFx running={running} />}
 
       <header className="topbar">
         <div className="greeting">
