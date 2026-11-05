@@ -106,6 +106,10 @@ const SCENE_IMAGES: Record<SceneId, string> = {
   pure: "",
 };
 
+/* The scene that ships with the app; picking anything else counts as choosing a
+   wallpaper, which is shown behind every theme. */
+const DEFAULT_SCENE: SceneId = "cabin";
+
 /* Fallback accent hue per scene, used until (or if) the image sample succeeds */
 const SCENE_HUES: Record<SceneId, number> = {
   cabin: 32,
@@ -254,7 +258,7 @@ const defaultState = (): AppState => ({
   activeTaskId: null,
   notes: "",
   stats: {},
-  scene: "cabin",
+  scene: DEFAULT_SCENE,
   sceneAuto: false,
   customImage: "",
   customYoutube: "",
@@ -737,6 +741,19 @@ function App() {
   const customHue = state.designHues[state.design] ?? null;
   const effectiveScene = state.sceneAuto ? autoScene() : state.scene;
   const bgUrl = state.customImage || (effectiveScene !== "pure" ? SCENE_IMAGES[effectiveScene] : "");
+  /* A wallpaper is whatever the user put there on purpose — a custom image, a
+     YouTube background or a scene they picked. It shows behind every theme; the
+     theme only decides how it is tinted and how legible the type stays. */
+  const ytId = state.customYoutube ? youtubeId(state.customYoutube) || state.customYoutube : "";
+  const scenePicked = state.sceneAuto || state.scene !== DEFAULT_SCENE;
+  const wallpaper: "image" | "video" | "scene" | "" = state.customImage
+    ? "image"
+    : ytId
+      ? "video"
+      : scenePicked && effectiveScene !== "pure"
+        ? "scene"
+        : "";
+  const wallpaperImage = wallpaper === "image" ? state.customImage : wallpaper === "scene" ? SCENE_IMAGES[effectiveScene] : "";
 
   useEffect(() => {
     let alive = true;
@@ -757,10 +774,11 @@ function App() {
   // Priority: your manual pick > the theme's own palette > the hue sampled off
   // the current background > the scene's default. Never static, intentional.
   const hue = customHue ?? preset.accent?.hue ?? sampledHue ?? SCENE_HUES[effectiveScene];
-  // Themes can also pin saturation/lightness so e.g. gold stays gold and neon
-  // stays neon. A hand-picked hue keeps the classic 66%/60% recipe.
-  const accentSat = customHue != null || !preset.accent ? 66 : preset.accent.sat;
-  const accentLight = customHue != null || !preset.accent ? 60 : preset.accent.light;
+  // A hand-picked hue only replaces the hue: the theme keeps its own saturation
+  // and lightness, so gold stays rich, neon stays neon and every accent-derived
+  // surface keeps the contrast its text colour was designed against.
+  const accentSat = preset.accent?.sat ?? 66;
+  const accentLight = preset.accent?.light ?? 60;
   const breakHue = preset.breakHue ?? (hue + 140) % 360;
   const themeVars = useMemo(
     () =>
@@ -1261,8 +1279,6 @@ function App() {
     breakSec > 0 ? `${(focusSec / breakSec).toFixed(1)} : 1` : focusSec > 0 ? "∞ : 0" : "—";
   const productivity = Math.round(pct(focusSec));
 
-  const ytId = state.customYoutube ? youtubeId(state.customYoutube) || state.customYoutube : "";
-
   /* Dots represent completed focus sessions only. They stay full through the
      long break, then reset when the next focus cycle begins. */
   const dotClass = (i: number): string => {
@@ -1446,7 +1462,11 @@ function App() {
             </button>
           ))}
         </div>
-        <p className="field-hint">The accent color of the whole UI follows the scene — unless a preset or your own pick sets it.</p>
+        <p className="field-hint">
+          A scene, image or video you pick here becomes your wallpaper and shows behind <b>every</b> theme — pick
+          &ldquo;Pure&rdquo; to go back to the theme&rsquo;s own background. The accent color follows the scene unless a
+          preset or your own pick sets it.
+        </p>
 
         <label className="field"><span>Custom image URL</span><input value={imageInput} onChange={(event) => setImageInput(event.target.value)} placeholder="https://..." /></label>
         <button className="panel-primary" onClick={() => setState((prev) => ({ ...prev, customImage: imageInput.trim(), customYoutube: "" }))}>Use image</button>
@@ -1542,8 +1562,8 @@ function App() {
         </div>
 
         <p className="field-hint">
-          Backdrops, weather layers and custom backgrounds stay in Scenes — they work with every preset, except the ones
-          that paint their own background.
+          Scenes, weather layers and custom backgrounds live in Scenes — a wallpaper you pick there shows behind every
+          preset. Choose Pure Black for no wallpaper.
         </p>
         <button className="theme-link" onClick={() => openPanel("scenes")}>Open Scenes →</button>
       </>
@@ -1665,13 +1685,18 @@ function App() {
       className={`focus-app scene-${effectiveScene} ${running ? "is-running" : ""} ${utilTab ? "util-open" : ""}`}
       data-design={state.design}
       data-tone={preset.tone}
+      data-wallpaper={wallpaper || undefined}
       style={{ ...themeVars, "--util-w": `${utilWidth}px` } as React.CSSProperties}
     >
-      <div
-        className="visual-plane"
-        style={state.customImage && preset.backdrop ? { backgroundImage: `url(${state.customImage})` } : undefined}
-      />
-      {ytId && preset.backdrop && (
+      <div className="visual-plane" />
+      {(wallpaperImage || ytId) && (
+        <div
+          className="wallpaper-plane"
+          style={wallpaperImage ? { backgroundImage: `url(${wallpaperImage})` } : undefined}
+          aria-hidden="true"
+        />
+      )}
+      {ytId && (
         <iframe
           className="video-plane"
           src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&playsinline=1`}
@@ -1679,6 +1704,7 @@ function App() {
           title="Custom background video"
         />
       )}
+      {(wallpaperImage || ytId) && <div className="wallpaper-veil" aria-hidden="true" />}
       <div className="rain-layer" />
       <div className="snow-layer" />
       <div className="scrim" />
