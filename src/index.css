@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,ital@9..144,300..800,0..1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,ital@9..144,300..800,0..1&family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -2529,5 +2529,1925 @@ a.util-go {
   *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
+  }
+}
+
+/* ============================================================================
+   DESIGN ORIENTATIONS  (Personalization ▸ Presets)
+   ----------------------------------------------------------------------------
+   Every preset re-skins the whole app: type, surfaces, corners, depth, borders
+   and the background treatment. The rules in this section are additive — the
+   token defaults below reproduce the original look exactly, and each preset
+   only re-declares tokens (plus a handful of structural tweaks).
+   ========================================================================== */
+
+.focus-app {
+  --d-font-ui: "Inter", system-ui, sans-serif;
+  --d-font-display: "Fraunces", serif;
+  --d-font-mono: "JetBrains Mono", monospace;
+
+  --d-shell-bg: #05070b;
+
+  --d-panel-bg: rgba(9, 13, 20, 0.8);
+  --d-panel-border: 1px solid rgba(255, 255, 255, 0.16);
+  --d-panel-radius: 1.25rem;
+  --d-panel-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  --d-panel-blur: blur(28px) saturate(1.3);
+  --d-panel-head: rgba(255, 255, 255, 0.09);
+
+  --d-util-bg: rgba(7, 11, 18, 0.62);
+  --d-util-border: 1px solid rgba(255, 255, 255, 0.14);
+  --d-util-shadow: 0 28px 90px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-soft);
+  --d-util-blur: blur(20px);
+
+  --d-head-bg: rgba(5, 8, 14, 0.5);
+  --d-bar-bg: rgba(5, 8, 14, 0.6);
+  --d-hairline: rgba(255, 255, 255, 0.08);
+  --d-view-bg: #05070b;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.06);
+  --d-surface-border: 1px solid rgba(255, 255, 255, 0.12);
+  --d-surface-line: rgba(255, 255, 255, 0.12);
+  --d-surface-radius: 0.9rem;
+  --d-field-radius: 0.85rem;
+  --d-field-radius-sm: 0.6rem;
+  --d-add-radius: 0.85rem;
+
+  --d-card-bg: rgba(255, 255, 255, 0.045);
+  --d-card-grad: linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  --d-card-border: 1px solid rgba(255, 255, 255, 0.08);
+  --d-card-radius: 0.9rem;
+  --d-reset-radius: 0.7rem;
+  --d-danger-radius: 0.85rem;
+  --d-misc-bg: rgba(255, 255, 255, 0.22);
+  --d-soft-bg: rgba(255, 255, 255, 0.07);
+  --d-soft-ink: rgba(255, 255, 255, 0.78);
+  --d-tab-ink: rgba(255, 255, 255, 0.68);
+  --d-on-soft: #fff;
+  --d-body-ink: rgba(255, 255, 255, 0.86);
+  --d-body-ink-strong: #fff;
+  --d-faint: rgba(255, 255, 255, 0.45);
+  --d-hover-bg: rgba(255, 255, 255, 0.12);
+  --d-hover-soft: rgba(255, 255, 255, 0.08);
+  --d-accent-ink: var(--accent);
+
+  --d-btn-grad: linear-gradient(135deg, var(--accent-2), var(--accent));
+  --d-btn-text: #fff;
+  --d-btn-radius: 0.95rem;
+  --d-btn-radius-sm: 0.6rem;
+  --d-btn-shadow: 0 16px 40px var(--accent-glow);
+  --d-btn-shadow-sm: 0 6px 18px var(--accent-glow);
+  --d-btn-font: var(--d-font-ui);
+  --d-btn-weight: 800;
+  --d-btn-spacing: normal;
+  --d-btn-transform: none;
+
+  --d-ctl-bg: rgba(6, 10, 18, 0.38);
+  --d-ctl-border: 1px solid rgba(255, 255, 255, 0.13);
+  --d-ctl-radius: 0.95rem;
+
+  --d-chip-bg: rgba(6, 10, 18, 0.34);
+  --d-chip-border: 1px solid rgba(255, 255, 255, 0.13);
+  --d-chip-radius: 999px;
+  --d-chip-ink: rgba(255, 255, 255, 0.74);
+
+  --d-mode-bg: rgba(8, 13, 22, 0.22);
+  --d-mode-border: 1.5px solid rgba(255, 255, 255, 0.55);
+  --d-mode-radius: 0.9rem;
+  --d-mode-ink: #fff;
+  --d-mode-font: var(--d-font-ui);
+  --d-mode-weight: 700;
+  --d-mode-spacing: -0.01em;
+  --d-mode-transform: none;
+  --d-mode-pad: 0.68rem 1.35rem;
+  --d-mode-hover: rgba(255, 255, 255, 0.12);
+
+  --d-dock-bg: rgba(7, 11, 18, 0.52);
+  --d-dock-border: 1px solid rgba(255, 255, 255, 0.12);
+  --d-dock-radius: 1.3rem;
+  --d-dock-btn-radius: 0.9rem;
+  --d-dock-ink: rgba(255, 255, 255, 0.72);
+  --d-toggle-radius: 1rem;
+
+  --d-readout-font: var(--d-font-ui);
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.045em;
+  --d-readout-shadow: 0 16px 50px rgba(0, 0, 0, 0.55);
+
+  --d-title-font: "Fraunces", serif;
+  --d-title-weight: 600;
+  --d-title-spacing: normal;
+  --d-title-transform: none;
+
+  --d-track-bg: rgba(255, 255, 255, 0.09);
+  --d-dot-bg: rgba(255, 255, 255, 0.35);
+  --d-dot-radius: 50%;
+  --d-switch-bg: rgba(255, 255, 255, 0.16);
+  --d-switch-knob: #fff;
+  --d-dial-core: #0b0f17;
+
+  --d-greet-ink: rgba(255, 255, 255, 0.62);
+  --d-date-ink: rgba(255, 255, 255, 0.44);
+  --d-resize-line: rgba(255, 255, 255, 0.35);
+  --d-grip-line: rgba(255, 255, 255, 0.22);
+  --d-greet-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+  --d-clock-shadow: 0 6px 26px rgba(0, 0, 0, 0.5);
+  --d-quote-ink: rgba(255, 255, 255, 0.82);
+  --d-quote-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  --d-quote-font: var(--d-font-display);
+
+  --d-break-ink: var(--break);
+  --d-danger-ink: var(--danger);
+  --d-danger-bg: rgba(255, 138, 122, 0.08);
+  --d-danger-border: 1px solid rgba(255, 138, 122, 0.34);
+
+  --d-toast-bg: rgba(8, 12, 20, 0.8);
+  --d-toast-border: 1px solid rgba(255, 255, 255, 0.14);
+  --d-toast-radius: 999px;
+  --d-toast-ink: var(--ink);
+
+  color: var(--ink);
+  font-family: var(--d-font-ui);
+}
+
+/* ---- shell & top bar ---- */
+
+.focus-app .greet-line {
+  color: var(--d-greet-ink);
+  text-shadow: var(--d-greet-shadow);
+}
+
+.focus-app .greet-date {
+  color: var(--d-date-ink);
+}
+
+.focus-app .greet-clock {
+  text-shadow: var(--d-clock-shadow);
+}
+
+.focus-app .fw-resize::after {
+  border-color: var(--d-resize-line);
+}
+
+.focus-app .util-resize::after {
+  background: var(--d-grip-line);
+}
+
+.focus-app .top-quote {
+  color: var(--d-quote-ink);
+  text-shadow: var(--d-quote-shadow);
+  font-family: var(--d-quote-font);
+}
+
+/* ---- stage: modes, clock, controls ---- */
+
+.focus-app .mode-choice {
+  padding: var(--d-mode-pad);
+  background: var(--d-mode-bg);
+  border: var(--d-mode-border);
+  border-radius: var(--d-mode-radius);
+  color: var(--d-mode-ink);
+  font-family: var(--d-mode-font);
+  font-weight: var(--d-mode-weight);
+  letter-spacing: var(--d-mode-spacing);
+  text-transform: var(--d-mode-transform);
+}
+
+.focus-app .mode-choice:hover {
+  background: var(--d-mode-hover);
+}
+
+.focus-app .mode-choice.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+
+.focus-app .time-readout {
+  font-family: var(--d-readout-font);
+  font-weight: var(--d-readout-weight);
+  letter-spacing: var(--d-readout-spacing);
+  text-shadow: var(--d-readout-shadow);
+}
+
+.focus-app .cycle-copy {
+  color: var(--d-faint);
+}
+
+.focus-app .phase-copy {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .phase-copy.break {
+  color: var(--d-break-ink);
+}
+
+.focus-app .micro-dots span {
+  background: var(--d-dot-bg);
+  border-radius: var(--d-dot-radius);
+}
+
+.focus-app .round-control {
+  background: var(--d-ctl-bg);
+  border: var(--d-ctl-border);
+  border-radius: var(--d-ctl-radius);
+}
+
+.focus-app .round-control:hover {
+  background: var(--d-hover-bg);
+}
+
+.focus-app .start-control,
+.focus-app .panel-primary {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  border-radius: var(--d-btn-radius);
+  box-shadow: var(--d-btn-shadow);
+  font-family: var(--d-btn-font);
+  font-weight: var(--d-btn-weight);
+  letter-spacing: var(--d-btn-spacing);
+  text-transform: var(--d-btn-transform);
+}
+
+.focus-app .panel-primary.subtle {
+  background: var(--d-soft-bg);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.focus-app .task-chip {
+  background: var(--d-chip-bg);
+  border: var(--d-chip-border);
+  border-radius: var(--d-chip-radius);
+  color: var(--d-chip-ink);
+}
+
+.focus-app .task-chip:hover {
+  border-color: var(--d-accent-ink);
+}
+
+/* ---- dock & utilities ---- */
+
+.focus-app .bottom-dock {
+  background: var(--d-dock-bg);
+  border: var(--d-dock-border);
+  border-radius: var(--d-dock-radius);
+}
+
+.focus-app .bottom-dock button,
+.focus-app .icon-button {
+  color: var(--d-dock-ink);
+  border-radius: var(--d-dock-btn-radius);
+}
+
+.focus-app .bottom-dock button:hover,
+.focus-app .icon-button:hover {
+  background: var(--d-hover-bg);
+  color: var(--ink);
+}
+
+.focus-app .bottom-dock button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+
+.focus-app .study-toggle {
+  background: var(--d-dock-bg);
+  border: var(--d-dock-border);
+  border-radius: var(--d-toggle-radius);
+}
+
+.focus-app .util-panel {
+  background: var(--d-util-bg);
+  border: var(--d-util-border);
+  border-radius: var(--d-panel-radius);
+  box-shadow: var(--d-util-shadow);
+  backdrop-filter: var(--d-util-blur);
+  color: var(--ink);
+}
+
+.focus-app .util-head {
+  background: var(--d-head-bg);
+  border-bottom: 1px solid var(--d-hairline);
+}
+
+.focus-app .util-tabs button {
+  color: var(--d-tab-ink);
+}
+
+.focus-app .util-tabs button:hover {
+  background: var(--d-hover-soft);
+  color: var(--ink);
+}
+
+.focus-app .util-tabs button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+
+.focus-app .util-bar {
+  border-bottom: 1px solid var(--d-hairline);
+}
+
+.focus-app .util-bar input {
+  background: var(--d-surface-bg);
+  border: var(--d-surface-border);
+  border-radius: var(--d-field-radius-sm);
+  color: var(--ink);
+  font-family: var(--d-font-ui);
+}
+
+.focus-app .util-go {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+  border-radius: var(--d-btn-radius-sm);
+  box-shadow: var(--d-btn-shadow-sm);
+  font-family: var(--d-btn-font);
+  letter-spacing: var(--d-btn-spacing);
+  text-transform: var(--d-btn-transform);
+}
+
+.focus-app .util-go.subtle {
+  background: var(--d-soft-bg);
+  color: var(--ink);
+}
+
+.focus-app .util-links button {
+  background: var(--d-surface-bg);
+  border: var(--d-surface-border);
+  border-radius: var(--d-chip-radius);
+  color: var(--d-soft-ink);
+}
+
+.focus-app .util-links button:hover,
+.focus-app .util-links button.active {
+  background: var(--accent-soft);
+  border-color: var(--d-accent-ink);
+  color: var(--ink);
+}
+
+.focus-app .util-view {
+  background: var(--d-view-bg);
+}
+
+.focus-app .util-empty {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .util-menu {
+  background: var(--d-panel-bg);
+  border: var(--d-panel-border);
+  border-radius: var(--d-panel-radius);
+  box-shadow: var(--d-panel-shadow);
+  backdrop-filter: var(--d-panel-blur);
+}
+
+.focus-app .util-menu button {
+  color: var(--d-body-ink);
+  border-radius: calc(var(--d-btn-radius) * 0.75);
+}
+
+.focus-app .util-menu button:hover,
+.focus-app .util-menu button.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.focus-app .util-menu button svg {
+  color: var(--d-accent-ink);
+}
+
+/* ---- file / pdf / reader chrome ---- */
+
+.focus-app .pdf-bar,
+.focus-app .file-header {
+  background: var(--d-bar-bg);
+  border-bottom: 1px solid var(--d-hairline);
+}
+
+.focus-app .pdf-zoom,
+.focus-app .reader-modes,
+.focus-app .music-tabs {
+  background: var(--d-soft-bg);
+}
+
+.focus-app .pdf-zoom button {
+  color: var(--d-body-ink);
+}
+
+.focus-app .pdf-zoom button:hover {
+  color: var(--ink);
+  background: var(--accent-soft);
+}
+
+.focus-app .reader-modes button {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .reader-modes button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+
+.focus-app .music-tabs button {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .music-tabs button.active {
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+
+.focus-app .study-apps a {
+  color: var(--d-on-soft);
+}
+
+.focus-app .file-text {
+  color: var(--d-body-ink);
+}
+
+.focus-app .reader-body {
+  color: var(--d-body-ink);
+}
+
+.focus-app .reader-body :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--d-body-ink-strong);
+}
+
+.focus-app .reader-body a {
+  color: var(--d-accent-ink);
+}
+
+.focus-app .reader-body :is(pre, code) {
+  background: var(--d-soft-bg);
+}
+
+.focus-app .reader-body pre code {
+  background: none;
+}
+
+.focus-app .reader-body blockquote {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .reader-body :is(th, td) {
+  border-color: var(--d-surface-line);
+}
+
+.focus-app .reader-body th {
+  background: var(--d-soft-bg);
+}
+
+/* ---- floating windows ---- */
+
+.focus-app .float-win {
+  background: var(--d-panel-bg);
+  border: var(--d-panel-border);
+  border-radius: var(--d-panel-radius);
+  box-shadow: var(--d-panel-shadow);
+  backdrop-filter: var(--d-panel-blur);
+  color: var(--ink);
+}
+
+.focus-app .float-win.is-full {
+  border-radius: 0;
+  border: 0;
+}
+
+.focus-app .fw-head {
+  border-bottom: 1px solid var(--d-panel-head);
+}
+
+.focus-app .fw-title {
+  font-family: var(--d-title-font);
+  font-weight: var(--d-title-weight);
+  letter-spacing: var(--d-title-spacing);
+  text-transform: var(--d-title-transform);
+}
+
+.focus-app .fw-title svg {
+  color: var(--d-accent-ink);
+}
+
+/* ---- panel interiors ---- */
+
+.focus-app .field input,
+.focus-app .notes,
+.focus-app .add-row input {
+  background: var(--d-surface-bg);
+  border: var(--d-surface-border);
+  border-radius: var(--d-field-radius);
+  color: var(--ink);
+  font-family: var(--d-font-ui);
+}
+
+.focus-app .add-row button {
+  border-radius: var(--d-add-radius);
+}
+
+.focus-app .switch-row {
+  color: var(--d-body-ink);
+}
+
+.focus-app .switch {
+  background: var(--d-switch-bg);
+}
+
+.focus-app .switch::after {
+  background: var(--d-switch-knob);
+}
+
+.focus-app .switch.on {
+  background: var(--d-accent-ink);
+}
+
+.focus-app .task-item {
+  background: var(--d-card-bg);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .task-item:hover {
+  background: var(--d-soft-bg);
+}
+
+.focus-app .task-item.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent-glow);
+}
+
+.focus-app .task-item > button {
+  background: var(--d-soft-bg);
+  border-radius: calc(var(--d-card-radius) * 0.7);
+}
+
+.focus-app .task-item.done span {
+  color: var(--d-faint);
+}
+
+.focus-app .task-item small {
+  color: var(--d-accent-ink);
+}
+
+.focus-app .task-progress {
+  background: var(--d-card-grad);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .task-progress-head b {
+  color: var(--ink);
+}
+
+.focus-app .task-progress-track {
+  background: var(--d-track-bg);
+}
+
+.focus-app .task-progress-track i {
+  background: var(--d-btn-grad);
+}
+
+.focus-app .task-progress-foot em {
+  color: var(--d-accent-ink);
+}
+
+.focus-app .stat-row div {
+  background: var(--d-card-bg);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .stat-row strong {
+  color: var(--ink);
+  font-family: var(--d-font-mono);
+}
+
+.focus-app .today-hero {
+  background: var(--d-card-grad);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .focus-dial-core {
+  background: var(--d-dial-core);
+}
+
+.focus-app .focus-dial-core strong {
+  color: var(--ink);
+}
+
+.focus-app .figure span {
+  color: var(--d-soft-ink);
+}
+
+.focus-app .figure.misc b {
+  color: var(--d-faint);
+}
+
+.focus-app .figure.misc i {
+  background: var(--d-dot-bg);
+}
+
+.focus-app .figure.focus b,
+.focus-app .chart > div.today small {
+  color: var(--d-accent-ink);
+}
+
+.focus-app .split-track {
+  background: var(--d-track-bg);
+}
+
+.focus-app .seg-misc {
+  background: var(--d-misc-bg);
+}
+
+.focus-app .chart-head span {
+  color: var(--d-body-ink);
+}
+
+.focus-app .theme-block {
+  background: var(--d-card-bg);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .theme-reset {
+  background: var(--d-soft-bg);
+  border: var(--d-surface-border);
+  border-radius: var(--d-reset-radius);
+  color: var(--d-body-ink);
+}
+
+.focus-app .yt-audio-card {
+  background: var(--d-card-grad);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+}
+
+.focus-app .yt-audio-controls > button {
+  background: var(--d-soft-bg);
+  color: var(--d-body-ink);
+}
+
+.focus-app .panel-danger {
+  background: var(--d-danger-bg);
+  border: var(--d-danger-border);
+  border-radius: var(--d-danger-radius);
+  color: var(--d-danger-ink);
+}
+
+.focus-app .toast {
+  background: var(--d-toast-bg);
+  border: var(--d-toast-border);
+  border-radius: var(--d-toast-radius);
+  color: var(--d-toast-ink);
+}
+
+.focus-app .scene-pick {
+  border-radius: var(--d-card-radius);
+}
+
+/* ---- small inline link used inside panels ---- */
+
+.focus-app .theme-link {
+  align-self: flex-start;
+  padding: 0.15rem 0;
+  background: none;
+  border: 0;
+  color: var(--d-accent-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-soft);
+  text-underline-offset: 3px;
+}
+
+.focus-app .theme-link:hover {
+  text-decoration-color: var(--d-accent-ink);
+}
+
+/* ============================================================================
+   PRESET CARDS (Personalization)
+   ========================================================================== */
+
+.focus-app .design-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.focus-app .design-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.4rem;
+  text-align: left;
+  background: var(--d-card-bg);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+  color: var(--ink);
+  transition: transform 170ms cubic-bezier(0.2, 0.85, 0.25, 1), border-color 170ms ease, box-shadow 170ms ease;
+}
+
+.focus-app .design-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--d-accent-ink);
+}
+
+.focus-app .design-card.active {
+  border-color: var(--d-accent-ink);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.focus-app .design-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 4.3rem;
+  border-radius: var(--pv-radius, 0.6rem);
+  background: var(--pv-bg, rgba(255, 255, 255, 0.06));
+  border: var(--pv-border, 1px solid var(--line));
+  box-shadow: var(--pv-shadow, none);
+  color: var(--pv-ink, var(--ink));
+  overflow: hidden;
+}
+
+.focus-app .dt-dots {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.focus-app .dt-dots i {
+  width: 0.24rem;
+  height: 0.24rem;
+  border-radius: var(--pv-dot, 50%);
+  background: var(--pv-accent, currentColor);
+  opacity: 0.6;
+}
+
+.focus-app .dt-time {
+  font-family: var(--pv-font, "Inter", system-ui, sans-serif);
+  font-weight: var(--pv-weight, 800);
+  font-size: 1.12rem;
+  line-height: 1;
+  letter-spacing: var(--pv-tracking, -0.02em);
+}
+
+.focus-app .dt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.focus-app .dt-start {
+  width: 1.9rem;
+  height: 0.44rem;
+  border-radius: var(--pv-start, 999px);
+  background: var(--pv-accent, currentColor);
+}
+
+.focus-app .dt-round {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: var(--pv-start, 999px);
+  border: 1px solid var(--pv-accent, currentColor);
+  opacity: 0.55;
+}
+
+.focus-app .design-card-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.32rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.focus-app .design-card-name em {
+  font-style: normal;
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--d-faint);
+}
+
+.focus-app .design-card-tag {
+  color: var(--dim);
+  font-size: 0.64rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+/* miniature previews, one palette each */
+
+.focus-app .design-card[data-preview="classic"] {
+  --pv-bg: linear-gradient(158deg, #3b5068 0%, #17222e 52%, #080c12 100%);
+  --pv-ink: #ffffff;
+  --pv-accent: hsl(32 66% 60%);
+  --pv-radius: 0.7rem;
+  --pv-border: 1px solid rgba(255, 255, 255, 0.18);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.03em;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+.focus-app .design-card[data-preview="editorial"] {
+  --pv-bg: #f7f1e6;
+  --pv-ink: #221d17;
+  --pv-accent: #221d17;
+  --pv-radius: 2px;
+  --pv-border: 1px solid rgba(34, 29, 23, 0.4);
+  --pv-font: "Fraunces", Georgia, serif;
+  --pv-weight: 500;
+  --pv-tracking: -0.01em;
+  --pv-dot: 1px;
+  --pv-start: 2px;
+}
+
+.focus-app .design-card[data-preview="terminal"] {
+  --pv-bg: #040806;
+  --pv-ink: #7df0a2;
+  --pv-accent: #48e07f;
+  --pv-radius: 0;
+  --pv-border: 1px solid rgba(72, 224, 127, 0.5);
+  --pv-font: "JetBrains Mono", monospace;
+  --pv-weight: 700;
+  --pv-tracking: 0.04em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="brutalist"] {
+  --pv-bg: #e9e4d8;
+  --pv-ink: #12100e;
+  --pv-accent: hsl(16 90% 52%);
+  --pv-radius: 0;
+  --pv-border: 2px solid #12100e;
+  --pv-shadow: 3px 3px 0 #12100e;
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 800;
+  --pv-tracking: -0.04em;
+  --pv-dot: 0;
+  --pv-start: 0;
+}
+
+.focus-app .design-card[data-preview="aurora"] {
+  --pv-bg: radial-gradient(circle at 28% 22%, #6a48e8 0%, #2a1a5c 42%, #0a0518 100%);
+  --pv-ink: #f4f0ff;
+  --pv-accent: #b39cff;
+  --pv-radius: 999px;
+  --pv-border: 1px solid rgba(220, 210, 255, 0.35);
+  --pv-font: "Inter", system-ui, sans-serif;
+  --pv-weight: 200;
+  --pv-tracking: 0.02em;
+  --pv-dot: 50%;
+  --pv-start: 999px;
+}
+
+/* ============================================================================
+   PRESET 1 — EDITORIAL (paper & ink)
+   ========================================================================== */
+
+.focus-app[data-design="editorial"] {
+  color-scheme: light;
+  --ink: #221d17;
+  --dim: rgba(34, 29, 23, 0.58);
+  --line: rgba(34, 29, 23, 0.16);
+  --danger: #a43b2b;
+
+  --d-shell-bg: #f2ecdf;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 70%, #221d17);
+  --d-break-ink: color-mix(in srgb, var(--break) 52%, #221d17);
+
+  --d-panel-bg: #faf5ea;
+  --d-panel-border: 1px solid rgba(34, 29, 23, 0.24);
+  --d-panel-radius: 3px;
+  --d-panel-shadow: 0 16px 40px rgba(64, 48, 28, 0.12);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(34, 29, 23, 0.16);
+
+  --d-util-bg: #faf5ea;
+  --d-util-border: 1px solid rgba(34, 29, 23, 0.24);
+  --d-util-shadow: 0 16px 40px rgba(64, 48, 28, 0.12);
+  --d-util-blur: none;
+
+  --d-head-bg: #f3ecdd;
+  --d-bar-bg: #f5eee0;
+  --d-hairline: rgba(34, 29, 23, 0.14);
+  --d-view-bg: #fffdf7;
+
+  --d-surface-bg: #fffdf7;
+  --d-surface-border: 1px solid rgba(34, 29, 23, 0.22);
+  --d-surface-line: rgba(34, 29, 23, 0.16);
+  --d-surface-radius: 2px;
+  --d-field-radius: 2px;
+  --d-field-radius-sm: 2px;
+  --d-add-radius: 2px;
+
+  --d-card-bg: #fffdf7;
+  --d-card-border: 1px solid rgba(34, 29, 23, 0.16);
+  --d-card-radius: 2px;
+  --d-card-grad: #fffdf7;
+  --d-reset-radius: 2px;
+  --d-danger-radius: 2px;
+  --d-misc-bg: rgba(34, 29, 23, 0.25);
+  --d-soft-bg: rgba(34, 29, 23, 0.06);
+  --d-soft-ink: rgba(34, 29, 23, 0.66);
+  --d-tab-ink: rgba(34, 29, 23, 0.7);
+  --d-on-soft: #221d17;
+  --d-body-ink: rgba(34, 29, 23, 0.85);
+  --d-body-ink-strong: #221d17;
+  --d-faint: rgba(34, 29, 23, 0.45);
+  --d-hover-bg: rgba(34, 29, 23, 0.08);
+  --d-hover-soft: rgba(34, 29, 23, 0.06);
+
+  --d-btn-grad: #221d17;
+  --d-btn-text: #fdf8ee;
+  --d-btn-radius: 2px;
+  --d-btn-radius-sm: 2px;
+  --d-btn-shadow: none;
+  --d-btn-weight: 600;
+  --d-btn-spacing: 0.16em;
+  --d-btn-shadow-sm: none;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: #fffdf7;
+  --d-ctl-border: 1px solid rgba(34, 29, 23, 0.22);
+  --d-ctl-radius: 2px;
+
+  --d-chip-bg: #fdf9f0;
+  --d-chip-border: 1px solid rgba(34, 29, 23, 0.18);
+  --d-chip-radius: 2px;
+  --d-chip-ink: rgba(34, 29, 23, 0.7);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 0;
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(34, 29, 23, 0.5);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.14em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.35rem 0.05rem;
+  --d-mode-hover: transparent;
+
+  --d-dock-bg: #faf5ea;
+  --d-dock-border: 1px solid rgba(34, 29, 23, 0.2);
+  --d-dock-radius: 2px;
+  --d-dock-btn-radius: 2px;
+  --d-dock-ink: rgba(34, 29, 23, 0.6);
+  --d-toggle-radius: 2px;
+
+  --d-readout-font: var(--d-font-display);
+  --d-readout-weight: 500;
+  --d-readout-spacing: -0.015em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-display);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.01em;
+
+  --d-track-bg: rgba(34, 29, 23, 0.1);
+  --d-dot-bg: rgba(34, 29, 23, 0.2);
+  --d-dot-radius: 1px;
+  --d-switch-bg: rgba(34, 29, 23, 0.18);
+  --d-switch-knob: #fffdf7;
+  --d-dial-core: #faf5ea;
+
+  --d-greet-ink: rgba(34, 29, 23, 0.6);
+  --d-date-ink: rgba(34, 29, 23, 0.46);
+  --d-resize-line: rgba(34, 29, 23, 0.3);
+  --d-grip-line: rgba(34, 29, 23, 0.22);
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: rgba(34, 29, 23, 0.78);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #a43b2b;
+  --d-danger-bg: rgba(164, 59, 43, 0.07);
+  --d-danger-border: 1px solid rgba(164, 59, 43, 0.3);
+
+  --d-toast-bg: #221d17;
+  --d-toast-border: 1px solid #221d17;
+  --d-toast-radius: 2px;
+  --d-toast-ink: #fdf8ee;
+
+  --d-visual-filter: grayscale(0.45) sepia(0.28) brightness(1.06) contrast(0.95);
+  --d-visual-opacity: 0.4;
+}
+
+.focus-app[data-design="editorial"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="editorial"] .visual-plane {
+  filter: var(--d-visual-filter);
+  opacity: var(--d-visual-opacity);
+}
+
+.focus-app[data-design="editorial"] .scrim {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(250, 245, 234, 0.78) 0 40%, rgba(244, 236, 222, 0.9) 100%),
+    linear-gradient(180deg, rgba(250, 245, 234, 0.86), rgba(240, 231, 214, 0.94));
+  box-shadow: none;
+}
+
+.focus-app[data-design="editorial"] .snow-layer,
+.focus-app[data-design="editorial"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="editorial"] .greet-clock {
+  font-family: var(--d-font-display);
+  font-weight: 460;
+  letter-spacing: -0.01em;
+}
+
+.focus-app[data-design="editorial"] .mode-row {
+  gap: 1.4rem;
+  border-bottom: 1px solid rgba(34, 29, 23, 0.18);
+}
+
+.focus-app[data-design="editorial"] .mode-choice {
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="editorial"] .mode-choice:hover {
+  color: var(--ink);
+}
+
+.focus-app[data-design="editorial"] .mode-choice.active {
+  background: transparent;
+  box-shadow: none;
+  color: var(--d-accent-ink);
+  border-bottom-color: var(--d-accent-ink);
+}
+
+.focus-app[data-design="editorial"] .timer-aura {
+  display: none;
+}
+
+.focus-app[data-design="editorial"] .tr-colon {
+  opacity: 0.3;
+  font-weight: 400;
+}
+
+.focus-app[data-design="editorial"] .micro-dots {
+  gap: 0.3rem;
+}
+
+.focus-app[data-design="editorial"] .micro-dots span {
+  width: 1.1rem;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.focus-app[data-design="editorial"] .start-control {
+  font-size: 0.76rem;
+  padding: 0.9rem 1.5rem;
+}
+
+.focus-app[data-design="editorial"] .panel-primary {
+  font-size: 0.76rem;
+  padding: 0.82rem 1.1rem;
+}
+
+.focus-app[data-design="editorial"] .util-go {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.focus-app[data-design="editorial"] .round-control,
+.focus-app[data-design="editorial"] .task-chip,
+.focus-app[data-design="editorial"] .bottom-dock,
+.focus-app[data-design="editorial"] .study-toggle,
+.focus-app[data-design="editorial"] .util-menu,
+.focus-app[data-design="editorial"] .float-win,
+.focus-app[data-design="editorial"] .util-panel {
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="editorial"] :is(.stat-row strong, .figure b, .focus-dial-core strong, .task-progress-head b) {
+  font-family: var(--d-font-display);
+  font-weight: 600;
+}
+
+.focus-app[data-design="editorial"] .cycle-copy,
+.focus-app[data-design="editorial"] .greet-date {
+  letter-spacing: 0.28em;
+}
+
+/* ============================================================================
+   PRESET 2 — TERMINAL (phosphor mono, no curves)
+   ========================================================================== */
+
+.focus-app[data-design="terminal"] {
+  color-scheme: dark;
+  --ink: #d8ffe5;
+  --dim: rgba(146, 226, 170, 0.55);
+  --line: rgba(96, 255, 154, 0.22);
+
+  --d-shell-bg: #030705;
+  --d-accent-ink: var(--accent);
+  --d-break-ink: var(--break);
+
+  --d-font-ui: "JetBrains Mono", ui-monospace, monospace;
+  --d-font-display: "JetBrains Mono", ui-monospace, monospace;
+
+  --d-panel-bg: rgba(4, 11, 7, 0.95);
+  --d-panel-border: 1px solid rgba(96, 255, 154, 0.28);
+  --d-panel-radius: 0;
+  --d-panel-shadow: 0 0 0 1px rgba(96, 255, 154, 0.06), 0 20px 60px rgba(0, 0, 0, 0.85);
+  --d-panel-blur: none;
+  --d-panel-head: rgba(96, 255, 154, 0.16);
+
+  --d-util-bg: rgba(4, 11, 7, 0.95);
+  --d-util-border: 1px solid rgba(96, 255, 154, 0.28);
+  --d-util-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  --d-util-blur: none;
+
+  --d-head-bg: rgba(96, 255, 154, 0.06);
+  --d-bar-bg: rgba(96, 255, 154, 0.05);
+  --d-hairline: rgba(96, 255, 154, 0.18);
+  --d-view-bg: #020503;
+
+  --d-surface-bg: rgba(96, 255, 154, 0.05);
+  --d-surface-border: 1px solid rgba(96, 255, 154, 0.22);
+  --d-surface-line: rgba(96, 255, 154, 0.18);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: rgba(96, 255, 154, 0.04);
+  --d-card-border: 1px solid rgba(96, 255, 154, 0.18);
+  --d-card-radius: 0;
+  --d-card-grad: rgba(96, 255, 154, 0.06);
+  --d-reset-radius: 0;
+  --d-danger-radius: 0;
+  --d-misc-bg: rgba(96, 255, 154, 0.22);
+  --d-soft-bg: rgba(96, 255, 154, 0.08);
+  --d-soft-ink: rgba(160, 240, 186, 0.72);
+  --d-tab-ink: rgba(190, 255, 214, 0.78);
+  --d-on-soft: #eafff1;
+  --d-body-ink: rgba(190, 255, 214, 0.82);
+  --d-body-ink-strong: #eafff1;
+  --d-faint: rgba(130, 220, 160, 0.42);
+  --d-hover-bg: rgba(96, 255, 154, 0.12);
+  --d-hover-soft: rgba(96, 255, 154, 0.08);
+
+  --d-btn-grad: rgba(96, 255, 154, 0.1);
+  --d-btn-text: var(--accent);
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: none;
+  --d-btn-weight: 700;
+  --d-btn-spacing: 0.14em;
+  --d-btn-shadow-sm: none;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: transparent;
+  --d-ctl-border: 1px solid rgba(96, 255, 154, 0.3);
+  --d-ctl-radius: 0;
+
+  --d-chip-bg: transparent;
+  --d-chip-border: 1px solid rgba(96, 255, 154, 0.24);
+  --d-chip-radius: 0;
+  --d-chip-ink: rgba(190, 255, 214, 0.8);
+
+  --d-mode-bg: transparent;
+  --d-mode-border: 1px solid rgba(96, 255, 154, 0.26);
+  --d-mode-radius: 0;
+  --d-mode-ink: rgba(190, 255, 214, 0.7);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.16em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.55rem 1rem;
+  --d-mode-hover: rgba(96, 255, 154, 0.1);
+
+  --d-dock-bg: rgba(4, 11, 7, 0.92);
+  --d-dock-border: 1px solid rgba(96, 255, 154, 0.28);
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: rgba(150, 230, 175, 0.7);
+  --d-toggle-radius: 0;
+
+  --d-readout-font: var(--d-font-mono);
+  --d-readout-weight: 700;
+  --d-readout-spacing: 0.01em;
+  --d-readout-shadow: 0 0 34px rgba(96, 255, 154, 0.35);
+
+  --d-title-font: var(--d-font-mono);
+  --d-title-weight: 600;
+  --d-title-spacing: 0.12em;
+  --d-title-transform: uppercase;
+
+  --d-track-bg: rgba(96, 255, 154, 0.14);
+  --d-dot-bg: rgba(96, 255, 154, 0.3);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(96, 255, 154, 0.18);
+  --d-switch-knob: var(--accent);
+  --d-dial-core: #020503;
+
+  --d-greet-ink: rgba(150, 230, 175, 0.65);
+  --d-date-ink: rgba(150, 230, 175, 0.5);
+  --d-resize-line: rgba(96, 255, 154, 0.4);
+  --d-grip-line: rgba(96, 255, 154, 0.3);
+  --d-greet-shadow: none;
+  --d-clock-shadow: 0 0 26px rgba(96, 255, 154, 0.25);
+  --d-quote-ink: rgba(190, 255, 214, 0.8);
+  --d-quote-shadow: none;
+
+  --d-danger-ink: #ff9c8e;
+  --d-danger-bg: rgba(255, 138, 122, 0.08);
+  --d-danger-border: 1px solid rgba(255, 138, 122, 0.4);
+
+  --d-toast-bg: #04100a;
+  --d-toast-border: 1px solid rgba(96, 255, 154, 0.4);
+  --d-toast-radius: 0;
+  --d-toast-ink: var(--accent);
+}
+
+.focus-app[data-design="terminal"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="terminal"] .visual-plane {
+  background-image:
+    linear-gradient(rgba(96, 255, 154, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 255, 154, 0.055) 1px, transparent 1px),
+    radial-gradient(circle at 50% -10%, rgba(16, 60, 34, 0.75), #030705 68%);
+  background-size: 100% 3px, 3px 100%, 100% 100%;
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="terminal"] .video-plane,
+.focus-app[data-design="terminal"] .snow-layer,
+.focus-app[data-design="terminal"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="terminal"] .scrim {
+  background: linear-gradient(180deg, rgba(3, 7, 5, 0.5), rgba(3, 7, 5, 0.88));
+  box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
+}
+
+.focus-app[data-design="terminal"] .greet-line,
+.focus-app[data-design="terminal"] .top-quote {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="terminal"] .top-quote::before {
+  content: "// ";
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.focus-app[data-design="terminal"] .cycle-copy::before {
+  content: "> ";
+  color: var(--accent);
+}
+
+.focus-app[data-design="terminal"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+  letter-spacing: 0.06em;
+}
+
+.focus-app[data-design="terminal"] .phase-copy::after {
+  content: "_";
+  animation: termBlink 1.4s steps(1, end) infinite;
+}
+
+@keyframes termBlink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.1; }
+}
+
+.focus-app[data-design="terminal"] .timer-aura {
+  background: conic-gradient(from -90deg, rgba(96, 255, 154, 0.55) var(--progress), rgba(96, 255, 154, 0.07) 0);
+  filter: blur(30px);
+  border-radius: 0;
+  opacity: 0.18;
+  animation: none;
+}
+
+.focus-app[data-design="terminal"] .micro-dots span {
+  width: 0.55rem;
+  height: 0.55rem;
+}
+
+.focus-app[data-design="terminal"] .task-progress-track i,
+.focus-app[data-design="terminal"] .task-progress-track i::after {
+  background: var(--accent);
+}
+
+.focus-app[data-design="terminal"] .mode-choice.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 24px rgba(96, 255, 154, 0.18);
+}
+
+.focus-app[data-design="terminal"] .start-control {
+  border: 1px solid var(--accent);
+  font-size: 0.78rem;
+  box-shadow: 0 0 22px rgba(96, 255, 154, 0.16);
+}
+
+.focus-app[data-design="terminal"] .start-control:hover {
+  background: var(--accent);
+  color: #030705;
+  box-shadow: 0 0 34px rgba(96, 255, 154, 0.4);
+}
+
+.focus-app[data-design="terminal"] .panel-primary,
+.focus-app[data-design="terminal"] .util-go {
+  border: 1px solid var(--accent);
+  font-size: 0.74rem;
+}
+
+.focus-app[data-design="terminal"] .panel-primary:hover,
+.focus-app[data-design="terminal"] .util-go:hover {
+  background: var(--accent);
+  color: #030705;
+}
+
+.focus-app[data-design="terminal"] .panel-primary.subtle {
+  border: 1px solid rgba(96, 255, 154, 0.28);
+  background: transparent;
+  color: var(--dim);
+}
+
+.focus-app[data-design="terminal"] .panel-primary.subtle:hover {
+  background: rgba(96, 255, 154, 0.12);
+  color: var(--accent);
+}
+
+.focus-app[data-design="terminal"] :is(.util-tabs button.active, .music-tabs button.active, .reader-modes button.active, .bottom-dock button.active) {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.focus-app[data-design="terminal"] .util-go {
+  font-size: 0.72rem;
+}
+
+.focus-app[data-design="terminal"] .task-chip::before {
+  content: "$ ";
+  color: var(--accent);
+  margin-right: 0.1rem;
+}
+
+.focus-app[data-design="terminal"] .design-card-tag,
+.focus-app[data-design="terminal"] .field-hint,
+.focus-app[data-design="terminal"] .empty-copy,
+.focus-app[data-design="terminal"] .task-progress-foot em {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+/* ============================================================================
+   PRESET 3 — BRUTALIST (concrete blocks, hard shadows)
+   ========================================================================== */
+
+.focus-app[data-design="brutalist"] {
+  color-scheme: light;
+  --ink: #12100e;
+  --dim: rgba(18, 16, 14, 0.62);
+  --line: rgba(18, 16, 14, 0.5);
+  --danger: #b3261e;
+
+  --d-shell-bg: #e6e1d6;
+  --d-accent-ink: color-mix(in srgb, var(--accent) 80%, #12100e);
+  --d-break-ink: color-mix(in srgb, var(--break) 60%, #12100e);
+
+  --d-font-display: "Inter", system-ui, sans-serif;
+
+  --d-panel-bg: #fdfbf5;
+  --d-panel-border: 2px solid #12100e;
+  --d-panel-radius: 0;
+  --d-panel-shadow: 8px 8px 0 #12100e;
+  --d-panel-blur: none;
+  --d-panel-head: #12100e;
+
+  --d-util-bg: #fdfbf5;
+  --d-util-border: 2px solid #12100e;
+  --d-util-shadow: 8px 8px 0 #12100e;
+  --d-util-blur: none;
+
+  --d-head-bg: #f2ede1;
+  --d-bar-bg: #f2ede1;
+  --d-hairline: #12100e;
+  --d-view-bg: #fdfbf5;
+
+  --d-surface-bg: #ffffff;
+  --d-surface-border: 2px solid #12100e;
+  --d-surface-line: rgba(18, 16, 14, 0.5);
+  --d-surface-radius: 0;
+  --d-field-radius: 0;
+  --d-field-radius-sm: 0;
+  --d-add-radius: 0;
+
+  --d-card-bg: #fdfbf5;
+  --d-card-border: 2px solid #12100e;
+  --d-card-radius: 0;
+  --d-card-grad: #fdfbf5;
+  --d-reset-radius: 0;
+  --d-danger-radius: 0;
+  --d-misc-bg: rgba(18, 16, 14, 0.28);
+  --d-soft-bg: #ece7db;
+  --d-soft-ink: rgba(18, 16, 14, 0.7);
+  --d-tab-ink: #12100e;
+  --d-on-soft: #12100e;
+  --d-body-ink: #12100e;
+  --d-body-ink-strong: #12100e;
+  --d-faint: rgba(18, 16, 14, 0.5);
+  --d-hover-bg: #ece7db;
+  --d-hover-soft: #ece7db;
+
+  --d-btn-grad: var(--accent);
+  --d-btn-text: #12100e;
+  --d-btn-radius: 0;
+  --d-btn-radius-sm: 0;
+  --d-btn-shadow: 4px 4px 0 #12100e;
+  --d-btn-weight: 800;
+  --d-btn-shadow-sm: 3px 3px 0 #12100e;
+  --d-btn-spacing: 0.06em;
+  --d-btn-transform: uppercase;
+
+  --d-ctl-bg: #ffffff;
+  --d-ctl-border: 2px solid #12100e;
+  --d-ctl-radius: 0;
+
+  --d-chip-bg: #ffffff;
+  --d-chip-border: 2px solid #12100e;
+  --d-chip-radius: 0;
+  --d-chip-ink: #12100e;
+
+  --d-mode-bg: #fdfbf5;
+  --d-mode-border: 2px solid #12100e;
+  --d-mode-radius: 0;
+  --d-mode-ink: #12100e;
+  --d-mode-weight: 800;
+  --d-mode-spacing: 0.06em;
+  --d-mode-transform: uppercase;
+  --d-mode-pad: 0.6rem 1.05rem;
+  --d-mode-hover: #f0ebdf;
+
+  --d-dock-bg: #fdfbf5;
+  --d-dock-border: 2px solid #12100e;
+  --d-dock-radius: 0;
+  --d-dock-btn-radius: 0;
+  --d-dock-ink: #12100e;
+  --d-toggle-radius: 0;
+
+  --d-readout-weight: 800;
+  --d-readout-spacing: -0.06em;
+  --d-readout-shadow: none;
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 800;
+  --d-title-spacing: -0.01em;
+  --d-title-transform: uppercase;
+
+  --d-track-bg: rgba(18, 16, 14, 0.16);
+  --d-dot-bg: rgba(18, 16, 14, 0.4);
+  --d-dot-radius: 0;
+  --d-switch-bg: rgba(18, 16, 14, 0.25);
+  --d-switch-knob: #12100e;
+  --d-dial-core: #fdfbf5;
+
+  --d-greet-ink: rgba(18, 16, 14, 0.72);
+  --d-date-ink: rgba(18, 16, 14, 0.6);
+  --d-resize-line: #12100e;
+  --d-grip-line: #12100e;
+  --d-greet-shadow: none;
+  --d-clock-shadow: none;
+  --d-quote-ink: #12100e;
+  --d-quote-shadow: none;
+  --d-quote-font: var(--d-font-ui);
+
+  --d-danger-ink: #b3261e;
+  --d-danger-bg: #ffd9d4;
+  --d-danger-border: 2px solid #12100e;
+
+  --d-toast-bg: #12100e;
+  --d-toast-border: 2px solid #12100e;
+  --d-toast-radius: 0;
+  --d-toast-ink: #fdfbf5;
+}
+
+.focus-app[data-design="brutalist"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="brutalist"] .visual-plane {
+  background-image:
+    repeating-linear-gradient(135deg, rgba(18, 16, 14, 0.05) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg, #efeade, #ddd6c6);
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+
+.focus-app[data-design="brutalist"] .video-plane,
+.focus-app[data-design="brutalist"] .snow-layer,
+.focus-app[data-design="brutalist"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="brutalist"] .scrim {
+  background:
+    linear-gradient(90deg, transparent 0 68%, var(--accent) 68% 100%),
+    radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.4), transparent 58%);
+  opacity: 0.16;
+  box-shadow: none;
+}
+
+.focus-app[data-design="brutalist"] .greet-line,
+.focus-app[data-design="brutalist"] .top-quote {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.focus-app[data-design="brutalist"] .greet-clock {
+  font-family: var(--d-font-ui);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.focus-app[data-design="brutalist"] .cycle-copy {
+  font-family: var(--d-font-ui);
+}
+
+.focus-app[data-design="brutalist"] .phase-copy {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+}
+
+.focus-app[data-design="brutalist"] .mode-choice,
+.focus-app[data-design="brutalist"] .task-chip,
+.focus-app[data-design="brutalist"] .bottom-dock,
+.focus-app[data-design="brutalist"] .study-toggle {
+  box-shadow: 3px 3px 0 #12100e;
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="brutalist"] .mode-choice {
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.focus-app[data-design="brutalist"] .mode-choice:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #12100e;
+}
+
+.focus-app[data-design="brutalist"] .mode-choice.active {
+  background: var(--accent);
+  color: #12100e;
+  box-shadow: 4px 4px 0 #12100e;
+}
+
+.focus-app[data-design="brutalist"] .timer-aura {
+  background: var(--accent);
+  border-radius: 0;
+  filter: none;
+  opacity: 0.16;
+  animation: none;
+}
+
+.focus-app[data-design="brutalist"] .start-control {
+  border: 2px solid #12100e;
+}
+
+.focus-app[data-design="brutalist"] .start-control:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #12100e;
+}
+
+.focus-app[data-design="brutalist"] .panel-primary {
+  border: 2px solid #12100e;
+}
+
+.focus-app[data-design="brutalist"] .panel-primary.subtle {
+  background: #ffffff;
+}
+
+.focus-app[data-design="brutalist"] .float-win {
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="brutalist"] .fw-body {
+  padding: 1rem 0.9rem;
+}
+
+.focus-app[data-design="brutalist"] .task-item:hover {
+  background: #ffffff;
+  transform: translate(-1px, -1px);
+}
+
+.focus-app[data-design="brutalist"] .focus-dial-core {
+  border: 2px solid #12100e;
+}
+
+.focus-app[data-design="brutalist"] .scene-pick {
+  border: 2px solid #12100e;
+}
+
+.focus-app[data-design="brutalist"] .design-card-tag,
+.focus-app[data-design="brutalist"] .field-hint,
+.focus-app[data-design="brutalist"] .empty-copy,
+.focus-app[data-design="brutalist"] .task-progress-foot em {
+  font-family: var(--d-font-ui);
+  font-style: normal;
+}
+
+.focus-app[data-design="brutalist"] .field-hint {
+  font-weight: 600;
+  color: var(--dim);
+}
+
+.focus-app[data-design="brutalist"] .design-card-name {
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================================
+   PRESET 4 — AURORA (soft glow, pills, weightless type)
+   ========================================================================== */
+
+.focus-app[data-design="aurora"] {
+  color-scheme: dark;
+  --ink: #f5f1ff;
+  --dim: rgba(214, 206, 255, 0.58);
+  --line: rgba(196, 178, 255, 0.28);
+
+  --d-shell-bg: #080512;
+  --d-accent-ink: var(--accent);
+
+  --d-panel-bg: linear-gradient(158deg, rgba(78, 62, 138, 0.4), rgba(14, 11, 26, 0.74));
+  --d-panel-border: 1px solid rgba(196, 178, 255, 0.22);
+  --d-panel-radius: 1.9rem;
+  --d-panel-shadow: 0 34px 90px rgba(40, 16, 90, 0.55), 0 0 70px var(--accent-soft);
+  --d-panel-blur: blur(34px) saturate(1.5);
+  --d-panel-head: rgba(220, 210, 255, 0.14);
+
+  --d-util-bg: linear-gradient(158deg, rgba(78, 62, 138, 0.38), rgba(14, 11, 26, 0.72));
+  --d-util-border: 1px solid rgba(196, 178, 255, 0.22);
+  --d-util-shadow: 0 30px 80px rgba(40, 16, 90, 0.5), 0 0 60px var(--accent-soft);
+  --d-util-blur: blur(30px) saturate(1.4);
+
+  --d-head-bg: rgba(255, 255, 255, 0.05);
+  --d-bar-bg: rgba(255, 255, 255, 0.05);
+  --d-hairline: rgba(220, 210, 255, 0.12);
+  --d-view-bg: #0a0716;
+
+  --d-surface-bg: rgba(255, 255, 255, 0.08);
+  --d-surface-border: 1px solid rgba(220, 210, 255, 0.16);
+  --d-surface-line: rgba(220, 210, 255, 0.16);
+  --d-surface-radius: 1.2rem;
+  --d-field-radius: 999px;
+  --d-field-radius-sm: 999px;
+  --d-add-radius: 999px;
+
+  --d-card-bg: rgba(255, 255, 255, 0.07);
+  --d-card-border: 1px solid rgba(220, 210, 255, 0.14);
+  --d-card-radius: 1.4rem;
+  --d-card-grad: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  --d-reset-radius: 999px;
+  --d-danger-radius: 999px;
+  --d-misc-bg: rgba(255, 255, 255, 0.18);
+  --d-soft-bg: rgba(255, 255, 255, 0.1);
+  --d-soft-ink: rgba(238, 232, 255, 0.8);
+  --d-tab-ink: rgba(238, 232, 255, 0.8);
+  --d-on-soft: #fff;
+  --d-body-ink: rgba(240, 236, 255, 0.86);
+  --d-body-ink-strong: #fff;
+  --d-faint: rgba(214, 206, 255, 0.5);
+  --d-hover-bg: rgba(255, 255, 255, 0.14);
+  --d-hover-soft: rgba(255, 255, 255, 0.1);
+
+  --d-btn-grad: linear-gradient(135deg, color-mix(in srgb, var(--accent) 78%, #6d4bff), var(--accent));
+  --d-btn-text: #fff;
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-btn-shadow: 0 18px 46px var(--accent-glow);
+  --d-btn-weight: 700;
+  --d-btn-shadow-sm: 0 12px 30px var(--accent-glow);
+  --d-btn-spacing: 0.02em;
+
+  --d-ctl-bg: rgba(255, 255, 255, 0.08);
+  --d-ctl-border: 1px solid rgba(220, 210, 255, 0.2);
+  --d-ctl-radius: 999px;
+
+  --d-chip-bg: rgba(255, 255, 255, 0.08);
+  --d-chip-border: 1px solid rgba(220, 210, 255, 0.2);
+  --d-chip-radius: 999px;
+  --d-chip-ink: rgba(240, 236, 255, 0.8);
+
+  --d-mode-bg: rgba(255, 255, 255, 0.07);
+  --d-mode-border: 1px solid transparent;
+  --d-mode-radius: 999px;
+  --d-mode-ink: rgba(238, 232, 255, 0.7);
+  --d-mode-weight: 600;
+  --d-mode-spacing: 0.02em;
+  --d-mode-pad: 0.66rem 1.3rem;
+  --d-mode-hover: rgba(255, 255, 255, 0.14);
+
+  --d-dock-bg: rgba(20, 14, 38, 0.6);
+  --d-dock-border: 1px solid rgba(220, 210, 255, 0.18);
+  --d-dock-radius: 999px;
+  --d-dock-btn-radius: 999px;
+  --d-dock-ink: rgba(238, 232, 255, 0.75);
+  --d-toggle-radius: 999px;
+
+  --d-readout-weight: 200;
+  --d-readout-spacing: 0.005em;
+  --d-readout-shadow: 0 0 60px rgba(160, 130, 255, 0.35);
+
+  --d-title-font: var(--d-font-ui);
+  --d-title-weight: 500;
+  --d-title-spacing: 0.02em;
+
+  --d-track-bg: rgba(255, 255, 255, 0.14);
+  --d-dot-bg: rgba(220, 210, 255, 0.35);
+  --d-switch-bg: rgba(255, 255, 255, 0.2);
+  --d-switch-knob: #fff;
+  --d-dial-core: #0d0920;
+
+  --d-greet-ink: rgba(238, 232, 255, 0.6);
+  --d-date-ink: rgba(238, 232, 255, 0.48);
+  --d-resize-line: rgba(220, 210, 255, 0.4);
+  --d-grip-line: rgba(220, 210, 255, 0.3);
+  --d-greet-shadow: 0 2px 24px rgba(80, 40, 160, 0.6);
+  --d-clock-shadow: 0 6px 30px rgba(80, 40, 160, 0.5);
+  --d-quote-ink: rgba(245, 240, 255, 0.85);
+  --d-quote-shadow: 0 4px 26px rgba(80, 40, 160, 0.5);
+
+  --d-danger-ink: #ff9d8f;
+  --d-danger-bg: rgba(255, 157, 143, 0.1);
+  --d-danger-border: 1px solid rgba(255, 157, 143, 0.34);
+
+  --d-toast-bg: rgba(24, 16, 46, 0.85);
+  --d-toast-border: 1px solid rgba(220, 210, 255, 0.2);
+  --d-toast-ink: var(--ink);
+}
+
+.focus-app[data-design="aurora"] {
+  background: var(--d-shell-bg);
+}
+
+.focus-app[data-design="aurora"] .visual-plane {
+  background-image:
+    radial-gradient(circle at 22% 16%, rgba(124, 78, 255, 0.6), transparent 46%),
+    radial-gradient(circle at 80% 26%, rgba(0, 214, 190, 0.34), transparent 44%),
+    radial-gradient(circle at 54% 90%, rgba(255, 92, 168, 0.3), transparent 48%),
+    linear-gradient(180deg, #0b0620, #05030f 72%);
+  filter: blur(26px) saturate(1.2);
+  transform: scale(1.14);
+  opacity: 1;
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDrift {
+  from { transform: scale(1.14) translate3d(-1.4%, -1%, 0); }
+  to { transform: scale(1.22) translate3d(1.4%, 1%, 0); }
+}
+
+.focus-app[data-design="aurora"] .video-plane,
+.focus-app[data-design="aurora"] .snow-layer,
+.focus-app[data-design="aurora"] .rain-layer {
+  display: none;
+}
+
+.focus-app[data-design="aurora"] .scrim {
+  background: radial-gradient(circle at 50% 46%, rgba(6, 4, 16, 0.04) 0 26%, rgba(6, 4, 16, 0.42) 68%, rgba(3, 2, 10, 0.86) 100%);
+  box-shadow: none;
+}
+
+.focus-app[data-design="aurora"] .greet-clock {
+  font-family: var(--d-font-ui);
+  font-weight: 200;
+  letter-spacing: -0.01em;
+}
+
+.focus-app[data-design="aurora"] .mode-row {
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(220, 210, 255, 0.12);
+}
+
+.focus-app[data-design="aurora"] .mode-choice {
+  backdrop-filter: none;
+}
+
+.focus-app[data-design="aurora"] .mode-choice.active {
+  box-shadow: 0 12px 32px var(--accent-glow);
+}
+
+.focus-app[data-design="aurora"] .timer-aura {
+  filter: blur(36px);
+  opacity: 0.3;
+}
+
+.focus-app[data-design="aurora"] .micro-dots span {
+  width: 0.42rem;
+  height: 0.42rem;
+  box-shadow: 0 0 10px rgba(180, 150, 255, 0.5);
+}
+
+.focus-app[data-design="aurora"] .tr-colon {
+  opacity: 0.3;
+  font-weight: 200;
+}
+
+.focus-app[data-design="aurora"] .start-control {
+  padding: 0.9rem 1.9rem;
+}
+
+.focus-app[data-design="aurora"] .notes {
+  border-radius: 1.5rem;
+}
+
+.focus-app[data-design="aurora"] .task-item,
+.focus-app[data-design="aurora"] .stat-row div {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.focus-app[data-design="aurora"] .scene-pick {
+  border-radius: 1.4rem;
+}
+
+/* ---- light-tone touch-ups shared by both paper presets ---- */
+
+.focus-app[data-tone="light"] .study-apps a:hover {
+  background: var(--d-soft-bg);
+  color: var(--ink);
+}
+
+.focus-app[data-tone="light"] .scene-pick {
+  color: #fff;
+  border-color: var(--line);
+}
+
+.focus-app[data-tone="light"] :is(.pdf-status.error, .reader-status.error) {
+  color: var(--ink);
+}
+
+.focus-app[data-tone="light"] .task-item .delete {
+  color: var(--danger);
+}
+
+
+/* ---- the page behind the app follows the preset as well ---- */
+
+body:has(.focus-app[data-tone="light"]) {
+  background: #f2ecdf;
+  color-scheme: light;
+}
+
+body:has(.focus-app[data-design="terminal"]) {
+  background: #030705;
+}
+
+body:has(.focus-app[data-design="brutalist"]) {
+  background: #e6e1d6;
+}
+
+body:has(.focus-app[data-design="aurora"]) {
+  background: #080512;
+}
+
+/* ---- responsive tweaks for the new panel ---- */
+
+@media (max-width: 760px) {
+  .focus-app .design-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .focus-app .design-thumb {
+    height: 3.7rem;
+  }
+
+  .focus-app .dt-time {
+    font-size: 0.98rem;
   }
 }

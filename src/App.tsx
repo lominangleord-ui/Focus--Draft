@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { DESIGNS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
 const YouTubeAudioPlayer = lazy(() => import("./YouTubeAudioPlayer"));
 
 type ModeId = "focus" | "short" | "long";
-type PanelId = "tasks" | "music" | "scenes" | "stats" | "notes" | "settings";
+type PanelId = "tasks" | "music" | "scenes" | "personal" | "stats" | "notes" | "settings";
 type UtilId = "youtube" | "web" | "files";
 type FileKind = "text" | "image" | "video" | "audio" | "pdf" | "other";
 type LocalFile = { id: string; name: string; type: string; url: string; kind: FileKind; text?: string; data?: ArrayBuffer };
@@ -59,6 +60,8 @@ type AppState = {
   youtubeMusicUrl: string;
   /** Manual accent override (0-359). Null means "follow the scene / background". */
   customHue: number | null;
+  /** Active design orientation. "classic" is the original look. */
+  design: DesignId;
   windows: Record<string, WinFrame>;
 };
 
@@ -257,6 +260,7 @@ const defaultState = (): AppState => ({
   spotify: null,
   youtubeMusicUrl: "",
   customHue: null,
+  design: DEFAULT_DESIGN,
   windows: {},
 });
 
@@ -272,11 +276,11 @@ function todayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function defaultFrame(): WinFrame {
+function defaultFrame(wide = false): WinFrame {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const w = Math.min(390, vw - 20);
-  const h = Math.min(500, Math.max(380, vh * 0.66));
+  const w = Math.min(wide ? 460 : 390, vw - 20);
+  const h = Math.min(wide ? 540 : 500, Math.max(380, vh * 0.66));
   return {
     x: Math.max(10, (vw - w) / 2),
     y: Math.max(12, Math.min(84, (vh - h) / 2 - 48)),
@@ -314,6 +318,8 @@ function loadState(): AppState {
       spotify: parsed.spotify ?? null,
       youtubeMusicUrl: parsed.youtubeMusicUrl ?? "",
       mode: (MODE_IDS.includes(parsed.mode as ModeId) ? parsed.mode : "focus") as ModeId,
+      // Unknown/removed presets fall back to the original design.
+      design: isDesignId(parsed.design) ? parsed.design : DEFAULT_DESIGN,
     };
     if (!Number.isFinite(merged.remaining) || merged.remaining <= 0) {
       merged.remaining = secondsFor(merged.mode, merged);
@@ -715,6 +721,7 @@ function App() {
   const inCycle = state.sessionsDone % cycleLength;
 
   /* ---- dynamic theme: hue is sampled from whatever is on screen ---- */
+  const preset = designById(state.design);
   const effectiveScene = state.sceneAuto ? autoScene() : state.scene;
   const bgUrl = state.customImage || (effectiveScene !== "pure" ? SCENE_IMAGES[effectiveScene] : "");
 
@@ -723,18 +730,21 @@ function App() {
     setSampledHue(null);
     // A manual color override always wins, so skip the network fetch and
     // canvas decode entirely while one is active — nothing to gain from it.
-    if (!bgUrl || state.customHue != null) return;
+    // Presets that ship their own accent (terminal, brutalist, aurora) don't
+    // follow the background either, so they skip it too.
+    if (!bgUrl || state.customHue != null || preset.accentHue != null) return;
     sampleImageHue(bgUrl).then((hue) => {
       if (alive) setSampledHue(hue);
     });
     return () => {
       alive = false;
     };
-  }, [bgUrl, state.customHue]);
+  }, [bgUrl, state.customHue, preset.accentHue]);
 
-  // Priority: your manual pick > whatever hue was sampled off the current
-  // background > the scene's own default. Never static, always intentional.
-  const hue = state.customHue ?? sampledHue ?? SCENE_HUES[effectiveScene];
+  // Priority: your manual pick > the preset's own accent > the hue sampled off
+  // the current background > the scene's default. Never static, intentional.
+  const hue = state.customHue ?? preset.accentHue ?? sampledHue ?? SCENE_HUES[effectiveScene];
+  const breakHue = preset.breakHue ?? (hue + 140) % 360;
   const themeVars = useMemo(
     () =>
       ({
@@ -742,9 +752,9 @@ function App() {
         "--accent-2": `hsl(${hue} 72% 46%)`,
         "--accent-glow": `hsla(${hue}, 75%, 60%, 0.45)`,
         "--accent-soft": `hsla(${hue}, 70%, 60%, 0.15)`,
-        "--break": `hsl(${(hue + 140) % 360} 62% 64%)`,
+        "--break": `hsl(${breakHue} 62% 64%)`,
       }) as React.CSSProperties,
-    [hue],
+    [hue, breakHue],
   );
 
   /* ---- persistence ----
@@ -1062,6 +1072,13 @@ function App() {
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 2400);
+  }
+
+  /* A preset is a whole look, accent included — so switching clears any older
+     manual accent. The accent picker stays available to override afterwards. */
+  function chooseDesign(id: DesignId) {
+    setState((prev) => ({ ...prev, design: id, customHue: null }));
+    notify(id === DEFAULT_DESIGN ? "Original look restored." : `${designById(id).name} design applied.`);
   }
 
   function startTimer() {
@@ -1403,7 +1420,54 @@ function App() {
             </button>
           ))}
         </div>
-        <p className="field-hint">The accent color of the whole UI follows the scene. Switch scenes and watch it shift.</p>
+        <p className="field-hint">The accent color of the whole UI follows the scene — unless a preset or your own pick sets it.</p>
+
+        <label className="field"><span>Custom image URL</span><input value={imageInput} onChange={(event) => setImageInput(event.target.value)} placeholder="https://..." /></label>
+        <button className="panel-primary" onClick={() => setState((prev) => ({ ...prev, customImage: imageInput.trim(), customYoutube: "" }))}>Use image</button>
+        <label className="field"><span>YouTube URL</span><input value={youtubeInput} onChange={(event) => setYoutubeInput(event.target.value)} placeholder="https://youtube.com/watch?v=..." /></label>
+        <button className="panel-primary subtle" onClick={() => setState((prev) => ({ ...prev, customYoutube: youtubeInput.trim(), customImage: "" }))}>Use video background</button>
+        <button className="panel-danger" onClick={() => setState((prev) => ({ ...prev, customImage: "", customYoutube: "" }))}>Clear custom background</button>
+        <button className="theme-link" onClick={() => openPanel("personal")}>Type, surfaces &amp; colors live in Personalization →</button>
+      </>
+    ),
+    personal: (
+      <>
+        <p className="field-hint">
+          A design orientation restyles everything — type, surfaces, corners, depth and color. Original is the default;
+          your tasks, stats and notes are untouched.
+        </p>
+
+        <div className="design-grid" role="radiogroup" aria-label="Design presets">
+          {DESIGNS.map((item) => {
+            const active = state.design === item.id;
+            return (
+              <button
+                key={item.id}
+                role="radio"
+                aria-checked={active}
+                data-preview={item.id}
+                className={`design-card ${active ? "active" : ""}`}
+                onClick={() => chooseDesign(item.id)}
+                title={item.tagline}
+              >
+                <span className="design-thumb" aria-hidden="true">
+                  <span className="dt-dots"><i /><i /><i /><i /></span>
+                  <b className="dt-time">25:00</b>
+                  <span className="dt-row">
+                    <i className="dt-round" />
+                    <i className="dt-start" />
+                    <i className="dt-round" />
+                  </span>
+                </span>
+                <span className="design-card-name">
+                  {item.name}
+                  {item.id === DEFAULT_DESIGN && <em>default</em>}
+                </span>
+                <span className="design-card-tag">{item.tagline}</span>
+              </button>
+            );
+          })}
+        </div>
 
         <div className="theme-block">
           <div className="theme-head">
@@ -1439,15 +1503,15 @@ function App() {
           />
 
           <button className="theme-reset" onClick={() => setState((prev) => ({ ...prev, customHue: null }))} disabled={state.customHue == null}>
-            Reset to scene color
+            {preset.accentHue != null ? `Reset to ${preset.name} accent` : "Reset to scene color"}
           </button>
         </div>
 
-        <label className="field"><span>Custom image URL</span><input value={imageInput} onChange={(event) => setImageInput(event.target.value)} placeholder="https://..." /></label>
-        <button className="panel-primary" onClick={() => setState((prev) => ({ ...prev, customImage: imageInput.trim(), customYoutube: "" }))}>Use image</button>
-        <label className="field"><span>YouTube URL</span><input value={youtubeInput} onChange={(event) => setYoutubeInput(event.target.value)} placeholder="https://youtube.com/watch?v=..." /></label>
-        <button className="panel-primary subtle" onClick={() => setState((prev) => ({ ...prev, customYoutube: youtubeInput.trim(), customImage: "" }))}>Use video background</button>
-        <button className="panel-danger" onClick={() => setState((prev) => ({ ...prev, customImage: "", customYoutube: "" }))}>Clear custom background</button>
+        <p className="field-hint">
+          Backdrops, weather layers and custom backgrounds stay in Scenes — they work with every preset, except the ones
+          that paint their own background.
+        </p>
+        <button className="theme-link" onClick={() => openPanel("scenes")}>Open Scenes →</button>
       </>
     ),
     stats: (
@@ -1546,6 +1610,7 @@ function App() {
     tasks: { title: "Tasks", icon: "task" },
     music: { title: "Music", icon: "music" },
     scenes: { title: "Scenes", icon: "scene" },
+    personal: { title: "Personalization", icon: "palette" },
     stats: { title: "Focus Stats", icon: "stats" },
     notes: { title: "Notes", icon: "note" },
     settings: { title: "Settings", icon: "settings" },
@@ -1555,6 +1620,7 @@ function App() {
     ["tasks", "task"],
     ["music", "music"],
     ["scenes", "scene"],
+    ["personal", "palette"],
     ["stats", "stats"],
     ["notes", "note"],
     ["settings", "settings"],
@@ -1563,10 +1629,15 @@ function App() {
   return (
     <main
       className={`focus-app scene-${effectiveScene} ${running ? "is-running" : ""} ${utilTab ? "util-open" : ""}`}
+      data-design={state.design}
+      data-tone={preset.tone}
       style={{ ...themeVars, "--util-w": `${utilWidth}px` } as React.CSSProperties}
     >
-      <div className="visual-plane" style={state.customImage ? { backgroundImage: `url(${state.customImage})` } : undefined} />
-      {ytId && (
+      <div
+        className="visual-plane"
+        style={state.customImage && preset.backdrop ? { backgroundImage: `url(${state.customImage})` } : undefined}
+      />
+      {ytId && preset.backdrop && (
         <iframe
           className="video-plane"
           src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&playsinline=1`}
@@ -1894,7 +1965,7 @@ function App() {
           key={id}
           title={panelMeta[id].title}
           icon={panelMeta[id].icon}
-          win={state.windows[id] ?? defaultFrame()}
+          win={state.windows[id] ?? defaultFrame(id === "personal")}
           z={12 + index}
           onFocus={() => raisePanel(id)}
           onPatch={(patch) => patchFrame(id, patch)}

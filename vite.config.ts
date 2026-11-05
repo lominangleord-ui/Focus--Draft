@@ -16,4 +16,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  // Bind to every interface and accept proxied preview hostnames, so the app
+  // can be opened from cloud/remote dev environments instead of only localhost.
+  server: {
+    host: true,
+    allowedHosts: true,
+  },
+  preview: {
+    host: true,
+    allowedHosts: true,
+  },
 });
