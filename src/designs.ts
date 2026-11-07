@@ -18,20 +18,11 @@ export type DesignId =
   | "retro"
   | "cyber"
   | "deco"
-  | "aurora"
   | "clay"
   | "neu"
-  | "nordic"
   | "ocean"
   | "sunset"
-  | "forest"
-  | "minimal"
-  | "golden"
-  | "arctic"
-  | "desert"
-  | "tech"
   | "botanical"
-  | "galaxy"
   | "kaleido"
   | "manga"
   | "pop"
@@ -56,8 +47,6 @@ export type DesignPreset = {
   accent: { hue: number; sat: number; light: number } | null;
   /** Break-phase hue. Null derives it from the accent (accent + 140°). */
   breakHue: number | null;
-  /** Whether scene photography / custom backgrounds still show through. */
-  backdrop: boolean;
   /** Illustration/motion layer this preset mounts (see src/MotionFx.tsx). */
   motion?: MotionVariant;
 };
@@ -79,7 +68,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: null,
     breakHue: null,
-    backdrop: true,
   },
   {
     id: "editorial",
@@ -89,7 +77,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: null,
     breakHue: null,
-    backdrop: true,
   },
   {
     id: "brutalist",
@@ -99,7 +86,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 16, sat: 84, light: 54 },
     breakHue: 199,
-    backdrop: false,
   },
   {
     id: "swiss",
@@ -109,7 +95,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 4, sat: 74, light: 50 },
     breakHue: 214,
-    backdrop: false,
   },
   {
     id: "sketch",
@@ -119,7 +104,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 14, sat: 52, light: 50 },
     breakHue: 196,
-    backdrop: false,
   },
   {
     id: "terminal",
@@ -129,7 +113,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 134, sat: 68, light: 58 },
     breakHue: 44,
-    backdrop: false,
   },
   {
     id: "retro",
@@ -139,7 +122,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 221, sat: 72, light: 46 },
     breakHue: 168,
-    backdrop: false,
   },
   {
     id: "cyber",
@@ -149,7 +131,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 317, sat: 92, light: 62 },
     breakHue: 187,
-    backdrop: false,
   },
   {
     id: "deco",
@@ -159,17 +140,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 42, sat: 58, light: 58 },
     breakHue: 152,
-    backdrop: false,
-  },
-  {
-    id: "aurora",
-    name: "Aurora",
-    tagline: "Soft glow, pill shapes, weightless type over drifted light.",
-    group: "soft",
-    tone: "dark",
-    accent: { hue: 268, sat: 78, light: 66 },
-    breakHue: 172,
-    backdrop: false,
   },
   {
     id: "clay",
@@ -179,7 +149,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 276, sat: 62, light: 66 },
     breakHue: 168,
-    backdrop: false,
   },
   {
     id: "neu",
@@ -189,17 +158,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 224, sat: 34, light: 60 },
     breakHue: 172,
-    backdrop: false,
-  },
-  {
-    id: "nordic",
-    name: "Nordic",
-    tagline: "Quiet sage and stone, thin rules, barely-there depth.",
-    group: "soft",
-    tone: "dark",
-    accent: { hue: 104, sat: 30, light: 52 },
-    breakHue: 36,
-    backdrop: false,
   },
   {
     id: "ocean",
@@ -209,7 +167,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 180, sat: 51, light: 36 },
     breakHue: 12,
-    backdrop: false,
   },
   {
     id: "sunset",
@@ -219,67 +176,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 12, sat: 76, light: 61 },
     breakHue: 188,
-    backdrop: false,
-  },
-  {
-    id: "forest",
-    name: "Forest Canopy",
-    tagline: "Ivory paper, forest-green ink, olive rules, serif caps.",
-    group: "palette",
-    tone: "light",
-    accent: { hue: 137, sat: 25, light: 39 },
-    breakHue: 32,
-    backdrop: false,
-  },
-  {
-    id: "minimal",
-    name: "Minimalist",
-    tagline: "Charcoal and slate on white. Hairlines, no shadows.",
-    group: "palette",
-    tone: "light",
-    accent: { hue: 203, sat: 19, light: 26 },
-    breakHue: 208,
-    backdrop: false,
-  },
-  {
-    id: "golden",
-    name: "Golden Hour",
-    tagline: "Mustard and terracotta on warm beige, soft and round.",
-    group: "palette",
-    tone: "light",
-    accent: { hue: 41, sat: 100, light: 48 },
-    breakHue: 356,
-    backdrop: false,
-  },
-  {
-    id: "arctic",
-    name: "Arctic Frost",
-    tagline: "Frosted glass, steel blue, silver hairlines.",
-    group: "palette",
-    tone: "light",
-    accent: { hue: 216, sat: 38, light: 47 },
-    breakHue: 190,
-    backdrop: false,
-  },
-  {
-    id: "desert",
-    name: "Desert Rose",
-    tagline: "Dusty rose and clay on sand, burgundy ink.",
-    group: "palette",
-    tone: "light",
-    accent: { hue: 13, sat: 35, light: 57 },
-    breakHue: 322,
-    backdrop: false,
-  },
-  {
-    id: "tech",
-    name: "Tech Innovation",
-    tagline: "Electric blue edges on graphite, cyan highlights.",
-    group: "palette",
-    tone: "dark",
-    accent: { hue: 216, sat: 100, light: 50 },
-    breakHue: 180,
-    backdrop: false,
   },
   {
     id: "botanical",
@@ -289,17 +185,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 35, sat: 95, light: 52 },
     breakHue: 140,
-    backdrop: false,
-  },
-  {
-    id: "galaxy",
-    name: "Midnight Galaxy",
-    tagline: "Deep purple night, lavender stars, cosmic glow.",
-    group: "palette",
-    tone: "dark",
-    accent: { hue: 266, sat: 27, light: 66 },
-    breakHue: 190,
-    backdrop: false,
   },
   {
     id: "kaleido",
@@ -309,7 +194,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 350, sat: 100, light: 62 },
     breakHue: 190,
-    backdrop: false,
     motion: "kaleido",
   },
   {
@@ -320,7 +204,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 3, sat: 84, light: 50 },
     breakHue: 205,
-    backdrop: false,
     motion: "manga",
   },
   {
@@ -331,7 +214,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 354, sat: 92, light: 54 },
     breakHue: 220,
-    backdrop: false,
     motion: "pop",
   },
   {
@@ -342,7 +224,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "light",
     accent: { hue: 328, sat: 92, light: 66 },
     breakHue: 190,
-    backdrop: false,
     motion: "bubblegum",
   },
   {
@@ -353,7 +234,6 @@ export const DESIGNS: DesignPreset[] = [
     tone: "dark",
     accent: { hue: 316, sat: 100, light: 66 },
     breakHue: 185,
-    backdrop: false,
     motion: "vaporwave",
   },
 ];

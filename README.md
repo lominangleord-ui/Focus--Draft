@@ -12,18 +12,27 @@ npm run build    # single-file bundle in dist/
 
 ## Themes
 
-`Personalization` in the dock holds 28 presets. A preset is not a colour scheme:
+`Personalization` in the dock holds 19 presets. A preset is not a colour scheme:
 it re-skins typography, button shape and press states, surfaces, corner language,
 border weight, depth model and the background treatment, so the app reads as a
 different product. The original look (`classic`) is the default and untouched.
 
-| Group | Presets |
-| --- | --- |
-| Paper & print | Original, Editorial, Brutalist, Swiss, Sketchbook |
-| Retro & neon | Terminal, Retro 95, Cyber, Art Deco |
-| Soft & sculpted | Aurora, Clay, Neumorph, Nordic |
-| Curated palettes | Ocean Depths, Sunset Boulevard, Forest Canopy, Minimalist, Golden Hour, Arctic Frost, Desert Rose, Tech Innovation, Botanical Garden, Midnight Galaxy |
-| Illustrated & motion | Kaleido, Manga, Pop Art, Bubblegum, Vaporwave |
+| Group | Presets | What is different about it |
+| --- | --- | --- |
+| Paper & print | Original, Editorial, Brutalist, Swiss, Sketchbook | glass over photography · warm serif paper · concrete blocks and hard offset shadows · white grid, one red rule · ruled paper, wobbly ink |
+| Retro & neon | Terminal, Retro 95, Cyber, Art Deco | phosphor monospace CRT · a Win95 desktop with bevels · neon grid and glow · gold hairlines on deep green |
+| Soft & sculpted | Clay, Neumorph | pressed pastel shapes · one surface colour, embossed |
+| Curated palettes | Ocean Depths, Sunset Boulevard, Botanical Garden | deep navy · burnt orange over teal · cream, fern and marigold |
+| Illustrated & motion | Kaleido, Manga, Pop Art, Bubblegum, Vaporwave | five animated layers (see below) |
+
+The set is deliberately curated rather than grown: themes that were only a
+recolouring of another one were folded into the strongest of their family
+(`aurora`/`galaxy` → Vaporwave, `nordic`/`arctic` → Ocean, `forest` → Botanical,
+`golden`/`desert` → Sunset, `minimal` → Swiss, `tech` → Terminal). Saved ids are
+mapped through `LEGACY_DESIGN_IDS` in `src/App.tsx`, so nobody's stored choice
+breaks.
+
+### The accent control
 
 Every theme exposes the accent-hue slider (12 swatches + a full hue ramp), and
 each theme remembers its own override (`designHues` in app state). Accent defaults
@@ -36,24 +45,29 @@ colour is re-lit to the same *perceived brightness* it was designed around
 yellow or indigo, and no theme has to hardcode a text colour that only works for
 one hue. `--accent-ink` (auto white or near-black) backs the primary button.
 The break phase is stored as an offset from the accent, so it travels with your
-pick instead of staying on the old hue. Themes that used to paint fixed colours now
-derive them: `--d-btn-grad`, `--d-btn-shadow`, active tabs, dock chips, session
-dots, progress fills, card rings, glows and borders are all `color-mix(...)` over
-`var(--accent)`. Nothing in a preset is hard-coded to a hex any more, so the
-colour control changes the start button, the active mode, the dock and the
-borders in all 24 presets, including `classic` (`Original`).
+pick instead of staying on the old hue. Themes that used to paint fixed colours
+now derive them: `--d-btn-grad`, `--d-btn-shadow`, active tabs, dock chips,
+session dots, progress fills, card rings, glows and borders are all
+`color-mix(...)` over `var(--accent)`.
+
+This is measured, not assumed: an audit renders all 19 presets at 12 hues and
+checks that (a) accent luminance moves by less than 0.005 within a preset, (b)
+the break colour changes at every hue, and (c) text/ink contrast against its own
+bed is unchanged by the pick.
 
 ### Adding a preset
 
-1. Add an id and an entry to `DESIGNS` in `src/designs.ts` (`accent`, `breakHue`,
-   `backdrop` decide the default colour; `tone` drives text/scrollbar handling).
+1. Add an id and an entry to `DESIGNS` in `src/designs.ts` (`accent`, `breakHue`
+   set the default colour; `tone` drives text/scrollbar handling).
 2. In `src/index.css` add a `.focus-app .design-card[data-preview="<id>"]` block
    so the picker card previews it, then a `.focus-app[data-design="<id>"]` block
    with the token set (`--ink`, `--d-panel-*`, `--d-btn-*`, …) plus any structural
    overrides, and a `body:has(.focus-app[data-design="<id>"])` background.
-3. Paint `.visual-plane` with the theme's own backdrop if it has one. Themes may
-   hide `.video-plane`/`.snow-layer`/`.rain-layer` for their idle look — a
-   wallpaper the user picks still overrides all of that (see below).
+3. Paint `.visual-plane` with the theme's own backdrop if it has one, and give it
+   a `--wall-tint` / `--wall-wash-*` bed in the wallpaper section (below) so a
+   user wallpaper stays legible. Themes may hide
+   `.video-plane`/`.snow-layer`/`.rain-layer` for their idle look — a wallpaper
+   the user picks still overrides all of that.
 
 Motion should stay opt-in per theme and respect `prefers-reduced-motion`.
 
@@ -69,13 +83,24 @@ How it works, so a new preset cannot break it:
   there is none). The default (`cabin`) and `Pure Black` count as "none", so the
   theme's own background is shown untouched.
 - `.wallpaper-plane` is a fixed layer at `z-index: -5` carrying the picture;
-  `.wallpaper-veil` sits above it and reads `--wall-veil`, which is dark for
-  `data-tone="dark"` presets and light for `data-tone="light"` ones (Anime warms
-  its own). The veil keeps type legible without flattening the photo.
-- `[data-wallpaper]` switches the theme's `.visual-plane` off, clears an opaque
-  shell colour off the root, and eases `.scrim` down to `--wall-scrim`, so the
-  picture reads through instead of being buried under a texture.
+  `.wallpaper-veil` sits above it and paints `--wall-veil`.
+- One tint model for every preset: the picture is washed toward `--wall-tint`
+  (each preset declares the bed its type needs) with four strengths
+  (`--wall-wash-1..4`, top → bottom), plus `--wall-filter` for how the photograph
+  itself is treated. Print presets go almost flat-paper, screen presets go nearly
+  black, and `classic` stays the one preset that keeps the photograph loud.
+- `--wall-texture` draws an optional pattern over the wash — Terminal puts the
+  CRT's scanlines back on top of its near-black tint, Manga lays screentone over
+  its paper, Vaporwave keeps its scan band.
+- `[data-wallpaper]` switches the theme's `.visual-plane` off, sets
+  `--d-page-bg: transparent` so no preset's own page colour can hide the picture,
+  and eases `.scrim` down to `--wall-scrim`.
 - `prefers-reduced-motion` drops the fade-in.
+
+Legibility is gated by pixels, not by hope: a harness renders every preset over a
+deliberately bright, busy photograph at three accents and measures the ink
+contrast of the greeting, the quote, the readout, the mode chips and the buttons
+straight out of the screenshot. All 19 presets clear 3.0 at every accent.
 
 Only `Pure Black` opts out — it is the "no wallpaper" choice.
 

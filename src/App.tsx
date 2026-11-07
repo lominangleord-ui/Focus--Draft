@@ -112,7 +112,20 @@ const SCENE_IMAGES: Record<SceneId, string> = {
 
 /* Preset ids that have been renamed. Saved state is rewritten on load so an
    existing theme pick (and its accent override) survives. */
-const LEGACY_DESIGN_IDS: Record<string, DesignId> = { anime: "kaleido" };
+/* Presets that were folded into a stronger one keep working: a saved id maps to
+   the closest surviving theme instead of silently falling back to Original. */
+const LEGACY_DESIGN_IDS: Record<string, DesignId> = {
+  anime: "kaleido",
+  aurora: "vaporwave",
+  nordic: "ocean",
+  forest: "botanical",
+  minimal: "swiss",
+  golden: "sunset",
+  arctic: "ocean",
+  desert: "sunset",
+  tech: "terminal",
+  galaxy: "vaporwave",
+};
 
 /* The scene that ships with the app; picking anything else counts as choosing a
    wallpaper, which is shown behind every theme. */
