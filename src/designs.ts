@@ -180,11 +180,11 @@ export const DESIGNS: DesignPreset[] = [
   {
     id: "botanical",
     name: "Botanical Garden",
-    tagline: "Cream, fern green and marigold; leafy serif headings.",
+    tagline: "Cream paper, fern-green ink, marigold in the borders.",
     group: "palette",
     tone: "light",
-    accent: { hue: 35, sat: 95, light: 52 },
-    breakHue: 140,
+    accent: { hue: 133, sat: 42, light: 36 },
+    breakHue: 36,
   },
   {
     id: "kaleido",

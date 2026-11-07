@@ -45,6 +45,9 @@ type Settings = {
   checkInMinutes: number;
   /** Interface clicks — a different synthesised voice per theme. */
   uiSound: boolean;
+  /** Wash the wallpaper toward the theme's own colour. Off = the picture,
+      untouched, with only a neutral scrim where type sits on it. */
+  wallTint: boolean;
 };
 
 type AppState = {
@@ -275,6 +278,7 @@ const defaultState = (): AppState => ({
     checkIns: false,
     checkInMinutes: 12,
     uiSound: true,
+    wallTint: true,
   },
   mode: "focus",
   remaining: 25 * 60,
@@ -1657,6 +1661,22 @@ function App() {
           <button className="theme-reset" onClick={() => setAccentHue(null)} disabled={customHue == null}>
             {preset.accent ? `Reset to ${preset.name} palette` : "Reset to scene color"}
           </button>
+
+          {/* The tint is the only thing between a wallpaper and the type, so it
+              gets an off switch right where colours are chosen. */}
+          <button
+            className={`theme-reset tint-toggle ${state.settings.wallTint ? "" : "is-off"}`}
+            onClick={() => updateSetting("wallTint", !state.settings.wallTint)}
+            aria-pressed={!state.settings.wallTint}
+            title={
+              state.settings.wallTint
+                ? "Take the theme's colour wash off your wallpaper — the picture stays exactly as it is."
+                : "Put the theme's colour wash back on the wallpaper."
+            }
+          >
+            {state.settings.wallTint ? "Remove tint" : "Tint is off — restore"}
+            <small>{wallpaper ? (state.settings.wallTint ? "wallpaper is colour-washed toward this theme" : "wallpaper shown untouched") : "only applies when a wallpaper is set"}</small>
+          </button>
         </div>
 
         <p className="field-hint">
@@ -1787,6 +1807,7 @@ function App() {
       data-design={state.design}
       data-tone={preset.tone}
       data-wallpaper={wallpaper || undefined}
+      data-tint={state.settings.wallTint ? undefined : "off"}
       style={{ ...themeVars, "--util-w": `${utilWidth}px` } as React.CSSProperties}
     >
       <div className="visual-plane" />

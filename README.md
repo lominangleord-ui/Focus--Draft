@@ -25,6 +25,29 @@ different product. The original look (`classic`) is the default and untouched.
 | Curated palettes | Ocean Depths, Sunset Boulevard, Botanical Garden | deep navy · burnt orange over teal · cream, fern and marigold |
 | Illustrated & motion | Kaleido, Manga, Pop Art, Bubblegum, Vaporwave | five animated layers (see below) |
 
+### Palettes
+
+Each preset's default accent is the colour its name promises, so a theme is
+recognisable before you touch the slider:
+
+| Preset | Default accent | Preset | Default accent |
+| --- | --- | --- | --- |
+| Original | sampled from the scene | Clay | pastel lilac 276 |
+| Editorial | sampled from the scene | Neumorph | slate blue 224 |
+| Brutalist | international orange 16 | Ocean Depths | seafoam teal 180 |
+| Swiss | Swiss red 4 | Sunset Boulevard | burnt orange 12 |
+| Sketchbook | sepia ink 14 | Botanical Garden | **fern green 133** |
+| Terminal | phosphor green 134 | Kaleido | coral 350 |
+| Retro 95 | Win95 navy 221 | Manga | ink red 3 |
+| Cyber | neon magenta 317 | Pop Art | poster red 354 |
+| Art Deco | gold 42 | Bubblegum | bubblegum pink 328 |
+| | | Vaporwave | neon magenta 316 |
+
+Botanical Garden used to be marigold — a garden theme whose accent was not
+green — and now leads with fern green while marigold moves to the break phase
+and the borders, where the tagline always said it was. Its break ink is mixed
+dark enough to sit on cream (contrast 4.5 against the panel, up from 2.1).
+
 The set is deliberately curated rather than grown: themes that were only a
 recolouring of another one were folded into the strongest of their family
 (`aurora`/`galaxy` → Vaporwave, `nordic`/`arctic` → Ocean, `forest` → Botanical,
@@ -38,6 +61,10 @@ Every theme exposes the accent-hue slider (12 swatches + a full hue ramp), and
 each theme remembers its own override (`designHues` in app state). Accent defaults
 come from the theme's own palette when it has one, otherwise from the sampled
 scene.
+
+Under the hue ramp sits **Remove tint**: it takes the theme's colour wash off
+your wallpaper, leaving the picture exactly as it is and letting a neutral scrim
+carry legibility instead (see Wallpapers).
 
 A hue pick only replaces the **hue**. The preset keeps its saturation and the
 colour is re-lit to the same *perceived brightness* it was designed around
@@ -162,6 +189,12 @@ How it works, so a new preset cannot break it:
   `--d-page-bg: transparent` so no preset's own page colour can hide the picture,
   and eases `.scrim` down to `--wall-scrim`.
 - `prefers-reduced-motion` drops the fade-in.
+
+`data-tint="off"` (the accent block's **Remove tint** button) drops the wash
+entirely: `--wall-veil` becomes a neutral grey/black gradient top and bottom,
+a soft neutral vignette is drawn behind the stage, `--wall-filter` and
+`--wall-texture` are switched off, and the text halo gets heavier. The
+photograph keeps its own colours; nothing is tinted toward the theme.
 
 Legibility is gated by pixels, not by hope: a harness renders every preset over a
 deliberately bright, busy photograph at three accents and measures the ink
