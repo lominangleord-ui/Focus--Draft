@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 import MotionFx from "./MotionFx";
 import { inkOn, lightnessFor, luminance } from "./accent";
+import { playUi, soundSupported } from "./sound";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -42,6 +43,8 @@ type Settings = {
   clock24h: boolean;
   checkIns: boolean;
   checkInMinutes: number;
+  /** Interface clicks — a different synthesised voice per theme. */
+  uiSound: boolean;
 };
 
 type AppState = {
@@ -271,6 +274,7 @@ const defaultState = (): AppState => ({
     clock24h: true,
     checkIns: false,
     checkInMinutes: 12,
+    uiSound: true,
   },
   mode: "focus",
   remaining: 25 * 60,
@@ -851,6 +855,41 @@ function App() {
     const id = window.setTimeout(() => localStorage.setItem(STORE_KEY, JSON.stringify(state)), 600);
     return () => window.clearTimeout(id);
   }, [state]);
+
+  /* ---- interface sounds
+     One delegated listener rather than a handler on every button: any press on
+     something interactive plays the current theme's voice, and pressing a theme
+     card previews that theme's voice instead. Off by default only if the
+     browser has no Web Audio at all — otherwise it follows the setting. */
+  useEffect(() => {
+    if (!state.settings.uiSound) return;
+    const interactive = (node: EventTarget | null) =>
+      node instanceof Element
+        ? node.closest<HTMLElement>(
+            "button, [role='button'], .design-card, .scene-pick, .theme-link, input[type='range']",
+          )
+        : null;
+    const onPointerDown = (event: PointerEvent) => {
+      const el = interactive(event.target);
+      if (!el || (el as HTMLButtonElement).disabled) return;
+      const card = el.closest<HTMLElement>(".design-card");
+      const preview = card?.dataset.preview;
+      playUi(preview ?? state.design, preview ? "select" : "tap");
+    };
+    // Keyboard and assistive activation fire a click with detail === 0.
+    const onClick = (event: MouseEvent) => {
+      if (event.detail !== 0) return;
+      const el = interactive(event.target);
+      if (!el || (el as HTMLButtonElement).disabled) return;
+      playUi(state.design, "tap");
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [state.settings.uiSound, state.design]);
 
   useEffect(() => {
     const flush = () => {
@@ -1714,6 +1753,9 @@ function App() {
         <ToggleRow label="Auto-start next focus" value={state.settings.autoStartFocus} onChange={(value) => updateSetting("autoStartFocus", value)} />
         <ToggleRow label="24-hour clock" value={state.settings.clock24h} onChange={(value) => updateSetting("clock24h", value)} />
         <ToggleRow label="Focus check-ins" value={state.settings.checkIns} onChange={(value) => updateSetting("checkIns", value)} />
+        {soundSupported() && (
+          <ToggleRow label="Interface sounds (per theme)" value={state.settings.uiSound} onChange={(value) => updateSetting("uiSound", value)} />
+        )}
         <button className="panel-danger" onClick={() => { localStorage.removeItem(STORE_KEY); window.location.reload(); }}>Erase local data</button>
       </>
     ),

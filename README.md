@@ -55,6 +55,72 @@ checks that (a) accent luminance moves by less than 0.005 within a preset, (b)
 the break colour changes at every hue, and (c) text/ink contrast against its own
 bed is unchanged by the pick.
 
+### Buttons
+
+The silhouette is part of the theme, not a shared rounded rectangle. Three hooks
+carry it (`--d-btn-clip`, `--d-mode-clip`, `--d-ctl-clip` for chamfers) on top of
+the radius tokens each preset already owns, and one table in `src/index.css`
+decides the whole set:
+
+| Preset | Silhouette |
+| --- | --- |
+| Original | soft rounded rectangle, accent glow |
+| Editorial | 3px print edge with a double hairline |
+| Brutalist | hard square block, offset shadow |
+| Swiss | square, hairline, the one red rule becomes an underline |
+| Sketchbook | wobbly hand-drawn corners |
+| Terminal | square, bracketed `[ START ]` |
+| Retro 95 | bevelled grey key |
+| Cyber | corners cut at 45°, glow follows the cut |
+| Art Deco | fan — round shoulders, flat foot, double gold rule |
+| Clay | pressed pebble, circular controls |
+| Neumorph | soft embossed |
+| Ocean | capsule |
+| Sunset | capsule, sinks on press |
+| Botanical | leaf — mirrored asymmetric corners |
+| Kaleido | soap bubble with an inked outline and a 5px lift |
+| Manga | speech chip — three soft corners, one cut, inked |
+| Pop Art | comic bubble, fat ink ring, flat offset shadow |
+| Bubblegum | glossy bubble that squishes on press |
+| Vaporwave | chrome capsule |
+
+Small chrome (dock chips, round controls) has its own hook because an inked
+offset shadow that reads as a comic panel on a big button turns into a crescent
+moon at 34px.
+
+### Sound
+
+Every preset has its own synthesised interface voice (`src/sound.ts`) — nothing
+is shipped as an asset, each click is an oscillator envelope (plus filtered noise
+where a theme needs a texture):
+
+| Voice | Presets |
+| --- | --- |
+| keycap beep | Terminal |
+| bevel click | Retro 95 |
+| square blip | Original, Neumorph |
+| paper tick / dry click | Editorial, Swiss |
+| concrete thunk | Brutalist |
+| pencil scratch | Sketchbook |
+| sawtooth zap | Cyber |
+| small bell | Art Deco |
+| muted thock | Clay |
+| water drop | Ocean |
+| warm dyad | Sunset |
+| marimba pluck | Botanical |
+| triangle shimmer | Kaleido |
+| ink shhk | Manga |
+| bright pop | Pop Art |
+| bubble pop | Bubblegum |
+| chrome swell | Vaporwave |
+
+Sounds are wired through one delegated listener on `document` (pointerdown for
+mouse, `detail === 0` click for keyboard and assistive activation), so a new
+button needs no wiring and the audio context only starts on the first real
+gesture. Clicking a theme card previews that theme's voice. Setting:
+`Settings ▸ Interface sounds`, on by default, hidden entirely when the browser
+has no Web Audio.
+
 ### Adding a preset
 
 1. Add an id and an entry to `DESIGNS` in `src/designs.ts` (`accent`, `breakHue`

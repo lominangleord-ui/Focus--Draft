@@ -8330,6 +8330,262 @@ body:has(.focus-app[data-design="vaporwave"]) {
 .motion-fx[data-reduced="true"] .fx-horizon {
   opacity: 0.55;
 }
+/* ============================================================================
+   BUTTON SILHOUETTES
+   ----------------------------------------------------------------------------
+   A preset's buttons should be recognisable from their outline alone, so the
+   silhouette is part of the theme rather than a shared rounded rectangle. Three
+   hooks carry it:
+     --d-btn-clip    primary button / panel primary   (chamfers)
+     --d-mode-clip   focus / break mode chips
+     --d-ctl-clip    dock chips, round controls, icon buttons
+   Everything else is the radius tokens (--d-btn-radius, --d-mode-radius, …),
+   which each preset already owns. The table at the bottom is the whole design;
+   the rules above it only wire the hooks up.
+   ========================================================================== */
+
+.focus-app {
+  --d-btn-clip: none;
+  --d-mode-clip: none;
+  --d-ctl-clip: none;
+}
+
+.focus-app .start-control,
+.focus-app .panel-primary,
+.focus-app .util-go {
+  clip-path: var(--d-btn-clip);
+}
+
+.focus-app .mode-choice {
+  clip-path: var(--d-mode-clip);
+}
+
+.focus-app .round-control,
+.focus-app .bottom-dock button,
+.focus-app .icon-button,
+.focus-app .task-chip {
+  clip-path: var(--d-ctl-clip);
+}
+
+/* --- paper & print ------------------------------------------------------- */
+
+/* Editorial: a printed rule, not a rectangle with corners — crisp edge, double
+   hairline underneath. */
+.focus-app[data-design="editorial"] .start-control,
+.focus-app[data-design="editorial"] .panel-primary {
+  --d-btn-radius: 3px;
+  box-shadow:
+    inset 0 0 0 1px rgba(34, 29, 23, 0.22),
+    0 2px 0 -1px rgba(34, 29, 23, 0.5);
+}
+
+/* Swiss: the one red rule becomes the whole button — square, hairline, and the
+   active mode is underlined instead of filled. */
+.focus-app[data-design="swiss"] .start-control,
+.focus-app[data-design="swiss"] .panel-primary {
+  --d-btn-radius: 0;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.focus-app[data-design="swiss"] .mode-choice.active {
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+/* Terminal: bracketed keys, printed by a machine. */
+.focus-app[data-design="terminal"] .start-control::before {
+  content: "[";
+  opacity: 0.8;
+}
+.focus-app[data-design="terminal"] .start-control::after {
+  content: "]";
+  opacity: 0.8;
+}
+
+/* --- retro & neon -------------------------------------------------------- */
+
+/* Cyber: corners are cut, and the glow follows the cut silhouette. */
+.focus-app[data-design="cyber"] {
+  --d-btn-clip: polygon(
+    0.8rem 0,
+    100% 0,
+    100% calc(100% - 0.8rem),
+    calc(100% - 0.8rem) 100%,
+    0 100%,
+    0 0.8rem
+  );
+  --d-mode-clip: polygon(
+    0.4rem 0,
+    100% 0,
+    100% calc(100% - 0.4rem),
+    calc(100% - 0.4rem) 100%,
+    0 100%,
+    0 0.4rem
+  );
+  --d-ctl-clip: polygon(
+    0.35rem 0,
+    100% 0,
+    100% calc(100% - 0.35rem),
+    calc(100% - 0.35rem) 100%,
+    0 100%,
+    0 0.35rem
+  );
+}
+.focus-app[data-design="cyber"] .start-control,
+.focus-app[data-design="cyber"] .panel-primary {
+  box-shadow: none;
+  filter: drop-shadow(0 0 20px var(--accent-glow));
+}
+.focus-app[data-design="cyber"] .start-control:hover,
+.focus-app[data-design="cyber"] .panel-primary:hover {
+  filter: drop-shadow(0 0 30px var(--accent-glow));
+}
+
+/* Art Deco: the shape is a fan — round shoulders, flat foot. */
+.focus-app[data-design="deco"] .start-control,
+.focus-app[data-design="deco"] .panel-primary {
+  --d-btn-radius: 999px 999px 0.3rem 0.3rem;
+}
+.focus-app[data-design="deco"] .mode-choice {
+  --d-mode-radius: 999px 999px 0 0;
+}
+.focus-app[data-design="deco"] .start-control:hover,
+.focus-app[data-design="deco"] .panel-primary:hover {
+  --d-btn-radius: 999px 999px 0.3rem 0.3rem;
+}
+
+/* --- soft & sculpted ----------------------------------------------------- */
+
+/* Clay: everything is a pressed pebble, so the square controls become circles. */
+.focus-app[data-design="clay"] .round-control,
+.focus-app[data-design="clay"] .bottom-dock button {
+  --d-ctl-radius: 999px;
+}
+
+/* --- curated palettes ---------------------------------------------------- */
+
+/* Ocean: capsules, like everything else under water. */
+.focus-app[data-design="ocean"] {
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-mode-radius: 999px;
+  --d-ctl-radius: 999px;
+  --d-chip-radius: 999px;
+  --d-dock-btn-radius: 999px;
+}
+.focus-app[data-design="ocean"] .start-control:active,
+.focus-app[data-design="ocean"] .panel-primary:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* Sunset: same capsule language, but it sinks a little on press. */
+.focus-app[data-design="sunset"] {
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-ctl-radius: 999px;
+  --d-dock-btn-radius: 999px;
+}
+
+/* Botanical: a leaf — one soft corner mirrored by the opposite one. */
+.focus-app[data-design="botanical"] {
+  --d-btn-radius: 0.3rem 2.2rem 0.3rem 2.2rem;
+  --d-btn-radius-sm: 0.25rem 1.3rem 0.25rem 1.3rem;
+  --d-mode-radius: 0.25rem 1.4rem 0.25rem 1.4rem;
+  --d-ctl-radius: 0.3rem 0.9rem 0.3rem 0.9rem;
+  --d-dock-btn-radius: 0.3rem 0.9rem 0.3rem 0.9rem;
+}
+
+/* --- illustrated & motion ------------------------------------------------ */
+
+/* Kaleido: a soap bubble with an inked outline. */
+.focus-app[data-design="kaleido"] {
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-mode-radius: 999px;
+  --d-ctl-radius: 999px;
+  --d-dock-btn-radius: 999px;
+}
+.focus-app[data-design="kaleido"] .start-control,
+.focus-app[data-design="kaleido"] .panel-primary {
+  border: 2px solid #14121c;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.55),
+    0 5px 0 #14121c;
+}
+.focus-app[data-design="kaleido"] .start-control:hover,
+.focus-app[data-design="kaleido"] .panel-primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.55),
+    0 7px 0 #14121c;
+}
+
+/* Manga: a speech chip — three soft corners, one cut corner, inked. */
+.focus-app[data-design="manga"] {
+  --d-btn-radius: 1.1rem 1.1rem 1.1rem 0.15rem;
+  --d-btn-radius-sm: 0.8rem 0.8rem 0.8rem 0.1rem;
+  --d-mode-radius: 0.9rem 0.9rem 0.9rem 0.12rem;
+  --d-ctl-radius: 0.7rem 0.7rem 0.7rem 0.1rem;
+  --d-dock-btn-radius: 0.7rem 0.7rem 0.7rem 0.1rem;
+}
+
+/* Pop Art: a comic bubble with a fat ink ring and a flat offset shadow. */
+.focus-app[data-design="pop"] {
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-mode-radius: 999px;
+  --d-ctl-radius: 999px;
+  --d-dock-btn-radius: 999px;
+}
+.focus-app[data-design="pop"] .start-control,
+.focus-app[data-design="pop"] .panel-primary {
+  border: 3px solid #14121c;
+  box-shadow: 6px 6px 0 #14121c;
+}
+
+/* Bubblegum: a glossy bubble that squishes when you press it. */
+.focus-app[data-design="bubblegum"] .start-control,
+.focus-app[data-design="bubblegum"] .panel-primary {
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -8px 12px rgba(180, 80, 140, 0.22),
+    0 10px 22px var(--accent-glow);
+  transition:
+    transform 160ms cubic-bezier(0.3, 1.6, 0.5, 1),
+    box-shadow 160ms ease;
+}
+.focus-app[data-design="bubblegum"] .start-control:hover,
+.focus-app[data-design="bubblegum"] .panel-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+.focus-app[data-design="bubblegum"] .start-control:active,
+.focus-app[data-design="bubblegum"] .panel-primary:active {
+  transform: scale(0.94);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -4px 8px rgba(180, 80, 140, 0.22),
+    0 4px 10px var(--accent-glow);
+}
+
+/* The inked offset shadow that reads as "comic panel" on a big button turns
+   into a crescent moon on a 34px dock chip, so it stays off the small chrome. */
+.focus-app[data-design="pop"] .bottom-dock button,
+.focus-app[data-design="kaleido"] .bottom-dock button,
+.focus-app[data-design="manga"] .bottom-dock button,
+.focus-app[data-design="pop"] .round-control,
+.focus-app[data-design="kaleido"] .round-control,
+.focus-app[data-design="manga"] .round-control {
+  box-shadow: none;
+}
+
+/* Vaporwave: chrome capsules. */
+.focus-app[data-design="vaporwave"] {
+  --d-btn-radius: 999px;
+  --d-btn-radius-sm: 999px;
+  --d-mode-radius: 999px;
+  --d-ctl-radius: 999px;
+  --d-chip-radius: 999px;
+  --d-dock-btn-radius: 999px;
+}
+
 /* ================= WALLPAPERS — EVERY PRESET ================= */
 /* A wallpaper you pick (photo, YouTube video or scene) sits behind *every*
    preset. The theme keeps its type, panels, accents and motion; only its own
