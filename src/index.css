@@ -8526,6 +8526,7 @@ body:has(.focus-app[data-design="vaporwave"]) {
   --wall-wash-3: 0.86;
   --wall-wash-4: 0.93;
   --wall-filter: saturate(0.4) contrast(1.05);
+  --wall-halo: rgba(0, 0, 0, 0.6);
 }
 
 .focus-app[data-design="cyber"] {
@@ -8598,6 +8599,7 @@ body:has(.focus-app[data-design="vaporwave"]) {
   --wall-wash-3: 0.77;
   --wall-wash-4: 0.9;
   --wall-filter: saturate(0.95) brightness(0.88);
+  --wall-halo: rgba(0, 0, 0, 0.62);
 }
 
 .focus-app[data-design="manga"] {
