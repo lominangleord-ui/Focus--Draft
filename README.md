@@ -10,10 +10,10 @@ npm run dev      # http://localhost:5173
 npm run build    # single-file bundle in dist/
 ```
 
-## Tasks & weekly planner
+## Tasks & monthly planner
 
-The Tasks panel has **Tasks** and **Planner** views. Planner is a small Monday–Sunday
-week strip with previous/next week navigation and a quick add for the selected day.
+The Tasks panel has **Tasks** and **Planner** views. Planner is a Monday-first
+month calendar with previous/next month navigation and a quick add for the selected day.
 Adding there creates a normal task; completion, active-task selection, and deletion
 stay in sync in both views. Use the date chip on any task to schedule or move it,
 or clear its date to return it to the unscheduled list. Dates are local and stored

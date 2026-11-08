@@ -330,6 +330,16 @@ function addDaysToKey(key: string, days: number) {
   return todayKey(date);
 }
 
+function addMonthsToKey(key: string, months: number) {
+  const date = localDateFromKey(key);
+  const day = date.getDate();
+  date.setDate(1);
+  date.setMonth(date.getMonth() + months);
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0, 12).getDate();
+  date.setDate(Math.min(day, lastDay));
+  return todayKey(date);
+}
+
 function mondayOfWeek(key: string) {
   const date = localDateFromKey(key);
   date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
@@ -1594,14 +1604,39 @@ function App() {
 
     return { byDate, remaining, plannedRemaining };
   }, [state.tasks]);
-  const plannerWeek = useMemo(() => {
+  const plannerMonthDays = useMemo(() => {
+    const selected = localDateFromKey(plannerDate);
+    const year = selected.getFullYear();
+    const month = selected.getMonth();
+    const first = new Date(year, month, 1, 12);
+    const leadingDays = (first.getDay() + 6) % 7;
+    const start = new Date(first);
+    start.setDate(1 - leadingDays);
+    const monthLength = new Date(year, month + 1, 0, 12).getDate();
+    const cellCount = Math.ceil((leadingDays + monthLength) / 7) * 7;
+
+    return Array.from({ length: cellCount }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return {
+        key: todayKey(date),
+        date,
+        inMonth: date.getMonth() === month && date.getFullYear() === year,
+      };
+    });
+  }, [plannerDate]);
+  const plannerWeekdays = useMemo(() => {
     const monday = localDateFromKey(mondayOfWeek(plannerDate));
     return Array.from({ length: 7 }, (_, index) => {
       const date = new Date(monday);
       date.setDate(monday.getDate() + index);
-      return { key: todayKey(date), date };
+      return date.toLocaleDateString(undefined, { weekday: "short" });
     });
   }, [plannerDate]);
+  const plannerMonthLabel = useMemo(
+    () => localDateFromKey(plannerDate).toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+    [plannerDate],
+  );
   const selectedDayTasks = useMemo(
     () => state.tasks
       .filter((task) => task.scheduledFor === plannerDate)
@@ -1613,10 +1648,6 @@ function App() {
     [selectedDayTasks],
   );
   const selectedDayRemaining = selectedDayTasks.length - selectedDayDone;
-  const plannerWeekRange = useMemo(
-    () => `${plannerWeek[0].date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${plannerWeek[6].date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`,
-    [plannerWeek],
-  );
 
   const totalTasks = state.tasks.length;
   const doneTasks = totalTasks - taskCounts.remaining;
@@ -1890,23 +1921,26 @@ function App() {
           </>
         ) : (
           <div className="planner-view">
-            <div className="planner-week-heading">
+            <div className="planner-month-heading">
               <div>
-                <small>Your week</small>
-                <strong>{plannerWeekRange}</strong>
+                <small>Monthly planner</small>
+                <strong>{plannerMonthLabel}</strong>
               </div>
-              <div className="planner-week-controls">
-                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addDaysToKey(date, -7))} aria-label="Previous week" title="Previous week">
+              <div className="planner-month-controls">
+                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addMonthsToKey(date, -1))} aria-label="Previous month" title="Previous month">
                   <Icon name="back" />
                 </button>
                 <button type="button" className="planner-today" onClick={() => setPlannerDate(todayKey())}>Today</button>
-                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addDaysToKey(date, 7))} aria-label="Next week" title="Next week">
+                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addMonthsToKey(date, 1))} aria-label="Next month" title="Next month">
                   <Icon name="next" />
                 </button>
               </div>
             </div>
-            <div className="planner-week" role="group" aria-label="Choose a day">
-              {plannerWeek.map(({ key, date }) => {
+            <div className="planner-weekdays" aria-hidden="true">
+              {plannerWeekdays.map((weekday, index) => <span key={`${index}-${weekday}`}>{weekday}</span>)}
+            </div>
+            <div className="planner-month-grid" role="group" aria-label={`Choose a day in ${plannerMonthLabel}`}>
+              {plannerMonthDays.map(({ key, date, inMonth }) => {
                 const counts = taskCounts.byDate.get(key);
                 const isToday = key === todayKey();
                 const detail = counts
@@ -1916,16 +1950,15 @@ function App() {
                   <button
                     key={key}
                     type="button"
-                    className={`planner-day ${plannerDate === key ? "active" : ""} ${isToday ? "is-today" : ""}`}
+                    className={`planner-day ${plannerDate === key ? "active" : ""} ${isToday ? "is-today" : ""} ${inMonth ? "" : "is-outside"}`}
                     data-date={key}
                     aria-pressed={plannerDate === key}
                     aria-current={isToday ? "date" : undefined}
                     aria-label={`${formatLongDate(key)}. ${detail}.`}
                     onClick={() => setPlannerDate(key)}
                   >
-                    <span>{date.toLocaleDateString(undefined, { weekday: "short" })}</span>
-                    <strong>{date.getDate()}</strong>
-                    <small>{counts?.remaining ? counts.remaining : counts?.done ? "✓" : ""}</small>
+                    <span>{date.getDate()}</span>
+                    <small>{counts?.remaining ? counts.remaining > 9 ? "9+" : counts.remaining : counts?.done ? "✓" : ""}</small>
                   </button>
                 );
               })}
