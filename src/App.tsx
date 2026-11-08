@@ -923,6 +923,8 @@ function App() {
   const segmentElapsed = useRef(0);
   const completionLock = useRef(false);
   const pendingAutoStart = useRef(false);
+  const totalSessionsCache = useRef<{ sessionsDone: number; value: number } | null>(null);
+  const streakCache = useRef<{ dayKey: string; sessionsDone: number; value: number } | null>(null);
   const lastCheckIn = useRef(Date.now());
   const utilDrag = useRef<{ axis: "x" | "y" | "xy"; sx: number; sy: number; ow: number; oh: number } | null>(null);
   const batchedUtilResize = useRafBatched<{ w?: number; h?: number }>((patch) => {
@@ -1542,6 +1544,7 @@ function App() {
   const greeting =
     clock.getHours() < 5 ? "still up" : clock.getHours() < 12 ? "good morning" : clock.getHours() < 17 ? "good afternoon" : clock.getHours() < 22 ? "good evening" : "still up";
 
+  const currentDayKey = todayKey();
   const sevenDays = useMemo(() => {
     const now = new Date();
     return Array.from({ length: 7 }, (_, index) => {
@@ -1549,31 +1552,7 @@ function App() {
       d.setDate(now.getDate() - (6 - index));
       return { key: todayKey(d), label: d.toLocaleDateString(undefined, { weekday: "narrow" }) };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.stats]);
-  const maxDay = Math.max(1, ...sevenDays.map((day) => state.stats[day.key]?.focusSec ?? 0));
-  const totalSessions = Object.values(state.stats).reduce((sum, day) => sum + (day.sessions ?? 0), 0);
-  const streak = useMemo(() => {
-    const now = new Date();
-    let count = 0;
-    for (let i = 0; i < 365; i += 1) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      const rec = state.stats[todayKey(d)];
-      if (rec?.sessions) count += 1;
-      else if (i !== 0) break;
-    }
-    return count;
-  }, [state.stats]);
-  const todayStats = state.stats[todayKey()] ?? emptyDay();
-  const focusSec = todayStats.focusSec;
-  const breakSec = todayStats.breakSec;
-  const idleSec = todayStats.idleSec;
-  const trackedSec = focusSec + breakSec + idleSec;
-  const pct = (value: number) => (trackedSec > 0 ? (value / trackedSec) * 100 : 0);
-  const focusBreakRatio =
-    breakSec > 0 ? `${(focusSec / breakSec).toFixed(1)} : 1` : focusSec > 0 ? "∞ : 0" : "—";
-  const productivity = Math.round(pct(focusSec));
+  }, [currentDayKey]);
 
   /* Dots represent completed focus sessions only. They stay full through the
      long break, then reset when the next focus cycle begins. */
@@ -1705,7 +1684,7 @@ function App() {
 
   /* Themes and Scenes share one panel now: two tabs of the same subject.
      Their bodies live here so the tab bar stays readable. */
-  const themesBody = (
+  const themesBody = () => (
     <>
       <p className="field-hint">
         A theme restyles everything — type, buttons, surfaces, corners, depth and colour. Original is the default;
@@ -1806,7 +1785,7 @@ function App() {
     </>
   );
 
-  const scenesBody = (
+  const scenesBody = () => (
     <>
       <div className="switch-row">
         <span>Adapt to time of day</span>
@@ -1852,8 +1831,119 @@ function App() {
     </>
   );
 
-  const panelContent: Record<PanelId, React.ReactNode> = {
-    tasks: (
+  function renderStatsPanel(): React.ReactNode {
+    const todayStats = state.stats[currentDayKey] ?? emptyDay();
+    const focusSec = todayStats.focusSec;
+    const breakSec = todayStats.breakSec;
+    const idleSec = todayStats.idleSec;
+    const trackedSec = focusSec + breakSec + idleSec;
+    const pct = (value: number) => (trackedSec > 0 ? (value / trackedSec) * 100 : 0);
+    const focusBreakRatio =
+      breakSec > 0 ? `${(focusSec / breakSec).toFixed(1)} : 1` : focusSec > 0 ? "∞ : 0" : "—";
+    const productivity = Math.round(pct(focusSec));
+    const maxDay = Math.max(1, ...sevenDays.map((day) => state.stats[day.key]?.focusSec ?? 0));
+
+    const totalSessions =
+      totalSessionsCache.current?.sessionsDone === state.sessionsDone
+        ? totalSessionsCache.current.value
+        : Object.values(state.stats).reduce((sum, day) => sum + (day.sessions ?? 0), 0);
+    if (totalSessionsCache.current?.sessionsDone !== state.sessionsDone) {
+      totalSessionsCache.current = { sessionsDone: state.sessionsDone, value: totalSessions };
+    }
+
+    const streakEntry = streakCache.current;
+    let streak: number;
+    if (streakEntry?.dayKey === currentDayKey && streakEntry.sessionsDone === state.sessionsDone) {
+      streak = streakEntry.value;
+    } else {
+      const now = new Date();
+      streak = 0;
+      for (let i = 0; i < 365; i += 1) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const rec = state.stats[todayKey(d)];
+        if (rec?.sessions) streak += 1;
+        else if (i !== 0) break;
+      }
+      streakCache.current = { dayKey: currentDayKey, sessionsDone: state.sessionsDone, value: streak };
+    }
+
+    return (
+      <>
+        <div className="today-hero">
+          <div
+            className="focus-dial"
+            style={{ "--deg": `${pct(focusSec) * 3.6}deg` } as React.CSSProperties}
+            role="img"
+            aria-label={`${productivity}% of tracked time was focus`}
+          >
+            <div className="focus-dial-core">
+              <strong>{productivity}%</strong>
+              <span>focused</span>
+            </div>
+          </div>
+          <div className="today-figures">
+            <div className="figure focus">
+              <i /><span>Focus</span><b>{formatDuration(focusSec)}</b>
+            </div>
+            <div className="figure leisure">
+              <i /><span>Leisure</span><b>{formatDuration(breakSec)}</b>
+            </div>
+            <div className="figure misc">
+              <i /><span>Misc / Unproductive</span><b>{formatDuration(idleSec)}</b>
+            </div>
+          </div>
+        </div>
+
+        <div className="split-bar" aria-label="Today time split">
+          <div className="split-track">
+            <i className="seg-focus" style={{ width: `${pct(focusSec)}%` }} title={`Focus ${formatDuration(focusSec)}`} />
+            <i className="seg-leisure" style={{ width: `${pct(breakSec)}%` }} title={`Leisure ${formatDuration(breakSec)}`} />
+            <i className="seg-misc" style={{ width: `${pct(idleSec)}%` }} title={`Misc ${formatDuration(idleSec)}`} />
+          </div>
+          <div className="split-legend">
+            <span><i className="seg-focus" />{Math.round(pct(focusSec))}%</span>
+            <span><i className="seg-leisure" />{Math.round(pct(breakSec))}%</span>
+            <span><i className="seg-misc" />{Math.round(pct(idleSec))}%</span>
+          </div>
+        </div>
+
+        <div className="stat-row">
+          <div><strong>{focusBreakRatio}</strong><span>Focus : leisure</span></div>
+          <div><strong>{todayStats.sessions}</strong><span>Done today</span></div>
+          <div><strong>{todayStats.skippedFocus}</strong><span>Skipped</span></div>
+          <div><strong>{streak}</strong><span>Day streak</span></div>
+          <div><strong>{totalSessions}</strong><span>All sessions</span></div>
+          <div><strong>{formatDuration(trackedSec)}</strong><span>Tracked</span></div>
+        </div>
+
+        <div>
+          <div className="chart-head">
+            <span>Last 7 days</span>
+            <small>focus vs leisure</small>
+          </div>
+          <div className="chart">
+            {sevenDays.map((day) => {
+              const record = state.stats[day.key] ?? emptyDay();
+              const isToday = day.key === todayKey();
+              return (
+                <div key={day.key} className={isToday ? "today" : ""}>
+                  <div className="bar-stack" title={`Focus ${formatDuration(record.focusSec)} · Leisure ${formatDuration(record.breakSec)}`}>
+                    <span className="bar-leisure" style={{ height: `${(record.breakSec / maxDay) * 100}%` }} />
+                    <span className="bar-focus" style={{ height: `${Math.max(record.focusSec > 0 ? 4 : 2, (record.focusSec / maxDay) * 100)}%` }} />
+                  </div>
+                  <small>{day.label}</small>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const panelContent: Record<PanelId, () => React.ReactNode> = {
+    tasks: () => (
       <>
         <div className="panel-tabs task-view-tabs" role="group" aria-label="Task views">
           <button
@@ -2013,7 +2103,7 @@ function App() {
         )}
       </>
     ),
-    music: (
+    music: () => (
       <>
         <div className="panel-tabs">
           <button className={musicTab === "spotify" ? "active" : ""} onClick={() => setMusicTab("spotify")}>Spotify</button>
@@ -2094,7 +2184,7 @@ function App() {
         )}
       </>
     ),
-    personal: (
+    personal: () => (
       <>
         <div className="panel-tabs" role="tablist" aria-label="Personalization sections">
           <button
@@ -2130,84 +2220,13 @@ function App() {
           aria-labelledby={`personal-tab-${personalTab}`}
           tabIndex={0}
         >
-          {personalTab === "themes" ? themesBody : scenesBody}
+          {personalTab === "themes" ? themesBody() : scenesBody()}
         </div>
       </>
     ),
-    stats: (
-      <>
-        <div className="today-hero">
-          <div
-            className="focus-dial"
-            style={{ "--deg": `${pct(focusSec) * 3.6}deg` } as React.CSSProperties}
-            role="img"
-            aria-label={`${productivity}% of tracked time was focus`}
-          >
-            <div className="focus-dial-core">
-              <strong>{productivity}%</strong>
-              <span>focused</span>
-            </div>
-          </div>
-          <div className="today-figures">
-            <div className="figure focus">
-              <i /><span>Focus</span><b>{formatDuration(focusSec)}</b>
-            </div>
-            <div className="figure leisure">
-              <i /><span>Leisure</span><b>{formatDuration(breakSec)}</b>
-            </div>
-            <div className="figure misc">
-              <i /><span>Misc / Unproductive</span><b>{formatDuration(idleSec)}</b>
-            </div>
-          </div>
-        </div>
-
-        <div className="split-bar" aria-label="Today time split">
-          <div className="split-track">
-            <i className="seg-focus" style={{ width: `${pct(focusSec)}%` }} title={`Focus ${formatDuration(focusSec)}`} />
-            <i className="seg-leisure" style={{ width: `${pct(breakSec)}%` }} title={`Leisure ${formatDuration(breakSec)}`} />
-            <i className="seg-misc" style={{ width: `${pct(idleSec)}%` }} title={`Misc ${formatDuration(idleSec)}`} />
-          </div>
-          <div className="split-legend">
-            <span><i className="seg-focus" />{Math.round(pct(focusSec))}%</span>
-            <span><i className="seg-leisure" />{Math.round(pct(breakSec))}%</span>
-            <span><i className="seg-misc" />{Math.round(pct(idleSec))}%</span>
-          </div>
-        </div>
-
-        <div className="stat-row">
-          <div><strong>{focusBreakRatio}</strong><span>Focus : leisure</span></div>
-          <div><strong>{todayStats.sessions}</strong><span>Done today</span></div>
-          <div><strong>{todayStats.skippedFocus}</strong><span>Skipped</span></div>
-          <div><strong>{streak}</strong><span>Day streak</span></div>
-          <div><strong>{totalSessions}</strong><span>All sessions</span></div>
-          <div><strong>{formatDuration(trackedSec)}</strong><span>Tracked</span></div>
-        </div>
-
-        <div>
-          <div className="chart-head">
-            <span>Last 7 days</span>
-            <small>focus vs leisure</small>
-          </div>
-          <div className="chart">
-            {sevenDays.map((day) => {
-              const record = state.stats[day.key] ?? emptyDay();
-              const isToday = day.key === todayKey();
-              return (
-                <div key={day.key} className={isToday ? "today" : ""}>
-                  <div className="bar-stack" title={`Focus ${formatDuration(record.focusSec)} · Leisure ${formatDuration(record.breakSec)}`}>
-                    <span className="bar-leisure" style={{ height: `${(record.breakSec / maxDay) * 100}%` }} />
-                    <span className="bar-focus" style={{ height: `${Math.max(record.focusSec > 0 ? 4 : 2, (record.focusSec / maxDay) * 100)}%` }} />
-                  </div>
-                  <small>{day.label}</small>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </>
-    ),
-    notes: <NotesNotebook legacyText={state.notes} onLegacyConsumed={consumeLegacyNotes} />,
-    settings: (
+    stats: () => renderStatsPanel(),
+    notes: () => <NotesNotebook legacyText={state.notes} onLegacyConsumed={consumeLegacyNotes} />,
+    settings: () => (
       <>
         <label className="field"><span>Your name</span><input value={state.settings.name} onChange={(event) => updateSetting("name", event.target.value.slice(0, 24))} placeholder="optional" /></label>
         <div className="settings-grid">
@@ -2606,7 +2625,7 @@ function App() {
           onPatch={(patch) => patchFrame(id, patch)}
           onClose={() => closePanel(id)}
         >
-          {panelContent[id]}
+          {panelContent[id]()}
         </FloatingWindow>
       ))}
 
