@@ -20,6 +20,16 @@ or clear its date to return it to the unscheduled list. Dates are local and stor
 with the task in browser storage; the planner uses native date inputs and no extra
 calendar package.
 
+## Notebook
+
+The Notes dock opens a multi-note notebook with local autosave, search, pins, rich text
+(headings, emphasis, lists, quotes and undo/redo), five per-note font choices, clickable
+links and inline pictures. Add pictures from the image button, paste or drag-and-drop;
+they are resized/compressed in the browser before being stored. Note bodies live in
+IndexedDB while the notebook list stores only lightweight titles and previews, keeping
+large images out of the app's frequently-saved timer state. Existing single-note memos
+are imported automatically the first time the notebook opens.
+
 ## Themes
 
 `Personalization` in the dock holds 19 presets. Its **Themes** and **Scenes** tabs

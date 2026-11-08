@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import NotesNotebook, { clearNotebookStorage } from "./NotesNotebook";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 import MotionFx from "./MotionFx";
 import { inkOn, lightnessFor, luminance } from "./accent";
@@ -398,6 +399,7 @@ function loadState(): AppState {
       ...base,
       ...parsed,
       settings,
+      notes: typeof parsed.notes === "string" ? parsed.notes : "",
       tasks: Array.isArray(parsed.tasks)
         ? parsed.tasks.map((task) => ({
             ...task,
@@ -881,6 +883,9 @@ function ToggleRow({ label, value, onChange }: { label: string; value: boolean; 
 
 function App() {
   const [state, setState] = useState<AppState>(loadState);
+  const consumeLegacyNotes = useCallback(() => {
+    setState((prev) => prev.notes ? { ...prev, notes: "" } : prev);
+  }, []);
   const [running, setRunning] = useState(false);
   const [openPanels, setOpenPanels] = useState<PanelId[]>([]);
   const [clock, setClock] = useState(new Date());
@@ -2201,7 +2206,7 @@ function App() {
         </div>
       </>
     ),
-    notes: <textarea className="notes" value={state.notes} onChange={(event) => setState((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Jot anything down. Saved locally on this device." />,
+    notes: <NotesNotebook legacyText={state.notes} onLegacyConsumed={consumeLegacyNotes} />,
     settings: (
       <>
         <label className="field"><span>Your name</span><input value={state.settings.name} onChange={(event) => updateSetting("name", event.target.value.slice(0, 24))} placeholder="optional" /></label>
@@ -2219,7 +2224,13 @@ function App() {
         {soundSupported() && (
           <ToggleRow label="Interface sounds (per theme)" value={state.settings.uiSound} onChange={(value) => updateSetting("uiSound", value)} />
         )}
-        <button className="panel-danger" onClick={() => { localStorage.removeItem(STORE_KEY); window.location.reload(); }}>Erase local data</button>
+        <button className="panel-danger" onClick={() => {
+          localStorage.removeItem(STORE_KEY);
+          localStorage.removeItem(PREV_STORE_KEY);
+          void clearNotebookStorage()
+            .catch((error: unknown) => window.alert(error instanceof Error ? error.message : "Notebook data could not be erased."))
+            .finally(() => window.location.reload());
+        }}>Erase local data</button>
       </>
     ),
   };
@@ -2589,7 +2600,7 @@ function App() {
           key={id}
           title={panelMeta[id].title}
           icon={panelMeta[id].icon}
-          win={state.windows[id] ?? defaultFrame(id === "personal")}
+          win={state.windows[id] ?? defaultFrame(id === "personal" || id === "notes")}
           z={12 + index}
           onFocus={() => raisePanel(id)}
           onPatch={(patch) => patchFrame(id, patch)}
