@@ -15,6 +15,12 @@ type UtilId = "youtube" | "web" | "files";
 type FileKind = "text" | "image" | "video" | "audio" | "pdf" | "other";
 type LocalFile = { id: string; name: string; type: string; url: string; kind: FileKind; text?: string; data?: ArrayBuffer };
 type SceneId = "cabin" | "rain" | "forest" | "ocean" | "dawn" | "pure";
+type PersonalTab = "scenes" | "themes" | "arrangement";
+type BuiltInArrangementId = "classic" | "timer-left" | "timer-right";
+type StageItemId = "modes" | "timer" | "controls" | "task";
+type LayoutPoint = { x: number; y: number };
+type LayoutPositions = Record<StageItemId, LayoutPoint>;
+type CustomArrangement = { id: string; name: string; positions: LayoutPositions };
 
 type Task = { id: string; text: string; done: boolean; pomosDone: number; createdAt: number; scheduledFor?: string };
 /* Time is accrued live, second by second, into three buckets:
@@ -72,6 +78,9 @@ type AppState = {
   youtubeMusicUrl: string;
   /** Active design orientation. "classic" is the original look. */
   design: DesignId;
+  /** Timer/control arrangement, plus user-saved draggable layouts. */
+  arrangement: string;
+  customArrangements: CustomArrangement[];
   /** Manual accent override (0-359), remembered per theme. A missing entry
       means "use the theme's own palette" (which itself may follow the scene). */
   designHues: Partial<Record<DesignId, number>>;
@@ -265,6 +274,35 @@ function phaseLinesFor(mode: ModeId): string[] {
   return FOCUS_LINES;
 }
 
+const BUILT_IN_ARRANGEMENTS: { id: BuiltInArrangementId; name: string; description: string }[] = [
+  { id: "classic", name: "Centered", description: "Default · the original, balanced stack." },
+  { id: "timer-left", name: "Timer left", description: "Timer on the left, controls stacked right." },
+  { id: "timer-right", name: "Timer right", description: "Controls stacked left, timer on the right." },
+];
+
+const STAGE_ITEM_IDS: StageItemId[] = ["modes", "timer", "controls", "task"];
+const DEFAULT_LAYOUT_POSITIONS: LayoutPositions = {
+  modes: { x: 50, y: 15 },
+  timer: { x: 50, y: 42 },
+  controls: { x: 50, y: 69 },
+  task: { x: 50, y: 87 },
+};
+const EDIT_START_POSITIONS: Record<BuiltInArrangementId, LayoutPositions> = {
+  classic: DEFAULT_LAYOUT_POSITIONS,
+  "timer-left": {
+    modes: { x: 50, y: 15 },
+    timer: { x: 29, y: 51 },
+    controls: { x: 82, y: 51 },
+    task: { x: 29, y: 85 },
+  },
+  "timer-right": {
+    modes: { x: 50, y: 15 },
+    controls: { x: 18, y: 51 },
+    timer: { x: 71, y: 51 },
+    task: { x: 71, y: 85 },
+  },
+};
+
 const defaultState = (): AppState => ({
   settings: {
     name: "",
@@ -297,12 +335,59 @@ const defaultState = (): AppState => ({
   spotify: null,
   youtubeMusicUrl: "",
   design: DEFAULT_DESIGN,
+  arrangement: "classic",
+  customArrangements: [],
   designHues: {},
   windows: {},
 });
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+function cloneLayoutPositions(positions: LayoutPositions): LayoutPositions {
+  return {
+    modes: { ...positions.modes },
+    timer: { ...positions.timer },
+    controls: { ...positions.controls },
+    task: { ...positions.task },
+  };
+}
+
+function isBuiltInArrangementId(value: unknown): value is BuiltInArrangementId {
+  return value === "classic" || value === "timer-left" || value === "timer-right";
+}
+
+function normalizeLayoutPoint(value: unknown, fallback: LayoutPoint): LayoutPoint {
+  const point = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  const x = typeof point.x === "number" && Number.isFinite(point.x) ? point.x : fallback.x;
+  const y = typeof point.y === "number" && Number.isFinite(point.y) ? point.y : fallback.y;
+  return { x: clamp(x, 4, 96), y: clamp(y, 5, 95) };
+}
+
+function normalizeCustomArrangements(value: unknown): CustomArrangement[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  return value.slice(0, 24).flatMap((entry): CustomArrangement[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const candidate = entry as Record<string, unknown>;
+    if (typeof candidate.id !== "string" || !candidate.id.startsWith("custom-") || seen.has(candidate.id)) return [];
+    seen.add(candidate.id);
+    const positions = candidate.positions && typeof candidate.positions === "object"
+      ? candidate.positions as Record<string, unknown>
+      : {};
+    const name = typeof candidate.name === "string" ? candidate.name.trim().slice(0, 32) : "";
+    return [{
+      id: candidate.id.slice(0, 100),
+      name: name || "Custom layout",
+      positions: {
+        modes: normalizeLayoutPoint(positions.modes, DEFAULT_LAYOUT_POSITIONS.modes),
+        timer: normalizeLayoutPoint(positions.timer, DEFAULT_LAYOUT_POSITIONS.timer),
+        controls: normalizeLayoutPoint(positions.controls, DEFAULT_LAYOUT_POSITIONS.controls),
+        task: normalizeLayoutPoint(positions.task, DEFAULT_LAYOUT_POSITIONS.task),
+      },
+    }];
+  });
 }
 
 function uid() {
@@ -390,6 +475,11 @@ function loadState(): AppState {
     const base = defaultState();
     const parsed = JSON.parse(raw) as Partial<AppState> & { mode?: string; remaining?: number };
 
+    const customArrangements = normalizeCustomArrangements(parsed.customArrangements);
+    const savedArrangement = typeof parsed.arrangement === "string" ? parsed.arrangement : "classic";
+    const arrangement = isBuiltInArrangementId(savedArrangement) || customArrangements.some((item) => item.id === savedArrangement)
+      ? savedArrangement
+      : "classic";
     const settings = { ...base.settings, ...(parsed.settings ?? {}) };
     if (legacy) {
       // Older saves used a different cycle length — adopt the standard 4-session Pomodoro cycle.
@@ -407,6 +497,8 @@ function loadState(): AppState {
           }))
         : base.tasks,
       windows: { ...(parsed.windows ?? {}) },
+      arrangement,
+      customArrangements,
       spotify: parsed.spotify ?? null,
       youtubeMusicUrl: parsed.youtubeMusicUrl ?? "",
       mode: (MODE_IDS.includes(parsed.mode as ModeId) ? parsed.mode : "focus") as ModeId,
@@ -898,8 +990,12 @@ function App() {
   const [youtubeInput, setYoutubeInput] = useState("");
   const [studyInput, setStudyInput] = useState(state.studyVideo);
   const [musicTab, setMusicTab] = useState<"spotify" | "youtube">("spotify");
-  /** Personalization holds both: themes on one tab, scenes/wallpaper on the other. */
-  const [personalTab, setPersonalTab] = useState<"themes" | "scenes">("themes");
+  /** Personalization keeps scenes, themes, and layout together in one tabbed panel. */
+  const [personalTab, setPersonalTab] = useState<PersonalTab>("themes");
+  const [arrangementEditing, setArrangementEditing] = useState(false);
+  const [arrangementName, setArrangementName] = useState("");
+  const [draftPositions, setDraftPositions] = useState<LayoutPositions | null>(null);
+  const [draggingItem, setDraggingItem] = useState<StageItemId | null>(null);
   const [ytMusicInput, setYtMusicInput] = useState("");
   const [phaseLine, setPhaseLine] = useState(() => pickRandom(FOCUS_LINES));
   const [toast, setToast] = useState("");
@@ -927,6 +1023,15 @@ function App() {
   const streakCache = useRef<{ dayKey: string; sessionsDone: number; value: number } | null>(null);
   const lastCheckIn = useRef(Date.now());
   const utilDrag = useRef<{ axis: "x" | "y" | "xy"; sx: number; sy: number; ow: number; oh: number } | null>(null);
+  const stageRef = useRef<HTMLElement | null>(null);
+  const arrangementDrag = useRef<{
+    item: StageItemId;
+    startX: number;
+    startY: number;
+    startPosition: LayoutPoint;
+    stageWidth: number;
+    stageHeight: number;
+  } | null>(null);
   const batchedUtilResize = useRafBatched<{ w?: number; h?: number }>((patch) => {
     if (patch.w !== undefined) setUtilWidth(patch.w);
     if (patch.h !== undefined) setUtilHeight(patch.h);
@@ -939,6 +1044,11 @@ function App() {
   const totalSeconds = secondsFor(state.mode, state);
   const progress = clamp(1 - state.remaining / Math.max(totalSeconds, 1), 0, 1);
   const activeTask = state.tasks.find((task) => task.id === state.activeTaskId) ?? null;
+  const selectedCustomArrangement = state.customArrangements.find((item) => item.id === state.arrangement) ?? null;
+  const stageArrangement = arrangementEditing || selectedCustomArrangement ? "custom" : state.arrangement;
+  const stagePositions = arrangementEditing
+    ? draftPositions ?? DEFAULT_LAYOUT_POSITIONS
+    : selectedCustomArrangement?.positions ?? null;
   const isBreak = state.mode === "short" || state.mode === "long";
   const studyId = state.studyVideo ? youtubeId(state.studyVideo) : "";
   const activeFile = files.find((file) => file.id === activeFileId) ?? null;
@@ -1148,6 +1258,10 @@ function App() {
      The handler is kept in a ref so it always sees the latest state. */
   const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
   keyHandler.current = (e: KeyboardEvent) => {
+    if (arrangementEditing) {
+      if (e.key === "Escape") cancelArrangementEdit();
+      return;
+    }
     const el = e.target as HTMLElement | null;
     if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
     if (e.code === "Space") {
@@ -1651,7 +1765,7 @@ function App() {
 
   /* Switching tabs should feel like changing page, not like scrolling: the
      panel goes back to the top every time. */
-  function switchPersonalTab(tab: "themes" | "scenes") {
+  function switchPersonalTab(tab: PersonalTab) {
     setPersonalTab(tab);
     requestAnimationFrame(() => {
       document.querySelectorAll<HTMLElement>(".fw-body").forEach((body) => {
@@ -1679,7 +1793,125 @@ function App() {
     event.preventDefault();
     const nextTab = tabs[next];
     nextTab.focus();
-    switchPersonalTab(nextTab.id === "personal-tab-scenes" ? "scenes" : "themes");
+    const tabId: Record<string, PersonalTab> = {
+      "personal-tab-scenes": "scenes",
+      "personal-tab-themes": "themes",
+      "personal-tab-arrangement": "arrangement",
+    };
+    switchPersonalTab(tabId[nextTab.id] ?? "themes");
+  }
+
+  function selectArrangement(id: string) {
+    if (!isBuiltInArrangementId(id) && !state.customArrangements.some((item) => item.id === id)) return;
+    setState((prev) => ({ ...prev, arrangement: id }));
+  }
+
+  function startArrangementEdit() {
+    const startingPositions = selectedCustomArrangement?.positions ??
+      (isBuiltInArrangementId(state.arrangement) ? EDIT_START_POSITIONS[state.arrangement] : DEFAULT_LAYOUT_POSITIONS);
+    setDraftPositions(cloneLayoutPositions(startingPositions));
+    setArrangementName(selectedCustomArrangement ? `${selectedCustomArrangement.name} copy`.slice(0, 32) : "");
+    setArrangementEditing(true);
+    setDraggingItem(null);
+    setOpenPanels([]);
+    setUtilMenu(false);
+    setUtilTab(null);
+  }
+
+  function cancelArrangementEdit() {
+    arrangementDrag.current = null;
+    setDraggingItem(null);
+    setArrangementEditing(false);
+    setDraftPositions(null);
+    setArrangementName("");
+    setPersonalTab("arrangement");
+    openPanel("personal");
+  }
+
+  function saveArrangementPreset() {
+    const name = arrangementName.trim().slice(0, 32);
+    if (!name) return;
+    const preset: CustomArrangement = {
+      id: `custom-${uid()}`,
+      name,
+      positions: cloneLayoutPositions(draftPositions ?? DEFAULT_LAYOUT_POSITIONS),
+    };
+    setState((prev) => ({
+      ...prev,
+      customArrangements: [...prev.customArrangements, preset].slice(-24),
+      arrangement: preset.id,
+    }));
+    setArrangementEditing(false);
+    setDraftPositions(null);
+    setDraggingItem(null);
+    arrangementDrag.current = null;
+    setArrangementName("");
+    setPersonalTab("arrangement");
+    openPanel("personal");
+  }
+
+  function deleteArrangementPreset(id: string) {
+    setState((prev) => ({
+      ...prev,
+      customArrangements: prev.customArrangements.filter((item) => item.id !== id),
+      arrangement: prev.arrangement === id ? "classic" : prev.arrangement,
+    }));
+  }
+
+  function beginArrangementDrag(event: React.PointerEvent<HTMLButtonElement>, item: StageItemId) {
+    if (event.button !== 0) return;
+    const stage = stageRef.current;
+    const currentPosition = stagePositions?.[item] ?? DEFAULT_LAYOUT_POSITIONS[item];
+    const bounds = stage?.getBoundingClientRect();
+    if (!bounds || bounds.width <= 0 || bounds.height <= 0) return;
+    arrangementDrag.current = {
+      item,
+      startX: event.clientX,
+      startY: event.clientY,
+      startPosition: { ...currentPosition },
+      stageWidth: bounds.width,
+      stageHeight: bounds.height,
+    };
+    setDraggingItem(item);
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveArrangementItem(event: React.PointerEvent<HTMLButtonElement>, item: StageItemId) {
+    const drag = arrangementDrag.current;
+    if (!drag || drag.item !== item) return;
+    const nextPosition = {
+      x: clamp(drag.startPosition.x + ((event.clientX - drag.startX) / drag.stageWidth) * 100, 4, 96),
+      y: clamp(drag.startPosition.y + ((event.clientY - drag.startY) / drag.stageHeight) * 100, 5, 95),
+    };
+    setDraftPositions((prev) => prev ? { ...prev, [item]: nextPosition } : prev);
+  }
+
+  function endArrangementDrag() {
+    arrangementDrag.current = null;
+    setDraggingItem(null);
+  }
+
+  function nudgeArrangementItem(event: React.KeyboardEvent<HTMLButtonElement>, item: StageItemId) {
+    const steps: Record<string, [number, number]> = {
+      ArrowLeft: [-2, 0],
+      ArrowRight: [2, 0],
+      ArrowUp: [0, -2],
+      ArrowDown: [0, 2],
+    };
+    const step = steps[event.key];
+    if (!step) return;
+    event.preventDefault();
+    setDraftPositions((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [item]: {
+          x: clamp(prev[item].x + step[0] * (event.shiftKey ? 2.5 : 1), 4, 96),
+          y: clamp(prev[item].y + step[1] * (event.shiftKey ? 2.5 : 1), 5, 95),
+        },
+      };
+    });
   }
 
   /* Themes and Scenes share one panel now: two tabs of the same subject.
@@ -1830,6 +2062,131 @@ function App() {
       <button className="theme-link" onClick={() => switchPersonalTab("themes")}>Themes, palettes &amp; accent color →</button>
     </>
   );
+
+  function renderArrangementPreview(id: string, positions?: LayoutPositions) {
+    return (
+      <div className={`arrangement-preview arrangement-preview--${id}`} aria-hidden="true">
+        {STAGE_ITEM_IDS.map((item) => (
+          <i
+            key={item}
+            className={`layout-preview-item layout-preview-item--${item}`}
+            style={positions ? { left: `${positions[item].x}%`, top: `${positions[item].y}%` } : undefined}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  function renderArrangementBody(): React.ReactNode {
+    return (
+      <>
+        <p className="field-hint arrangement-intro">
+          Choose where the timer and controls sit. Start with a layout below, or customize it and drag the timer, mode tabs,
+          controls, and task chip directly on the screen.
+        </p>
+
+        <div className="arrangement-grid" role="group" aria-label="Built-in timer arrangements">
+          {BUILT_IN_ARRANGEMENTS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={state.arrangement === item.id}
+              className={`arrangement-card ${state.arrangement === item.id ? "active" : ""}`}
+              onClick={() => selectArrangement(item.id)}
+            >
+              {renderArrangementPreview(item.id)}
+              <span className="arrangement-copy">
+                <strong>{item.name}</strong>
+                <small>{item.description}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="saved-arrangements">
+          <div className="arrangement-section-head">
+            <strong>Saved layouts</strong>
+            <small>{state.customArrangements.length}/24</small>
+          </div>
+          {state.customArrangements.length === 0 ? (
+            <p className="arrangement-empty">Your custom presets will appear here.</p>
+          ) : (
+            <div className="saved-arrangement-list" role="group" aria-label="Saved layouts">
+              {[...state.customArrangements].reverse().map((item) => (
+                <div className="saved-arrangement-row" key={item.id}>
+                  <button
+                    type="button"
+                    aria-pressed={state.arrangement === item.id}
+                    className={`saved-arrangement ${state.arrangement === item.id ? "active" : ""}`}
+                    onClick={() => selectArrangement(item.id)}
+                  >
+                    {renderArrangementPreview("custom", item.positions)}
+                    <span className="arrangement-copy">
+                      <strong>{item.name}</strong>
+                      <small>Custom arrangement</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="arrangement-delete"
+                    aria-label={`Delete ${item.name}`}
+                    title={`Delete ${item.name}`}
+                    onClick={() => deleteArrangementPreset(item.id)}
+                  >
+                    <Icon name="trash" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className="panel-primary arrangement-edit-button" onClick={startArrangementEdit}>
+          {selectedCustomArrangement ? "Edit selected layout" : "Customize current layout"}
+        </button>
+        <p className="arrangement-tip">
+          Editing opens a clear canvas. Drag each outlined piece, then name and save your own preset.
+          Use arrow keys for precise placement.
+        </p>
+      </>
+    );
+  }
+
+  function renderStageItem(item: StageItemId, label: string, content: React.ReactNode) {
+    const position = stagePositions?.[item] ?? DEFAULT_LAYOUT_POSITIONS[item];
+    const style = stageArrangement === "custom"
+      ? { "--item-x": `${position.x}%`, "--item-y": `${position.y}%` } as React.CSSProperties
+      : undefined;
+    return (
+      <div
+        key={item}
+        className={`stage-layout-item stage-layout-item--${item} ${draggingItem === item ? "is-dragging" : ""}`}
+        data-layout-item={item}
+        style={style}
+      >
+        <div className="stage-layout-item-content" inert={arrangementEditing}>
+          {content}
+        </div>
+        {arrangementEditing && (
+          <button
+            type="button"
+            className="layout-drag-handle"
+            aria-label={`Move ${label}. Use arrow keys to reposition.`}
+            title={`Drag to move ${label}; use arrow keys for precision`}
+            onPointerDown={(event) => beginArrangementDrag(event, item)}
+            onPointerMove={(event) => moveArrangementItem(event, item)}
+            onPointerUp={endArrangementDrag}
+            onPointerCancel={endArrangementDrag}
+            onLostPointerCapture={endArrangementDrag}
+            onKeyDown={(event) => nudgeArrangementItem(event, item)}
+          >
+            <span className="layout-drag-grip" aria-hidden="true">⠿</span>
+            <span>Move {label}</span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   function renderStatsPanel(): React.ReactNode {
     const todayStats = state.stats[currentDayKey] ?? emptyDay();
@@ -2186,7 +2543,19 @@ function App() {
     ),
     personal: () => (
       <>
-        <div className="panel-tabs" role="tablist" aria-label="Personalization sections">
+        <div className="panel-tabs personal-section-tabs" role="tablist" aria-label="Personalization sections">
+          <button
+            id="personal-tab-scenes"
+            role="tab"
+            aria-controls="personal-tabpanel"
+            aria-selected={personalTab === "scenes"}
+            tabIndex={personalTab === "scenes" ? 0 : -1}
+            className={personalTab === "scenes" ? "active" : ""}
+            onClick={() => switchPersonalTab("scenes")}
+            onKeyDown={handlePersonalTabKeyDown}
+          >
+            Scenes
+          </button>
           <button
             id="personal-tab-themes"
             role="tab"
@@ -2200,16 +2569,18 @@ function App() {
             Themes
           </button>
           <button
-            id="personal-tab-scenes"
+            id="personal-tab-arrangement"
             role="tab"
             aria-controls="personal-tabpanel"
-            aria-selected={personalTab === "scenes"}
-            tabIndex={personalTab === "scenes" ? 0 : -1}
-            className={personalTab === "scenes" ? "active" : ""}
-            onClick={() => switchPersonalTab("scenes")}
+            aria-selected={personalTab === "arrangement"}
+            tabIndex={personalTab === "arrangement" ? 0 : -1}
+            className={personalTab === "arrangement" ? "active" : ""}
+            onClick={() => switchPersonalTab("arrangement")}
             onKeyDown={handlePersonalTabKeyDown}
+            aria-label="Arrangement / Orientation"
           >
-            Scenes
+            <span className="personal-tab-label-full">Arrangement / Orientation</span>
+            <span className="personal-tab-label-short" aria-hidden="true">Arrange</span>
           </button>
         </div>
 
@@ -2220,7 +2591,11 @@ function App() {
           aria-labelledby={`personal-tab-${personalTab}`}
           tabIndex={0}
         >
-          {personalTab === "themes" ? themesBody() : scenesBody()}
+          {personalTab === "themes"
+            ? themesBody()
+            : personalTab === "scenes"
+              ? scenesBody()
+              : renderArrangementBody()}
         </div>
       </>
     ),
@@ -2528,56 +2903,99 @@ function App() {
           </section>
         )}
 
-        <section className="stage" aria-label="Pomodoro timer">
-        <div className="mode-row" role="tablist" aria-label="Timer mode">
-          {MODE_IDS.map((mode) => (
-            <button
-              key={mode}
-              role="tab"
-              aria-selected={state.mode === mode}
-              className={`mode-choice ${state.mode === mode ? "active" : ""}`}
-              onClick={() => switchMode(mode)}
-            >
-              {modeLabels[mode]}
-            </button>
-          ))}
-        </div>
-
-        <div
-          className="timer-composition"
-          style={{ "--progress": `${progress * 360}deg`, "--aura": isBreak ? "var(--break)" : "var(--accent)" } as React.CSSProperties}
+        <section
+          ref={stageRef}
+          className={`stage stage--${stageArrangement} ${arrangementEditing ? "is-layout-editing" : ""}`}
+          data-arrangement={stageArrangement}
+          aria-label="Pomodoro timer"
         >
-          <div className="timer-aura" aria-hidden="true" />
-          <div className="timer-face">
-            <div className="micro-dots" aria-hidden="true">
-              {Array.from({ length: cycleLength }).map((_, i) => (
-                <span key={i} className={dotClass(i)} />
+          {renderStageItem("modes", "mode tabs", (
+            <div className="mode-row" role="tablist" aria-label="Timer mode">
+              {MODE_IDS.map((mode) => (
+                <button
+                  key={mode}
+                  role="tab"
+                  aria-selected={state.mode === mode}
+                  className={`mode-choice ${state.mode === mode ? "active" : ""}`}
+                  onClick={() => switchMode(mode)}
+                >
+                  {modeLabels[mode]}
+                </button>
               ))}
             </div>
-            <div className="cycle-copy">{cycleCopy}</div>
-            <TimeReadout seconds={state.remaining} />
-            <div className={`phase-copy ${isBreak ? "break" : ""}`}>{phaseLine}</div>
-          </div>
-        </div>
+          ))}
 
-        <div className="control-row">
-          <button className="round-control" onClick={resetTimer} aria-label="Reset"><Icon name="reset" /></button>
-          <button className="start-control" onClick={running ? pauseTimer : startTimer}>
-            {running ? (
-              <><Icon name="pause" /> Pause</>
-            ) : (
-              <><Icon name="play" /> Start</>
-            )}
-          </button>
-          <button className="round-control" onClick={skipSegment} aria-label="Skip"><Icon name="skip" /></button>
-        </div>
+          {renderStageItem("timer", "timer", (
+            <div
+              className="timer-composition"
+              style={{ "--progress": `${progress * 360}deg`, "--aura": isBreak ? "var(--break)" : "var(--accent)" } as React.CSSProperties}
+            >
+              <div className="timer-aura" aria-hidden="true" />
+              <div className="timer-face">
+                <div className="micro-dots" aria-hidden="true">
+                  {Array.from({ length: cycleLength }).map((_, i) => (
+                    <span key={i} className={dotClass(i)} />
+                  ))}
+                </div>
+                <div className="cycle-copy">{cycleCopy}</div>
+                <TimeReadout seconds={state.remaining} />
+                <div className={`phase-copy ${isBreak ? "break" : ""}`}>{phaseLine}</div>
+              </div>
+            </div>
+          ))}
 
-        <button className={`task-chip ${activeTask ? "" : "empty"}`} onClick={() => openPanel("tasks")}>
-          <span aria-hidden="true" />
-          {activeTask ? activeTask.text : "No task selected. Open tasks to pick one."}
-        </button>
+          {renderStageItem("controls", "timer controls", (
+            <div className="control-row">
+              <button className="round-control" onClick={resetTimer} aria-label="Reset"><Icon name="reset" /></button>
+              <button className="start-control" onClick={running ? pauseTimer : startTimer}>
+                {running ? (
+                  <><Icon name="pause" /> Pause</>
+                ) : (
+                  <><Icon name="play" /> Start</>
+                )}
+              </button>
+              <button className="round-control" onClick={skipSegment} aria-label="Skip"><Icon name="skip" /></button>
+            </div>
+          ))}
+
+          {renderStageItem("task", "task chip", (
+            <button className={`task-chip ${activeTask ? "" : "empty"}`} onClick={() => openPanel("tasks")}>
+              <span aria-hidden="true" />
+              {activeTask ? activeTask.text : "No task selected. Open tasks to pick one."}
+            </button>
+          ))}
         </section>
       </div>
+
+      {arrangementEditing && (
+        <div className="layout-editor-bar" role="region" aria-label="Layout editor">
+          <div className="layout-editor-message">
+            <span className="layout-editor-grip" aria-hidden="true">⠿</span>
+            Drag the outlined pieces into place
+          </div>
+          <label className="layout-name-field">
+            <span className="sr-only">Preset name</span>
+            <input
+              aria-label="Preset name"
+              value={arrangementName}
+              onChange={(event) => setArrangementName(event.target.value.slice(0, 32))}
+              onKeyDown={(event) => event.key === "Enter" && saveArrangementPreset()}
+              placeholder="Name this preset"
+              maxLength={32}
+            />
+          </label>
+          <button
+            type="button"
+            className="panel-primary layout-save-button"
+            onClick={saveArrangementPreset}
+            disabled={!arrangementName.trim() || state.customArrangements.length >= 24}
+          >
+            Save preset
+          </button>
+          <button type="button" className="layout-cancel-button" onClick={cancelArrangementEdit}>Cancel</button>
+          {state.customArrangements.length >= 24 && <small className="layout-limit-note">Delete a saved layout to make room.</small>}
+        </div>
+      )}
 
       <nav className="bottom-dock" aria-label="Tools">
         {dockItems.map(([id, icon]) => (

@@ -9875,3 +9875,548 @@ body:has(.focus-app[data-design="vaporwave"]) {
     transform: none;
   }
 }
+
+/* ============================================================================
+   TIMER ARRANGEMENTS (Personalization ▸ Arrangement / Orientation)
+   ========================================================================== */
+.focus-app .personal-section-tabs button {
+  min-width: 0;
+  padding: 0.48rem 0.38rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+.personal-tab-label-short {
+  display: none;
+}
+.arrangement-intro {
+  margin-top: 0;
+  line-height: 1.55;
+}
+.focus-app .arrangement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.48rem;
+}
+.focus-app .arrangement-card,
+.focus-app .saved-arrangement {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
+  padding: 0.42rem;
+  text-align: left;
+  color: var(--ink);
+  background: var(--d-card-bg);
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+.focus-app .arrangement-card {
+  flex-direction: column;
+}
+.focus-app .arrangement-card:hover,
+.focus-app .saved-arrangement:hover {
+  transform: translateY(-1px);
+  border-color: var(--d-accent-ink);
+}
+.focus-app .arrangement-card.active,
+.focus-app .saved-arrangement.active {
+  border-color: var(--d-accent-ink);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+.arrangement-preview {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 4.25rem;
+  overflow: hidden;
+  border: 1px solid var(--d-card-border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 0.56rem;
+  background: color-mix(in srgb, var(--d-soft-bg) 85%, transparent);
+}
+.layout-preview-item {
+  position: absolute;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: 0.2rem;
+  background: var(--accent-soft);
+  transform: translate(-50%, -50%);
+}
+.layout-preview-item--modes {
+  left: 50%;
+  top: 15%;
+  width: 50%;
+  height: 12%;
+}
+.layout-preview-item--timer {
+  left: 50%;
+  top: 45%;
+  width: 32%;
+  height: 42%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, var(--d-soft-bg));
+}
+.layout-preview-item--controls {
+  left: 50%;
+  top: 48%;
+  width: 8%;
+  height: 35%;
+  border-radius: 0.2rem;
+}
+.layout-preview-item--task {
+  left: 50%;
+  top: 84%;
+  width: 40%;
+  height: 9%;
+  border-radius: 99px;
+}
+.arrangement-preview--timer-left .layout-preview-item--timer,
+.arrangement-preview--custom .layout-preview-item--timer {
+  width: 36%;
+}
+.arrangement-preview--timer-left .layout-preview-item--timer {
+  left: 30%;
+  top: 54%;
+}
+.arrangement-preview--timer-left .layout-preview-item--controls {
+  left: 81%;
+  top: 53%;
+  width: 8%;
+  height: 40%;
+}
+.arrangement-preview--timer-left .layout-preview-item--task {
+  left: 30%;
+  top: 86%;
+}
+.arrangement-preview--timer-right .layout-preview-item--timer {
+  left: 70%;
+  top: 54%;
+  width: 36%;
+}
+.arrangement-preview--timer-right .layout-preview-item--controls {
+  left: 19%;
+  top: 53%;
+  width: 8%;
+  height: 40%;
+}
+.arrangement-preview--timer-right .layout-preview-item--task {
+  left: 70%;
+  top: 86%;
+}
+.arrangement-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+.arrangement-copy strong {
+  overflow: hidden;
+  color: var(--d-body-ink, var(--ink));
+  font-size: 0.76rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+.arrangement-copy small {
+  color: var(--d-soft-ink);
+  font-size: 0.65rem;
+  line-height: 1.3;
+}
+.saved-arrangements {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.arrangement-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.arrangement-section-head strong {
+  font-size: 0.78rem;
+}
+.arrangement-section-head small,
+.arrangement-empty {
+  color: var(--d-soft-ink);
+  font-size: 0.72rem;
+}
+.arrangement-empty {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--d-soft-ink) 35%, transparent);
+  border-radius: 0.65rem;
+}
+.saved-arrangement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.saved-arrangement-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+.focus-app .saved-arrangement {
+  flex: 1;
+  align-items: center;
+  padding: 0.35rem;
+}
+.saved-arrangement .arrangement-preview {
+  width: 6.2rem;
+  height: 3.5rem;
+}
+.focus-app .arrangement-delete {
+  flex: 0 0 auto;
+  width: 2.55rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--d-danger-border-color, rgba(255, 255, 255, 0.12));
+  border-radius: var(--d-btn-radius, 0.65rem);
+  background: var(--d-soft-bg);
+  color: var(--d-soft-ink);
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+.focus-app .arrangement-delete:hover {
+  color: var(--d-danger-ink, #ff8a7a);
+  border-color: var(--d-danger-ink, #ff8a7a);
+  background: color-mix(in srgb, var(--d-danger-ink, #ff8a7a) 10%, var(--d-soft-bg));
+}
+.arrangement-delete svg {
+  width: 1rem;
+  height: 1rem;
+}
+.focus-app .arrangement-edit-button {
+  align-self: stretch;
+  width: 100%;
+}
+.arrangement-tip {
+  margin: -0.35rem 0 0;
+  color: var(--d-soft-ink);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+/* Default wrappers are layout-transparent so the classic timer is unchanged. */
+.stage-layout-item,
+.stage-layout-item-content {
+  display: contents;
+}
+.stage[data-arrangement="timer-left"],
+.stage[data-arrangement="timer-right"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(3.6rem, 0.5fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  column-gap: clamp(0.5rem, 2vw, 1.5rem);
+  row-gap: clamp(0.55rem, 1.5vh, 1rem);
+}
+.stage[data-arrangement="timer-left"] {
+  grid-template-areas:
+    "modes modes"
+    "timer controls"
+    "task .";
+}
+.stage[data-arrangement="timer-right"] {
+  grid-template-areas:
+    "modes modes"
+    "controls timer"
+    ". task";
+}
+.stage[data-arrangement="timer-left"] > .stage-layout-item,
+.stage[data-arrangement="timer-right"] > .stage-layout-item {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stage-layout-item--modes {
+  grid-area: modes;
+}
+.stage-layout-item--timer {
+  grid-area: timer;
+}
+.stage-layout-item--controls {
+  grid-area: controls;
+}
+.stage-layout-item--task {
+  grid-area: task;
+  align-self: start;
+}
+.stage[data-arrangement="timer-left"] .timer-composition,
+.stage[data-arrangement="timer-right"] .timer-composition {
+  width: min(100%, 40rem);
+  min-height: clamp(10rem, 25vh, 19rem);
+}
+.stage[data-arrangement="timer-left"] .control-row,
+.stage[data-arrangement="timer-right"] .control-row {
+  flex-direction: column;
+  gap: 0.68rem;
+}
+.stage[data-arrangement="timer-left"] .start-control,
+.stage[data-arrangement="timer-right"] .start-control {
+  width: 3.5rem;
+  min-width: 3.5rem;
+  min-height: 5.6rem;
+  flex-direction: column;
+  gap: 0.32rem;
+  padding: 0.65rem 0.25rem;
+  font-size: 0.72rem;
+}
+.stage[data-arrangement="timer-left"] .stage-layout-item--task,
+.stage[data-arrangement="timer-right"] .stage-layout-item--task {
+  padding-top: 0.1rem;
+}
+.stage[data-arrangement="timer-left"] .task-chip,
+.stage[data-arrangement="timer-right"] .task-chip {
+  max-width: 100%;
+}
+
+.stage[data-arrangement="custom"] {
+  display: block;
+  min-height: 0;
+}
+.stage[data-arrangement="custom"] > .stage-layout-item {
+  position: absolute;
+  left: var(--item-x, 50%);
+  top: var(--item-y, 50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 96%;
+  transform: translate(-50%, -50%);
+}
+.stage[data-arrangement="custom"] > .stage-layout-item--modes {
+  width: min(96%, 42rem);
+}
+.stage[data-arrangement="custom"] > .stage-layout-item--timer {
+  width: min(94%, 40rem);
+}
+.stage[data-arrangement="custom"] > .stage-layout-item--controls {
+  max-width: 96%;
+}
+.stage[data-arrangement="custom"] > .stage-layout-item--task {
+  max-width: 96%;
+}
+.stage[data-arrangement="custom"] .timer-composition {
+  width: 100%;
+  max-width: 40rem;
+}
+.stage[data-arrangement="custom"] .task-chip {
+  max-width: min(90vw, 32rem);
+}
+.stage.is-layout-editing > .stage-layout-item {
+  z-index: 4;
+}
+.stage.is-layout-editing .stage-layout-item-content {
+  max-width: 100%;
+  opacity: 0.66;
+  filter: saturate(0.75);
+}
+.stage.is-layout-editing .stage-layout-item--timer .stage-layout-item-content {
+  width: 100%;
+}
+.stage.is-layout-editing .layout-drag-handle {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  height: 100%;
+  padding: 0.55rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 82%, white);
+  border-radius: 0.9rem;
+  background: rgba(5, 8, 14, 0.74);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 14px 34px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(7px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+}
+.stage.is-layout-editing .layout-drag-handle:hover,
+.stage.is-layout-editing .layout-drag-handle:focus-visible {
+  border-style: solid;
+  background: color-mix(in srgb, var(--d-panel-bg) 75%, var(--accent-soft));
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.stage.is-layout-editing .stage-layout-item.is-dragging .layout-drag-handle {
+  border-style: solid;
+  cursor: grabbing;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 18px 42px rgba(0, 0, 0, 0.36);
+}
+.layout-drag-grip {
+  color: var(--accent);
+  font-size: 1.6rem;
+  line-height: 0.75;
+}
+.layout-editor-bar {
+  position: fixed;
+  z-index: 18;
+  left: 50%;
+  bottom: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: max-content;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.55rem;
+  border: 1px solid var(--d-panel-border-color, rgba(255, 255, 255, 0.16));
+  border-radius: 1rem;
+  background: var(--d-panel-bg, rgba(9, 13, 20, 0.9));
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.4), 0 0 26px var(--accent-soft);
+  backdrop-filter: blur(18px) saturate(1.25);
+  transform: translateX(-50%);
+}
+.layout-editor-message {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0 0.35rem;
+  color: var(--d-body-ink, var(--ink));
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.layout-editor-grip {
+  color: var(--accent);
+  font-size: 1.35rem;
+}
+.layout-name-field {
+  min-width: 0;
+}
+.layout-editor-bar input {
+  width: 10.5rem;
+  min-width: 0;
+  padding: 0.63rem 0.7rem;
+  border: 1px solid var(--d-field-border, rgba(255, 255, 255, 0.15));
+  border-radius: 0.7rem;
+  outline: none;
+  background: var(--d-field-bg, rgba(255, 255, 255, 0.06));
+  color: var(--d-body-ink, var(--ink));
+  font-size: 0.8rem;
+}
+.layout-editor-bar input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.layout-editor-bar .layout-save-button {
+  min-width: 0;
+  padding: 0.68rem 0.9rem;
+  border-radius: 0.7rem;
+  box-shadow: none;
+  white-space: nowrap;
+}
+.layout-editor-bar .layout-save-button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.layout-editor-bar .layout-cancel-button {
+  flex: 0 0 auto;
+  padding: 0.68rem 0.85rem;
+  border: 1px solid var(--d-field-border, rgba(255, 255, 255, 0.15));
+  border-radius: 0.7rem;
+  background: var(--d-soft-bg);
+  color: var(--d-soft-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.layout-editor-bar .layout-cancel-button:hover {
+  color: var(--ink);
+  border-color: var(--d-accent-ink);
+}
+.layout-limit-note {
+  flex-basis: 100%;
+  color: var(--d-soft-ink);
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .stage[data-arrangement="timer-left"],
+  .stage[data-arrangement="timer-right"] {
+    grid-template-columns: minmax(0, 1.7fr) minmax(3.35rem, 0.45fr);
+    column-gap: 0.45rem;
+    row-gap: 0.4rem;
+  }
+  .stage[data-arrangement="timer-left"] .timer-composition,
+  .stage[data-arrangement="timer-right"] .timer-composition {
+    min-height: clamp(9rem, 22vh, 13rem);
+  }
+  .stage[data-arrangement="timer-left"] .start-control,
+  .stage[data-arrangement="timer-right"] .start-control {
+    width: 3.25rem;
+    min-width: 3.25rem;
+    min-height: 5rem;
+    font-size: 0.68rem;
+  }
+  .focus-app .personal-section-tabs button {
+    padding-inline: 0.22rem;
+    font-size: 0.69rem;
+  }
+  .layout-editor-bar {
+    left: 0.55rem;
+    right: 0.55rem;
+    bottom: 78px;
+    flex-wrap: wrap;
+    gap: 0.38rem;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+  .layout-editor-message {
+    flex: 1 0 100%;
+    justify-content: center;
+    font-size: 0.72rem;
+  }
+  .layout-name-field {
+    flex: 1 1 8rem;
+  }
+  .layout-editor-bar input {
+    width: 100%;
+  }
+  .layout-editor-bar .layout-save-button,
+  .layout-editor-bar .layout-cancel-button {
+    padding: 0.62rem 0.72rem;
+  }
+}
+@media (max-width: 480px) {
+  .personal-tab-label-full {
+    display: none;
+  }
+  .personal-tab-label-short {
+    display: inline;
+  }
+  .focus-app .arrangement-grid {
+    grid-template-columns: 1fr;
+  }
+  .focus-app .arrangement-card {
+    display: grid;
+    grid-template-columns: minmax(6rem, 0.75fr) minmax(0, 1fr);
+    align-items: center;
+  }
+  .arrangement-card .arrangement-preview {
+    height: 3.6rem;
+  }
+}
