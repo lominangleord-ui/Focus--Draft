@@ -15,7 +15,7 @@ type FileKind = "text" | "image" | "video" | "audio" | "pdf" | "other";
 type LocalFile = { id: string; name: string; type: string; url: string; kind: FileKind; text?: string; data?: ArrayBuffer };
 type SceneId = "cabin" | "rain" | "forest" | "ocean" | "dawn" | "pure";
 
-type Task = { id: string; text: string; done: boolean; pomosDone: number; createdAt: number };
+type Task = { id: string; text: string; done: boolean; pomosDone: number; createdAt: number; scheduledFor?: string };
 /* Time is accrued live, second by second, into three buckets:
      focusSec  — clock running in a focus segment
      breakSec  — clock running in a short/long break (leisure)
@@ -312,6 +312,44 @@ function todayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+/** Parse calendar dates at local noon to avoid UTC and DST day shifts. */
+function localDateFromKey(key: string) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, month - 1, day, 12);
+}
+
+function isLocalDateKey(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = localDateFromKey(value);
+  return Number.isFinite(date.getTime()) && todayKey(date) === value;
+}
+
+function addDaysToKey(key: string, days: number) {
+  const date = localDateFromKey(key);
+  date.setDate(date.getDate() + days);
+  return todayKey(date);
+}
+
+function mondayOfWeek(key: string) {
+  const date = localDateFromKey(key);
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return todayKey(date);
+}
+
+function formatTaskDate(key: string) {
+  if (key === todayKey()) return "Today";
+  if (key === addDaysToKey(todayKey(), 1)) return "Tomorrow";
+  return localDateFromKey(key).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function formatLongDate(key: string) {
+  return localDateFromKey(key).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function defaultFrame(wide = false): WinFrame {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -350,6 +388,12 @@ function loadState(): AppState {
       ...base,
       ...parsed,
       settings,
+      tasks: Array.isArray(parsed.tasks)
+        ? parsed.tasks.map((task) => ({
+            ...task,
+            scheduledFor: isLocalDateKey(task.scheduledFor) ? task.scheduledFor : undefined,
+          }))
+        : base.tasks,
       windows: { ...(parsed.windows ?? {}) },
       spotify: parsed.spotify ?? null,
       youtubeMusicUrl: parsed.youtubeMusicUrl ?? "",
@@ -530,6 +574,7 @@ function sampleImageHue(url: string): Promise<number | null> {
 function Icon({ name }: { name: string }) {
   const paths: Record<string, React.ReactNode> = {
     task: <><path d="M4 7l1.5 1.5L9 5" /><path d="M4 13l1.5 1.5L9 11" /><path d="M12 7h8" /><path d="M12 13h8" /><path d="M5 19h15" /></>,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
     music: <><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></>,
     scene: <><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M7 15l3-3 3 3 2-2 3 4" /><circle cx="8" cy="9" r="1.4" /></>,
     stats: <><path d="M5 20V10" /><path d="M12 20V4" /><path d="M19 20v-7" /></>,
@@ -552,10 +597,88 @@ function Icon({ name }: { name: string }) {
     grid: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
     external: <><path d="M14 4h6v6" /><path d="M20 4 10 14" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>,
     back: <><path d="M15 5l-7 7 7 7" /></>,
+    next: <><path d="M9 5l7 7-7 7" /></>,
     refresh: <><path d="M20 12a8 8 0 1 1-2.3-5.6" /><path d="M20 4v5h-5" /></>,
     palette: <><circle cx="12" cy="12" r="9" /><circle cx="9" cy="10" r="1.1" /><circle cx="13" cy="8.5" r="1.1" /><circle cx="16" cy="11.5" r="1.1" /><circle cx="10.5" cy="14.5" r="1.1" /><path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.6-.7 1.6-1.5 0-.4-.2-.7-.2-1.1 0-.7.6-1.2 1.3-1.2h1.5A3.8 3.8 0 0 0 20 13.4C20 7.7 16.4 3 12 3Z" /></>,
   };
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
+}
+
+function TaskRow({
+  task,
+  active,
+  onSelect,
+  onToggle,
+  onDelete,
+  onSchedule,
+}: {
+  task: Task;
+  active: boolean;
+  onSelect: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+  onSchedule: (date: string) => void;
+}) {
+  return (
+    <div
+      className={`task-item ${task.done ? "done" : ""} ${active ? "selected" : ""}`}
+      role="listitem"
+      onClick={onSelect}
+    >
+      <button
+        type="button"
+        onClick={(event) => { event.stopPropagation(); onToggle(); }}
+        aria-label="Toggle done"
+        aria-pressed={task.done}
+      >
+        <Icon name="check" />
+      </button>
+      <div className="task-item-main">
+        <span className="task-item-title">{task.text}</span>
+        <div className="task-item-meta">
+          <label
+            className={`task-date-control ${task.scheduledFor ? "is-planned" : ""}`}
+            onClick={(event) => event.stopPropagation()}
+            title={task.scheduledFor ? `Planned for ${formatLongDate(task.scheduledFor)}` : "Add this task to the planner"}
+          >
+            <Icon name="calendar" />
+            <span>{task.scheduledFor ? formatTaskDate(task.scheduledFor) : "Plan"}</span>
+            <input
+              type="date"
+              value={task.scheduledFor ?? ""}
+              onChange={(event) => onSchedule(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              aria-label={task.scheduledFor ? `Change planned date for ${task.text}` : `Plan ${task.text} on a date`}
+            />
+          </label>
+          {task.scheduledFor && (
+            <button
+              type="button"
+              className="task-date-clear"
+              onClick={(event) => { event.stopPropagation(); onSchedule(""); }}
+              aria-label="Remove planned date"
+              title="Remove planned date"
+            >
+              <Icon name="close" />
+            </button>
+          )}
+          {task.pomosDone > 0 && (
+            <small className="task-pomo-count" title={`${task.pomosDone} focus sessions completed`}>
+              {task.pomosDone} 🍅
+            </small>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="delete"
+        onClick={(event) => { event.stopPropagation(); onDelete(); }}
+        aria-label="Delete task"
+      >
+        <Icon name="trash" />
+      </button>
+    </div>
+  );
 }
 
 /** #rrggbb → hue (0-359). Used by the custom accent color picker. */
@@ -753,6 +876,8 @@ function App() {
   const [clock, setClock] = useState(new Date());
   const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * quotes.length));
   const [taskInput, setTaskInput] = useState("");
+  const [taskView, setTaskView] = useState<"tasks" | "planner">("tasks");
+  const [plannerDate, setPlannerDate] = useState(() => todayKey());
   const [spotifyInput, setSpotifyInput] = useState("");
   const [imageInput, setImageInput] = useState("");
   const [youtubeInput, setYoutubeInput] = useState("");
@@ -1336,12 +1461,46 @@ function App() {
     resetSegmentClock();
   }
 
-  function addTask() {
+  function addTask(scheduledFor?: string) {
     const text = taskInput.trim();
     if (!text) return;
-    const task: Task = { id: uid(), text, done: false, pomosDone: 0, createdAt: Date.now() };
+    const task: Task = {
+      id: uid(),
+      text,
+      done: false,
+      pomosDone: 0,
+      createdAt: Date.now(),
+      ...(isLocalDateKey(scheduledFor) ? { scheduledFor } : {}),
+    };
     setState((prev) => ({ ...prev, tasks: [task, ...prev.tasks], activeTaskId: prev.activeTaskId ?? task.id }));
     setTaskInput("");
+  }
+
+  function updateTaskSchedule(taskId: string, scheduledFor: string) {
+    const validDate = isLocalDateKey(scheduledFor) ? scheduledFor : undefined;
+    setState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((task) => task.id === taskId ? { ...task, scheduledFor: validDate } : task),
+    }));
+  }
+
+  function toggleTaskDone(taskId: string) {
+    setState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((task) => task.id === taskId ? { ...task, done: !task.done } : task),
+    }));
+  }
+
+  function deleteTask(taskId: string) {
+    setState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.filter((task) => task.id !== taskId),
+      activeTaskId: prev.activeTaskId === taskId ? null : prev.activeTaskId,
+    }));
+  }
+
+  function selectTask(taskId: string) {
+    setState((prev) => ({ ...prev, activeTaskId: taskId }));
   }
 
   function updateSetting<K extends keyof Settings>(key: K, value: Settings[K]) {
@@ -1416,8 +1575,51 @@ function App() {
         ? `Short break${inCycle ? ` · after session ${inCycle}` : ""}`
         : "Long break · cycle complete";
 
+  const taskCounts = useMemo(() => {
+    const byDate = new Map<string, { remaining: number; done: number }>();
+    let remaining = 0;
+    let plannedRemaining = 0;
+
+    for (const task of state.tasks) {
+      if (!task.done) remaining += 1;
+      if (!task.scheduledFor) continue;
+      const counts = byDate.get(task.scheduledFor) ?? { remaining: 0, done: 0 };
+      if (task.done) counts.done += 1;
+      else {
+        counts.remaining += 1;
+        plannedRemaining += 1;
+      }
+      byDate.set(task.scheduledFor, counts);
+    }
+
+    return { byDate, remaining, plannedRemaining };
+  }, [state.tasks]);
+  const plannerWeek = useMemo(() => {
+    const monday = localDateFromKey(mondayOfWeek(plannerDate));
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return { key: todayKey(date), date };
+    });
+  }, [plannerDate]);
+  const selectedDayTasks = useMemo(
+    () => state.tasks
+      .filter((task) => task.scheduledFor === plannerDate)
+      .sort((a, b) => Number(a.done) - Number(b.done) || a.createdAt - b.createdAt),
+    [state.tasks, plannerDate],
+  );
+  const selectedDayDone = useMemo(
+    () => selectedDayTasks.filter((task) => task.done).length,
+    [selectedDayTasks],
+  );
+  const selectedDayRemaining = selectedDayTasks.length - selectedDayDone;
+  const plannerWeekRange = useMemo(
+    () => `${plannerWeek[0].date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${plannerWeek[6].date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`,
+    [plannerWeek],
+  );
+
   const totalTasks = state.tasks.length;
-  const doneTasks = state.tasks.filter((task) => task.done).length;
+  const doneTasks = totalTasks - taskCounts.remaining;
   const taskPct = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
   const taskProgressNote =
     totalTasks === 0
@@ -1617,55 +1819,160 @@ function App() {
   const panelContent: Record<PanelId, React.ReactNode> = {
     tasks: (
       <>
-        {totalTasks > 0 && (
-          <div className={`task-progress ${taskPct === 100 ? "complete" : ""}`}>
-            <div className="task-progress-head">
-              <span>Progress</span>
-              <b>{doneTasks}/{totalTasks}</b>
+        <div className="panel-tabs task-view-tabs" role="group" aria-label="Task views">
+          <button
+            type="button"
+            className={taskView === "tasks" ? "active" : ""}
+            aria-pressed={taskView === "tasks"}
+            onClick={() => setTaskView("tasks")}
+          >
+            <span>Tasks</span><small>{taskCounts.remaining}</small>
+          </button>
+          <button
+            type="button"
+            className={taskView === "planner" ? "active" : ""}
+            aria-pressed={taskView === "planner"}
+            onClick={() => setTaskView("planner")}
+          >
+            <Icon name="calendar" /><span>Planner</span><small>{taskCounts.plannedRemaining}</small>
+          </button>
+        </div>
+
+        {taskView === "tasks" ? (
+          <>
+            {totalTasks > 0 && (
+              <div className={`task-progress ${taskPct === 100 ? "complete" : ""}`}>
+                <div className="task-progress-head">
+                  <span>Progress</span>
+                  <b>{doneTasks}/{totalTasks}</b>
+                </div>
+                <div
+                  className="task-progress-track"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={totalTasks}
+                  aria-valuenow={doneTasks}
+                  aria-label={`${doneTasks} of ${totalTasks} tasks complete`}
+                >
+                  <i style={{ width: `${taskPct}%` }} />
+                </div>
+                <div className="task-progress-foot">
+                  <small>{Math.round(taskPct)}% complete</small>
+                  <em>{taskProgressNote}</em>
+                </div>
+              </div>
+            )}
+            <div className="add-row">
+              <input
+                aria-label="Add a task"
+                value={taskInput}
+                onChange={(event) => setTaskInput(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && addTask()}
+                placeholder="Add what you are working on"
+                maxLength={140}
+              />
+              <button type="button" onClick={() => addTask()} aria-label="Add task"><Icon name="plus" /></button>
             </div>
-            <div
-              className="task-progress-track"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={totalTasks}
-              aria-valuenow={doneTasks}
-              aria-label={`${doneTasks} of ${totalTasks} tasks complete`}
-            >
-              <i style={{ width: `${taskPct}%` }} />
+            <div className="task-list" role="list" aria-label="Tasks">
+              {state.tasks.length === 0 && <p className="empty-copy">No tasks yet. Add one precise target for the next session.</p>}
+              {state.tasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  active={task.id === state.activeTaskId}
+                  onSelect={() => selectTask(task.id)}
+                  onToggle={() => toggleTaskDone(task.id)}
+                  onDelete={() => deleteTask(task.id)}
+                  onSchedule={(date) => updateTaskSchedule(task.id, date)}
+                />
+              ))}
             </div>
-            <div className="task-progress-foot">
-              <small>{Math.round(taskPct)}% complete</small>
-              <em>{taskProgressNote}</em>
+          </>
+        ) : (
+          <div className="planner-view">
+            <div className="planner-week-heading">
+              <div>
+                <small>Your week</small>
+                <strong>{plannerWeekRange}</strong>
+              </div>
+              <div className="planner-week-controls">
+                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addDaysToKey(date, -7))} aria-label="Previous week" title="Previous week">
+                  <Icon name="back" />
+                </button>
+                <button type="button" className="planner-today" onClick={() => setPlannerDate(todayKey())}>Today</button>
+                <button type="button" className="icon-button" onClick={() => setPlannerDate((date) => addDaysToKey(date, 7))} aria-label="Next week" title="Next week">
+                  <Icon name="next" />
+                </button>
+              </div>
+            </div>
+            <div className="planner-week" role="group" aria-label="Choose a day">
+              {plannerWeek.map(({ key, date }) => {
+                const counts = taskCounts.byDate.get(key);
+                const isToday = key === todayKey();
+                const detail = counts
+                  ? `${counts.remaining} remaining, ${counts.done} done`
+                  : "No planned tasks";
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`planner-day ${plannerDate === key ? "active" : ""} ${isToday ? "is-today" : ""}`}
+                    data-date={key}
+                    aria-pressed={plannerDate === key}
+                    aria-current={isToday ? "date" : undefined}
+                    aria-label={`${formatLongDate(key)}. ${detail}.`}
+                    onClick={() => setPlannerDate(key)}
+                  >
+                    <span>{date.toLocaleDateString(undefined, { weekday: "short" })}</span>
+                    <strong>{date.getDate()}</strong>
+                    <small>{counts?.remaining ? counts.remaining : counts?.done ? "✓" : ""}</small>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="planner-day-summary">
+              <div>
+                <strong>{formatLongDate(plannerDate)}</strong>
+                <small>
+                  {selectedDayTasks.length === 0
+                    ? "A clear day is room for a win."
+                    : `${selectedDayRemaining} left · ${selectedDayDone} done`}
+                </small>
+              </div>
+              <span className={`planner-day-total ${selectedDayRemaining === 0 && selectedDayDone > 0 ? "is-complete" : ""}`}>
+                {selectedDayRemaining === 0 && selectedDayDone > 0 ? <Icon name="check" /> : selectedDayRemaining}
+              </span>
+            </div>
+            <div className="add-row planner-add-row">
+              <input
+                aria-label={`Add task for ${formatLongDate(plannerDate)}`}
+                value={taskInput}
+                onChange={(event) => setTaskInput(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && addTask(plannerDate)}
+                placeholder="Add a task to this day"
+                maxLength={140}
+              />
+              <button type="button" onClick={() => addTask(plannerDate)} aria-label="Add task to planner"><Icon name="plus" /></button>
+            </div>
+            <p className="planner-sync-note">Plan it here, finish it anywhere — these are the same tasks as your list.</p>
+            <div className="task-list planner-task-list" role="list" aria-label={`Tasks for ${formatLongDate(plannerDate)}`}>
+              {selectedDayTasks.length === 0 && (
+                <p className="empty-copy planner-empty">Nothing planned yet. Add a small win above, or schedule a task from Tasks.</p>
+              )}
+              {selectedDayTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  active={task.id === state.activeTaskId}
+                  onSelect={() => selectTask(task.id)}
+                  onToggle={() => toggleTaskDone(task.id)}
+                  onDelete={() => deleteTask(task.id)}
+                  onSchedule={(date) => updateTaskSchedule(task.id, date)}
+                />
+              ))}
             </div>
           </div>
         )}
-        <div className="add-row">
-          <input value={taskInput} onChange={(event) => setTaskInput(event.target.value)} onKeyDown={(event) => event.key === "Enter" && addTask()} placeholder="Add what you are working on" maxLength={140} />
-          <button onClick={addTask} aria-label="Add task"><Icon name="plus" /></button>
-        </div>
-        <div className="task-list">
-          {state.tasks.length === 0 && <p className="empty-copy">No tasks yet. Add one precise target for the next session.</p>}
-          {state.tasks.map((task) => (
-            <div
-              key={task.id}
-              className={`task-item ${task.done ? "done" : ""} ${task.id === state.activeTaskId ? "selected" : ""}`}
-              onClick={() => setState((prev) => ({ ...prev, activeTaskId: task.id }))}
-            >
-              <button onClick={(event) => { event.stopPropagation(); setState((prev) => ({ ...prev, tasks: prev.tasks.map((item) => (item.id === task.id ? { ...item, done: !item.done } : item)) })); }} aria-label="Toggle done">
-                <Icon name="check" />
-              </button>
-              <span>{task.text}</span>
-              {!!task.pomosDone && <small>{task.pomosDone}x</small>}
-              <button
-                className="delete"
-                onClick={(event) => { event.stopPropagation(); setState((prev) => ({ ...prev, tasks: prev.tasks.filter((item) => item.id !== task.id), activeTaskId: prev.activeTaskId === task.id ? null : prev.activeTaskId })); }}
-                aria-label="Delete task"
-              >
-                <Icon name="trash" />
-              </button>
-            </div>
-          ))}
-        </div>
       </>
     ),
     music: (

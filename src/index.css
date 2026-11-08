@@ -1493,6 +1493,284 @@ a.util-go {
   flex-direction: column;
   gap: 0.5rem;
 }
+.task-view-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.task-view-tabs button svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: 0 0 auto;
+}
+.task-view-tabs button small {
+  min-width: 1.1rem;
+  padding: 0.08rem 0.25rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+.planner-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
+  min-width: 0;
+}
+.planner-week-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.planner-week-heading > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+.planner-week-heading > div:first-child small {
+  color: var(--d-soft-ink);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.planner-week-heading strong {
+  overflow: hidden;
+  color: var(--d-body-ink-strong);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.planner-week-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex: 0 0 auto;
+}
+.planner-week-controls .icon-button {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: var(--d-btn-radius-sm);
+  background: var(--d-soft-bg);
+  color: var(--d-body-ink);
+}
+.planner-week-controls .icon-button svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.planner-today {
+  padding: 0.3rem 0.52rem;
+  border: var(--d-surface-border);
+  border-radius: var(--d-btn-radius-sm);
+  background: var(--d-soft-bg);
+  color: var(--d-body-ink);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.planner-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.32rem;
+}
+.planner-day {
+  display: flex;
+  min-width: 0;
+  min-height: 3.65rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  padding: 0.3rem 0.08rem;
+  border: var(--d-surface-border);
+  border-radius: var(--d-card-radius);
+  background: var(--d-card-bg);
+  color: var(--d-body-ink);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.planner-day:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.planner-day span {
+  font-size: 0.59rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.planner-day strong {
+  font-size: 0.94rem;
+  line-height: 1.1;
+}
+.planner-day small {
+  min-height: 0.67rem;
+  color: var(--d-accent-ink);
+  font-size: 0.57rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.planner-day.is-today:not(.active) {
+  box-shadow: inset 0 0 0 1px var(--accent-glow);
+}
+.planner-day.active {
+  border-color: var(--accent);
+  background: var(--d-btn-grad);
+  color: var(--d-btn-text);
+}
+.planner-day.active small,
+.planner-day.active span,
+.planner-day.active strong {
+  color: var(--d-btn-text);
+}
+.planner-day-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border: var(--d-card-border);
+  border-radius: var(--d-card-radius);
+  background: var(--d-card-bg);
+}
+.planner-day-summary > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+.planner-day-summary strong {
+  overflow: hidden;
+  color: var(--d-body-ink-strong);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.planner-day-summary small {
+  color: var(--d-soft-ink);
+  font-size: 0.68rem;
+}
+.planner-day-total {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--d-soft-bg);
+  color: var(--d-accent-ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.planner-day-total.is-complete {
+  background: var(--accent-soft);
+}
+.planner-day-total svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.planner-add-row input {
+  min-width: 0;
+}
+.planner-sync-note {
+  margin: -0.3rem 0 0;
+  color: var(--d-soft-ink);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+.planner-empty {
+  padding: 0.2rem 0.1rem;
+}
+.task-item-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+.task-item .task-item-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+}
+.task-date-control {
+  position: relative;
+  display: inline-flex;
+  min-height: 1.35rem;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.38rem;
+  border: var(--d-surface-border);
+  border-radius: 999px;
+  background: var(--d-soft-bg);
+  color: var(--d-soft-ink);
+  cursor: pointer;
+  font-size: 0.64rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.task-date-control:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.task-date-control svg {
+  width: 0.72rem;
+  height: 0.72rem;
+  flex: 0 0 auto;
+}
+.task-date-control input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+.task-date-control input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.task-date-control.is-planned {
+  border-color: var(--accent-glow);
+  color: var(--d-accent-ink);
+}
+.task-item .task-date-clear {
+  display: grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--d-soft-bg);
+  color: var(--d-soft-ink);
+}
+.task-item .task-date-clear svg {
+  width: 0.68rem;
+  height: 0.68rem;
+}
+.task-item .task-pomo-count {
+  color: var(--d-accent-ink);
+  font-size: 0.64rem;
+}
 /* ---- task completion bar ---- */
 
 .task-progress {
@@ -1624,7 +1902,7 @@ a.util-go {
   border-color: var(--accent-glow);
   background: var(--accent-soft);
 }
-.task-item.done span {
+.task-item.done .task-item-title {
   color: rgba(255, 255, 255, 0.42);
   text-decoration: line-through;
 }
@@ -1645,7 +1923,7 @@ a.util-go {
 .task-item:hover .delete {
   opacity: 1;
 }
-.task-item span {
+.task-item-title {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2919,7 +3197,7 @@ a.util-go {
   background: var(--d-soft-bg);
   border-radius: calc(var(--d-card-radius) * 0.7);
 }
-.focus-app .task-item.done span {
+.focus-app .task-item.done .task-item-title {
   color: var(--d-faint);
 }
 .focus-app .task-item small {
