@@ -1664,16 +1664,16 @@ a.util-go {
   font-style: italic;
   line-height: 1.5;
 }
-/* ---- music panel: segmented tabs ---- */
+/* ---- shared segmented tabs ---- */
 
-.music-tabs {
+.panel-tabs {
   display: flex;
   gap: 0.3rem;
   padding: 0.25rem;
   border-radius: 0.8rem;
   background: rgba(255, 255, 255, 0.06);
 }
-.music-tabs button {
+.panel-tabs button {
   flex: 1;
   padding: 0.5rem 0.6rem;
   border-radius: 0.6rem;
@@ -1684,9 +1684,20 @@ a.util-go {
     background 160ms ease,
     color 160ms ease;
 }
-.music-tabs button.active {
+.panel-tabs button.active {
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
   color: #fff;
+}
+.personal-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+  outline: none;
+}
+.personal-tabpanel:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
 }
 /* ---- YouTube audio-only player ---- */
 
@@ -1929,7 +1940,7 @@ a.util-go {
   font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  opacity: 0.62;
+  color: var(--d-body-ink);
 }
 .tint-toggle.is-off {
   border-color: var(--accent);
@@ -2776,8 +2787,18 @@ a.util-go {
 }
 .focus-app .pdf-zoom,
 .focus-app .reader-modes,
-.focus-app .music-tabs {
+.focus-app .panel-tabs {
   background: var(--d-soft-bg);
+}
+/* Personalization's tab bar docks to the top of its scrolling panel, so the
+   other section is always one click away even halfway down a theme list. */
+.focus-app .panel-tabs[aria-label="Personalization sections"] {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: color-mix(in srgb, var(--d-panel-bg) 99%, transparent);
+  backdrop-filter: blur(14px) saturate(1.08);
+  box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.75);
 }
 .focus-app .pdf-zoom button {
   color: var(--d-body-ink);
@@ -2793,10 +2814,10 @@ a.util-go {
   background: var(--d-btn-grad);
   color: var(--d-btn-text);
 }
-.focus-app .music-tabs button {
+.focus-app .panel-tabs button {
   color: var(--d-soft-ink);
 }
-.focus-app .music-tabs button.active {
+.focus-app .panel-tabs button.active {
   background: var(--d-btn-grad);
   color: var(--d-btn-text);
 }
@@ -3664,7 +3685,7 @@ a.util-go {
 .focus-app[data-design="terminal"]
   :is(
     .util-tabs button.active,
-    .music-tabs button.active,
+    .panel-tabs button.active,
     .reader-modes button.active,
     .bottom-dock button.active
   ) {
@@ -4897,7 +4918,7 @@ body:has(.focus-app[data-design="brutalist"]) {
     .design-card,
     .scene-pick,
     .add-row button,
-    .music-tabs,
+    .panel-tabs,
     .reader-modes,
     .pdf-zoom
   ) {
@@ -4913,7 +4934,7 @@ body:has(.focus-app[data-design="brutalist"]) {
   :is(
     .mode-choice.active,
     .bottom-dock button.active,
-    .music-tabs button.active,
+    .panel-tabs button.active,
     .reader-modes button.active,
     .util-tabs button.active
   ) {
@@ -5248,7 +5269,7 @@ body:has(.focus-app[data-design="brutalist"]) {
 .focus-app[data-design="cyber"]
   :is(
     .util-tabs button.active,
-    .music-tabs button.active,
+    .panel-tabs button.active,
     .reader-modes button.active,
     .bottom-dock button.active
   ) {
@@ -5995,7 +6016,7 @@ body:has(.focus-app[data-design="brutalist"]) {
 }
 /* Neumorph has no colour blocks at all: active tabs read as pressed. */
 .focus-app[data-design="neu"] .util-tabs button.active,
-.focus-app[data-design="neu"] .music-tabs button.active,
+.focus-app[data-design="neu"] .panel-tabs button.active,
 .focus-app[data-design="neu"] .reader-modes button.active,
 .focus-app[data-design="neu"] .bottom-dock button.active {
   background: #e6eaf2;
@@ -8995,6 +9016,27 @@ body:has(.focus-app[data-design="vaporwave"]) {
     rgba(8, 10, 14, 0) 80%
   );
   --wall-halo: rgba(0, 0, 0, 0.9);
+}
+
+/* With the neutral veil, these three selected mode chips otherwise lose their
+   contrast against mid-tone photographs. Keep the photo untinted, but give the
+   active control a small opaque ink bed so each theme's chosen ink stays clear. */
+.focus-app[data-design="cyber"][data-tint="off"][data-wallpaper] .mode-choice.active,
+.focus-app[data-design="deco"][data-tint="off"][data-wallpaper] .mode-choice.active,
+.focus-app[data-design="ocean"][data-tint="off"][data-wallpaper] .mode-choice.active {
+  background: rgba(8, 10, 14, 0.94);
+}
+.focus-app[data-design="cyber"][data-tint="off"][data-wallpaper] .start-control {
+  background: rgba(8, 10, 14, 0.94);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.focus-app[data-design="cyber"][data-tint="off"][data-wallpaper] .mode-choice.active,
+.focus-app[data-design="deco"][data-tint="off"][data-wallpaper] .mode-choice.active {
+  color: var(--accent);
+}
+.focus-app[data-design="ocean"][data-tint="off"][data-wallpaper] .mode-choice.active {
+  color: var(--d-accent-ink);
 }
 
 /* the vignette itself — only ever drawn when the tint is off */

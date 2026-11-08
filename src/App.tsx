@@ -9,7 +9,7 @@ const WebReader = lazy(() => import("./WebReader"));
 const YouTubeAudioPlayer = lazy(() => import("./YouTubeAudioPlayer"));
 
 type ModeId = "focus" | "short" | "long";
-type PanelId = "tasks" | "music" | "scenes" | "personal" | "stats" | "notes" | "settings";
+type PanelId = "tasks" | "music" | "personal" | "stats" | "notes" | "settings";
 type UtilId = "youtube" | "web" | "files";
 type FileKind = "text" | "image" | "video" | "audio" | "pdf" | "other";
 type LocalFile = { id: string; name: string; type: string; url: string; kind: FileKind; text?: string; data?: ArrayBuffer };
@@ -715,6 +715,33 @@ function NumberField({ label, value, min, max, onChange }: { label: string; valu
   );
 }
 
+/* The "Remove tint" switch. It is a colour control (it lives under the accent
+   ramp) but it only means anything once a wallpaper is set, so the Scenes tab
+   gets the same switch rather than sending people to the other tab. */
+function TintButton({ tinted, wallpaper, onToggle }: { tinted: boolean; wallpaper: boolean; onToggle: () => void }) {
+  return (
+    <button
+      className={`theme-reset tint-toggle ${tinted ? "" : "is-off"}`}
+      onClick={onToggle}
+      aria-pressed={!tinted}
+      title={
+        tinted
+          ? "Take the theme's colour wash off your wallpaper — the picture stays exactly as it is."
+          : "Put the theme's colour wash back on the wallpaper."
+      }
+    >
+      {tinted ? "Remove tint" : "Tint is off — restore"}
+      <small>
+        {wallpaper
+          ? tinted
+            ? "wallpaper is colour-washed toward this theme"
+            : "wallpaper shown untouched"
+          : "only applies when a wallpaper is set"}
+      </small>
+    </button>
+  );
+}
+
 function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: (value: boolean) => void }) {
   return <div className="switch-row"><span>{label}</span><button className={value ? "switch on" : "switch"} onClick={() => onChange(!value)} /></div>;
 }
@@ -731,6 +758,8 @@ function App() {
   const [youtubeInput, setYoutubeInput] = useState("");
   const [studyInput, setStudyInput] = useState(state.studyVideo);
   const [musicTab, setMusicTab] = useState<"spotify" | "youtube">("spotify");
+  /** Personalization holds both: themes on one tab, scenes/wallpaper on the other. */
+  const [personalTab, setPersonalTab] = useState<"themes" | "scenes">("themes");
   const [ytMusicInput, setYtMusicInput] = useState("");
   const [phaseLine, setPhaseLine] = useState(() => pickRandom(FOCUS_LINES));
   const [toast, setToast] = useState("");
@@ -1403,6 +1432,188 @@ function App() {
               ? "Past halfway. Keep going."
               : `${totalTasks - doneTasks} left to go.`;
 
+  /* Switching tabs should feel like changing page, not like scrolling: the
+     panel goes back to the top every time. */
+  function switchPersonalTab(tab: "themes" | "scenes") {
+    setPersonalTab(tab);
+    requestAnimationFrame(() => {
+      document.querySelectorAll<HTMLElement>(".fw-body").forEach((body) => {
+        if (body.querySelector(".panel-tabs [aria-selected='true']")) body.scrollTop = 0;
+      });
+    });
+  }
+
+  function handlePersonalTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    const tabs = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '[aria-label="Personalization sections"] [role="tab"]',
+      ),
+    );
+    const current = tabs.indexOf(event.currentTarget);
+    if (current < 0) return;
+
+    let next = current;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (current + 1) % tabs.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (current - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+
+    event.preventDefault();
+    const nextTab = tabs[next];
+    nextTab.focus();
+    switchPersonalTab(nextTab.id === "personal-tab-scenes" ? "scenes" : "themes");
+  }
+
+  /* Themes and Scenes share one panel now: two tabs of the same subject.
+     Their bodies live here so the tab bar stays readable. */
+  const themesBody = (
+    <>
+      <p className="field-hint">
+        A theme restyles everything — type, buttons, surfaces, corners, depth and colour. Original is the default;
+        your tasks, stats and notes are untouched.
+      </p>
+
+      {DESIGN_GROUPS.map((group) => (
+        <div className="design-group" key={group.id}>
+          <div className="design-group-head">
+            <span>{group.label}</span>
+            <small>{group.note}</small>
+          </div>
+          <div className="design-grid" role="radiogroup" aria-label={group.label}>
+            {DESIGNS.filter((item) => item.group === group.id).map((item) => {
+              const active = state.design === item.id;
+              return (
+                <button
+                  key={item.id}
+                  role="radio"
+                  aria-checked={active}
+                  data-preview={item.id}
+                  className={`design-card ${active ? "active" : ""}`}
+                  onClick={() => chooseDesign(item.id)}
+                  title={item.tagline}
+                >
+                  <span className="design-thumb" aria-hidden="true">
+                    <span className="dt-dots"><i /><i /><i /><i /></span>
+                    <b className="dt-time">25:00</b>
+                    <span className="dt-row">
+                      <i className="dt-round" />
+                      <i className="dt-start" />
+                      <i className="dt-round" />
+                    </span>
+                  </span>
+                  <span className="design-card-name">
+                    {item.name}
+                    {item.id === DEFAULT_DESIGN && <em>default</em>}
+                  </span>
+                  <span className="design-card-tag">{item.tagline}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div className="theme-block">
+        <div className="theme-head">
+          <span>Accent color</span>
+          <i className="theme-preview" style={{ background: hslToHex(hue, accentSat, accentLight) }} aria-hidden="true" />
+        </div>
+
+        <div className="swatch-grid">
+          {THEME_SWATCHES.map((hexValue) => {
+            const swatchHue = hexToHue(hexValue);
+            const active = customHue !== null && Math.abs(((customHue - swatchHue + 540) % 360) - 180) < 6;
+            return (
+              <button
+                key={hexValue}
+                className={`swatch ${active ? "active" : ""}`}
+                style={{ background: hexValue }}
+                onClick={() => setAccentHue(swatchHue)}
+                aria-label={`Use ${hexValue} as the accent color`}
+                title={hexValue}
+              />
+            );
+          })}
+        </div>
+
+        <input
+          className="hue-slider"
+          type="range"
+          min={0}
+          max={359}
+          value={Math.round(hue)}
+          onChange={(event) => setAccentHue(Number(event.target.value))}
+          aria-label="Accent hue"
+        />
+
+        <button className="theme-reset" onClick={() => setAccentHue(null)} disabled={customHue == null}>
+          {preset.accent ? `Reset to ${preset.name} palette` : "Reset to scene color"}
+        </button>
+
+        {/* The tint is the only thing between a wallpaper and the type, so it
+            gets an off switch right where colours are chosen. */}
+        <TintButton
+          tinted={state.settings.wallTint}
+          wallpaper={Boolean(wallpaper)}
+          onToggle={() => updateSetting("wallTint", !state.settings.wallTint)}
+        />
+      </div>
+
+      <p className="field-hint">
+        Wallpapers, weather layers and custom backgrounds live on the Scenes tab — a wallpaper you pick there shows
+        behind every preset. Choose Pure Black for no wallpaper.
+      </p>
+      <button className="theme-link" onClick={() => switchPersonalTab("scenes")}>Wallpapers &amp; scenes →</button>
+    </>
+  );
+
+  const scenesBody = (
+    <>
+      <div className="switch-row">
+        <span>Adapt to time of day</span>
+        <button className={state.sceneAuto ? "switch on" : "switch"} onClick={() => setState((prev) => ({ ...prev, sceneAuto: !prev.sceneAuto }))} />
+      </div>
+      <div className="scene-grid">
+        {(Object.keys(sceneLabels) as SceneId[]).map((scene) => (
+          <button
+            key={scene}
+            className={`scene-pick mini-${scene} ${!state.sceneAuto && state.scene === scene ? "active" : ""}`}
+            onClick={() =>
+              setState((prev) => ({
+                ...prev,
+                scene,
+                sceneExplicit: scene !== "pure" || prev.sceneExplicit,
+                sceneAuto: false,
+                customImage: "",
+                customYoutube: "",
+              }))
+            }
+          >
+            {sceneLabels[scene]}
+          </button>
+        ))}
+      </div>
+      <p className="field-hint">
+        A scene, image or video you pick here becomes your wallpaper and shows behind <b>every</b> theme — pick
+        &ldquo;Pure&rdquo; to go back to the theme&rsquo;s own background. The accent color follows the scene unless a
+        preset or your own pick sets it.
+      </p>
+
+      <label className="field"><span>Custom image URL</span><input value={imageInput} onChange={(event) => setImageInput(event.target.value)} placeholder="https://..." /></label>
+      <button className="panel-primary" onClick={() => setState((prev) => ({ ...prev, customImage: imageInput.trim(), customYoutube: "" }))}>Use image</button>
+      <label className="field"><span>YouTube URL</span><input value={youtubeInput} onChange={(event) => setYoutubeInput(event.target.value)} placeholder="https://youtube.com/watch?v=..." /></label>
+      <button className="panel-primary subtle" onClick={() => setState((prev) => ({ ...prev, customYoutube: youtubeInput.trim(), customImage: "" }))}>Use video background</button>
+      <button className="panel-danger" onClick={() => setState((prev) => ({ ...prev, customImage: "", customYoutube: "" }))}>Clear custom background</button>
+      <TintButton
+        tinted={state.settings.wallTint}
+        wallpaper={Boolean(wallpaper)}
+        onToggle={() => updateSetting("wallTint", !state.settings.wallTint)}
+      />
+      <button className="theme-link" onClick={() => switchPersonalTab("themes")}>Themes, palettes &amp; accent color →</button>
+    </>
+  );
+
   const panelContent: Record<PanelId, React.ReactNode> = {
     tasks: (
       <>
@@ -1459,7 +1670,7 @@ function App() {
     ),
     music: (
       <>
-        <div className="music-tabs">
+        <div className="panel-tabs">
           <button className={musicTab === "spotify" ? "active" : ""} onClick={() => setMusicTab("spotify")}>Spotify</button>
           <button className={musicTab === "youtube" ? "active" : ""} onClick={() => setMusicTab("youtube")}>YouTube Music</button>
         </div>
@@ -1538,152 +1749,44 @@ function App() {
         )}
       </>
     ),
-    scenes: (
-      <>
-        <div className="switch-row">
-          <span>Adapt to time of day</span>
-          <button className={state.sceneAuto ? "switch on" : "switch"} onClick={() => setState((prev) => ({ ...prev, sceneAuto: !prev.sceneAuto }))} />
-        </div>
-        <div className="scene-grid">
-          {(Object.keys(sceneLabels) as SceneId[]).map((scene) => (
-            <button
-              key={scene}
-              className={`scene-pick mini-${scene} ${!state.sceneAuto && state.scene === scene ? "active" : ""}`}
-              onClick={() =>
-                setState((prev) => ({
-                  ...prev,
-                  scene,
-                  sceneExplicit: scene !== "pure" || prev.sceneExplicit,
-                  sceneAuto: false,
-                  customImage: "",
-                  customYoutube: "",
-                }))
-              }
-            >
-              {sceneLabels[scene]}
-            </button>
-          ))}
-        </div>
-        <p className="field-hint">
-          A scene, image or video you pick here becomes your wallpaper and shows behind <b>every</b> theme — pick
-          &ldquo;Pure&rdquo; to go back to the theme&rsquo;s own background. The accent color follows the scene unless a
-          preset or your own pick sets it.
-        </p>
-
-        <label className="field"><span>Custom image URL</span><input value={imageInput} onChange={(event) => setImageInput(event.target.value)} placeholder="https://..." /></label>
-        <button className="panel-primary" onClick={() => setState((prev) => ({ ...prev, customImage: imageInput.trim(), customYoutube: "" }))}>Use image</button>
-        <label className="field"><span>YouTube URL</span><input value={youtubeInput} onChange={(event) => setYoutubeInput(event.target.value)} placeholder="https://youtube.com/watch?v=..." /></label>
-        <button className="panel-primary subtle" onClick={() => setState((prev) => ({ ...prev, customYoutube: youtubeInput.trim(), customImage: "" }))}>Use video background</button>
-        <button className="panel-danger" onClick={() => setState((prev) => ({ ...prev, customImage: "", customYoutube: "" }))}>Clear custom background</button>
-        <button className="theme-link" onClick={() => openPanel("personal")}>Type, surfaces &amp; colors live in Personalization →</button>
-      </>
-    ),
     personal: (
       <>
-        <p className="field-hint">
-          A theme restyles everything — type, buttons, surfaces, corners, depth and colour. Original is the default;
-          your tasks, stats and notes are untouched.
-        </p>
-
-        {DESIGN_GROUPS.map((group) => (
-          <div className="design-group" key={group.id}>
-            <div className="design-group-head">
-              <span>{group.label}</span>
-              <small>{group.note}</small>
-            </div>
-            <div className="design-grid" role="radiogroup" aria-label={group.label}>
-              {DESIGNS.filter((item) => item.group === group.id).map((item) => {
-                const active = state.design === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    role="radio"
-                    aria-checked={active}
-                    data-preview={item.id}
-                    className={`design-card ${active ? "active" : ""}`}
-                    onClick={() => chooseDesign(item.id)}
-                    title={item.tagline}
-                  >
-                    <span className="design-thumb" aria-hidden="true">
-                      <span className="dt-dots"><i /><i /><i /><i /></span>
-                      <b className="dt-time">25:00</b>
-                      <span className="dt-row">
-                        <i className="dt-round" />
-                        <i className="dt-start" />
-                        <i className="dt-round" />
-                      </span>
-                    </span>
-                    <span className="design-card-name">
-                      {item.name}
-                      {item.id === DEFAULT_DESIGN && <em>default</em>}
-                    </span>
-                    <span className="design-card-tag">{item.tagline}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-
-        <div className="theme-block">
-          <div className="theme-head">
-            <span>Accent color</span>
-            <i className="theme-preview" style={{ background: hslToHex(hue, accentSat, accentLight) }} aria-hidden="true" />
-          </div>
-
-          <div className="swatch-grid">
-            {THEME_SWATCHES.map((hexValue) => {
-              const swatchHue = hexToHue(hexValue);
-              const active = customHue !== null && Math.abs(((customHue - swatchHue + 540) % 360) - 180) < 6;
-              return (
-                <button
-                  key={hexValue}
-                  className={`swatch ${active ? "active" : ""}`}
-                  style={{ background: hexValue }}
-                  onClick={() => setAccentHue(swatchHue)}
-                  aria-label={`Use ${hexValue} as the accent color`}
-                  title={hexValue}
-                />
-              );
-            })}
-          </div>
-
-          <input
-            className="hue-slider"
-            type="range"
-            min={0}
-            max={359}
-            value={Math.round(hue)}
-            onChange={(event) => setAccentHue(Number(event.target.value))}
-            aria-label="Accent hue"
-          />
-
-          <button className="theme-reset" onClick={() => setAccentHue(null)} disabled={customHue == null}>
-            {preset.accent ? `Reset to ${preset.name} palette` : "Reset to scene color"}
-          </button>
-
-          {/* The tint is the only thing between a wallpaper and the type, so it
-              gets an off switch right where colours are chosen. */}
+        <div className="panel-tabs" role="tablist" aria-label="Personalization sections">
           <button
-            className={`theme-reset tint-toggle ${state.settings.wallTint ? "" : "is-off"}`}
-            onClick={() => updateSetting("wallTint", !state.settings.wallTint)}
-            aria-pressed={!state.settings.wallTint}
-            title={
-              state.settings.wallTint
-                ? "Take the theme's colour wash off your wallpaper — the picture stays exactly as it is."
-                : "Put the theme's colour wash back on the wallpaper."
-            }
+            id="personal-tab-themes"
+            role="tab"
+            aria-controls="personal-tabpanel"
+            aria-selected={personalTab === "themes"}
+            tabIndex={personalTab === "themes" ? 0 : -1}
+            className={personalTab === "themes" ? "active" : ""}
+            onClick={() => switchPersonalTab("themes")}
+            onKeyDown={handlePersonalTabKeyDown}
           >
-            {state.settings.wallTint ? "Remove tint" : "Tint is off — restore"}
-            <small>{wallpaper ? (state.settings.wallTint ? "wallpaper is colour-washed toward this theme" : "wallpaper shown untouched") : "only applies when a wallpaper is set"}</small>
+            Themes
+          </button>
+          <button
+            id="personal-tab-scenes"
+            role="tab"
+            aria-controls="personal-tabpanel"
+            aria-selected={personalTab === "scenes"}
+            tabIndex={personalTab === "scenes" ? 0 : -1}
+            className={personalTab === "scenes" ? "active" : ""}
+            onClick={() => switchPersonalTab("scenes")}
+            onKeyDown={handlePersonalTabKeyDown}
+          >
+            Scenes
           </button>
         </div>
 
-        <p className="field-hint">
-          Scenes, weather layers and custom backgrounds live in Scenes — a wallpaper you pick there shows behind every
-          preset. Choose Pure Black for no wallpaper.
-        </p>
-        <button className="theme-link" onClick={() => openPanel("scenes")}>Open Scenes →</button>
+        <div
+          id="personal-tabpanel"
+          className="personal-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`personal-tab-${personalTab}`}
+          tabIndex={0}
+        >
+          {personalTab === "themes" ? themesBody : scenesBody}
+        </div>
       </>
     ),
     stats: (
@@ -1784,7 +1887,6 @@ function App() {
   const panelMeta: Record<PanelId, { title: string; icon: string }> = {
     tasks: { title: "Tasks", icon: "task" },
     music: { title: "Music", icon: "music" },
-    scenes: { title: "Scenes", icon: "scene" },
     personal: { title: "Personalization", icon: "palette" },
     stats: { title: "Focus Stats", icon: "stats" },
     notes: { title: "Notes", icon: "note" },
@@ -1794,7 +1896,6 @@ function App() {
   const dockItems: [PanelId, string][] = [
     ["tasks", "task"],
     ["music", "music"],
-    ["scenes", "scene"],
     ["personal", "palette"],
     ["stats", "stats"],
     ["notes", "note"],

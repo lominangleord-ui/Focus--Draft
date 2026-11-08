@@ -12,10 +12,12 @@ npm run build    # single-file bundle in dist/
 
 ## Themes
 
-`Personalization` in the dock holds 19 presets. A preset is not a colour scheme:
-it re-skins typography, button shape and press states, surfaces, corner language,
-border weight, depth model and the background treatment, so the app reads as a
-different product. The original look (`classic`) is the default and untouched.
+`Personalization` in the dock holds 19 presets. Its **Themes** and **Scenes** tabs
+keep the theme picker, accent controls, palettes and wallpaper settings together
+in one place. A preset is not a colour scheme: it re-skins typography, button
+shape and press states, surfaces, corner language, border weight, depth model and
+the background treatment, so the app reads as a different product. The original
+look (`classic`) is the default and untouched.
 
 | Group | Presets | What is different about it |
 | --- | --- | --- |
@@ -62,9 +64,10 @@ each theme remembers its own override (`designHues` in app state). Accent defaul
 come from the theme's own palette when it has one, otherwise from the sampled
 scene.
 
-Under the hue ramp sits **Remove tint**: it takes the theme's colour wash off
-your wallpaper, leaving the picture exactly as it is and letting a neutral scrim
-carry legibility instead (see Wallpapers).
+Under the hue ramp sits **Remove tint**. The same switch is also available in
+the Scenes tab, right beside the wallpaper controls. It takes the theme's colour
+wash off your wallpaper, leaving the picture exactly as it is and letting a
+neutral scrim carry legibility instead (see Wallpapers).
 
 A hue pick only replaces the **hue**. The preset keeps its saturation and the
 colour is re-lit to the same *perceived brightness* it was designed around
@@ -166,9 +169,10 @@ Motion should stay opt-in per theme and respect `prefers-reduced-motion`.
 
 ## Wallpapers
 
-`Scenes` in the dock sets the wallpaper: one of six scenes, any image URL, or a
-YouTube link that loops muted behind the app. **A wallpaper you pick shows behind
-every preset** — it is not a per-theme option any more.
+Open the **Scenes** tab inside `Personalization` to set the wallpaper: choose
+one of six scenes, enter an image URL, or use a YouTube link that loops muted
+behind the app. **A wallpaper you pick shows behind every preset** — it is not a
+per-theme option any more.
 
 How it works, so a new preset cannot break it:
 
@@ -190,11 +194,11 @@ How it works, so a new preset cannot break it:
   and eases `.scrim` down to `--wall-scrim`.
 - `prefers-reduced-motion` drops the fade-in.
 
-`data-tint="off"` (the accent block's **Remove tint** button) drops the wash
-entirely: `--wall-veil` becomes a neutral grey/black gradient top and bottom,
-a soft neutral vignette is drawn behind the stage, `--wall-filter` and
-`--wall-texture` are switched off, and the text halo gets heavier. The
-photograph keeps its own colours; nothing is tinted toward the theme.
+`data-tint="off"` (the **Remove tint** switch in either Personalization tab)
+drops the wash entirely: `--wall-veil` becomes a neutral grey/black gradient top
+and bottom, a soft neutral vignette is drawn behind the stage, `--wall-filter` and
+`--wall-texture` are switched off, and the text halo gets heavier. The photograph
+keeps its own colours; nothing is tinted toward the theme.
 
 Legibility is gated by pixels, not by hope: a harness renders every preset over a
 deliberately bright, busy photograph at three accents and measures the ink
