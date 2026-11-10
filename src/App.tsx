@@ -4,13 +4,15 @@ import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type De
 import MotionFx from "./MotionFx";
 import { inkOn, lightnessFor, luminance } from "./accent";
 import { playUi, soundSupported } from "./sound";
+import AttentionGuardPanel, { AttentionCameraIndicator } from "./attention-guard/AttentionGuardPanel";
+import { AttentionGuardController } from "./attention-guard/controller";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
 const YouTubeAudioPlayer = lazy(() => import("./YouTubeAudioPlayer"));
 
 type ModeId = "focus" | "short" | "long";
-type PanelId = "tasks" | "music" | "personal" | "stats" | "notes" | "settings";
+type PanelId = "tasks" | "music" | "personal" | "stats" | "notes" | "settings" | "attention";
 type UtilId = "youtube" | "web" | "files";
 type FileKind = "text" | "image" | "video" | "audio" | "pdf" | "other";
 type LocalFile = { id: string; name: string; type: string; url: string; kind: FileKind; text?: string; data?: ArrayBuffer };
@@ -684,6 +686,7 @@ function Icon({ name }: { name: string }) {
     stats: <><path d="M5 20V10" /><path d="M12 20V4" /><path d="M19 20v-7" /></>,
     note: <><path d="M4 20h4l11-11-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></>,
     settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" /></>,
+    attention: <><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /><path d="M12 3V1M3.5 4.5 2 3M20.5 4.5 22 3" /></>,
     play: <path d="M8 5.5l11 6.5-11 6.5v-13z" />,
     pause: <><rect x="7" y="5" width="4" height="14" rx="1" /><rect x="15" y="5" width="4" height="14" rx="1" /></>,
     reset: <><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></>,
@@ -975,6 +978,7 @@ function ToggleRow({ label, value, onChange }: { label: string; value: boolean; 
 
 function App() {
   const [state, setState] = useState<AppState>(loadState);
+  const [attentionController] = useState(() => new AttentionGuardController());
   const consumeLegacyNotes = useCallback(() => {
     setState((prev) => prev.notes ? { ...prev, notes: "" } : prev);
   }, []);
@@ -1040,6 +1044,11 @@ function App() {
   stateRef.current = state;
   const runningRef = useRef(running);
   runningRef.current = running;
+
+  useEffect(() => {
+    attentionController.mount();
+    return () => attentionController.dispose();
+  }, [attentionController]);
 
   const totalSeconds = secondsFor(state.mode, state);
   const progress = clamp(1 - state.remaining / Math.max(totalSeconds, 1), 0, 1);
@@ -2627,6 +2636,7 @@ function App() {
         }}>Erase local data</button>
       </>
     ),
+    attention: () => <AttentionGuardPanel controller={attentionController} />,
   };
 
   const panelMeta: Record<PanelId, { title: string; icon: string }> = {
@@ -2636,6 +2646,7 @@ function App() {
     stats: { title: "Focus Stats", icon: "stats" },
     notes: { title: "Notes", icon: "note" },
     settings: { title: "Settings", icon: "settings" },
+    attention: { title: "Attention Guard", icon: "attention" },
   };
 
   const dockItems: [PanelId, string][] = [
@@ -2644,6 +2655,7 @@ function App() {
     ["personal", "palette"],
     ["stats", "stats"],
     ["notes", "note"],
+    ["attention", "attention"],
     ["settings", "settings"],
   ];
 
@@ -2686,6 +2698,7 @@ function App() {
         </div>
         <div className="top-quote">&ldquo;{quotes[quoteIndex]}&rdquo;</div>
       </header>
+      <AttentionCameraIndicator controller={attentionController} onOpen={() => openPanel("attention")} />
 
       <div className="workspace">
         {utilTab && (
@@ -2999,7 +3012,7 @@ function App() {
 
       <nav className="bottom-dock" aria-label="Tools">
         {dockItems.map(([id, icon]) => (
-          <button key={id} className={openPanels.includes(id) ? "active" : ""} onClick={() => togglePanel(id)} aria-label={id}>
+          <button key={id} className={openPanels.includes(id) ? "active" : ""} onClick={() => togglePanel(id)} aria-label={panelMeta[id].title} title={panelMeta[id].title}>
             <Icon name={icon} />
           </button>
         ))}
@@ -3037,7 +3050,7 @@ function App() {
           key={id}
           title={panelMeta[id].title}
           icon={panelMeta[id].icon}
-          win={state.windows[id] ?? defaultFrame(id === "personal" || id === "notes")}
+          win={state.windows[id] ?? defaultFrame(id === "personal" || id === "notes" || id === "attention")}
           z={12 + index}
           onFocus={() => raisePanel(id)}
           onPatch={(patch) => patchFrame(id, patch)}
