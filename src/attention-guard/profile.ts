@@ -39,6 +39,9 @@ export type AttentionProfile = {
   calibrationSamples: number;
   baseline: AttentionBaseline | null;
   zone: AttentionZone;
+  zoneShape: "ellipse" | "rectangle";
+  marginPercent: number;
+  negativeOverlap: number | null;
   tuning: AttentionClassifierTuning;
 };
 
@@ -81,6 +84,9 @@ export function defaultAttentionProfile(mode: AttentionMode, id = `default-${mod
     calibrationSamples: 0,
     baseline: null,
     zone: { ...DEFAULT_ZONE, pitchDeg: mode === "book" ? 22 : DEFAULT_ZONE.pitchDeg, gazeY: mode === "book" ? 1.05 : DEFAULT_ZONE.gazeY },
+    zoneShape: "rectangle",
+    marginPercent: 20,
+    negativeOverlap: null,
     tuning: { ...DEFAULT_TUNING },
   };
 }
@@ -141,6 +147,13 @@ export function normalizeAttentionProfile(value: unknown): AttentionProfile | nu
       gazeX: finite(zone.gazeX, defaults.zone.gazeX, 0.15, 1.5),
       gazeY: finite(zone.gazeY, defaults.zone.gazeY, 0.15, 1.5),
     },
+    // Missing fields from schema v1 profiles are migrated to the behavior
+    // already used by the classifier before calibration shapes were added.
+    zoneShape: value.zoneShape === "ellipse" ? "ellipse" : "rectangle",
+    marginPercent: finite(value.marginPercent, defaults.marginPercent, 0, 80),
+    negativeOverlap: typeof value.negativeOverlap === "number" && Number.isFinite(value.negativeOverlap)
+      ? finite(value.negativeOverlap, 0, 0, 1)
+      : null,
     tuning: {
       smoothingAlpha: finite(tuning.smoothingAlpha, defaults.tuning.smoothingAlpha, 0.05, 0.9),
       level1Score,

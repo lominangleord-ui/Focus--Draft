@@ -49,8 +49,11 @@ export function computeAttentionScore(signals: RawAttentionSignals, profile: Att
     signals.gazeY == null ? null : Math.abs(signals.gazeY - baseline.gazeY) / zone.gazeY,
   ].filter((value): value is number => value != null && Number.isFinite(value));
 
-  const poseScore = poseDeviations.length ? Math.max(...poseDeviations) : null;
-  const gazeScore = gazeDeviations.length ? Math.max(...gazeDeviations) : null;
+  const groupScore = (values: number[]) => profile.zoneShape === "ellipse"
+    ? Math.sqrt(values.reduce((sum, value) => sum + value * value, 0))
+    : Math.max(...values);
+  const poseScore = poseDeviations.length ? groupScore(poseDeviations) : null;
+  const gazeScore = gazeDeviations.length ? groupScore(gazeDeviations) : null;
   if (poseScore == null && gazeScore == null) return null;
 
   // Head pose carries slightly more weight than coarse webcam gaze. Missing

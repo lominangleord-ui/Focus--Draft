@@ -27,6 +27,15 @@ describe("Attention Guard profile files", () => {
     expect(() => parseAttentionProfileFile(JSON.stringify({ format: "focus-draft-attention-profile", schemaVersion: 2, profile: calibrated() }))).toThrow("Unsupported");
   });
 
+  it("migrates schema v1 profiles without the newer zone fields", () => {
+    const legacy = { ...calibrated() } as Record<string, unknown>;
+    delete legacy.zoneShape;
+    delete legacy.marginPercent;
+    delete legacy.negativeOverlap;
+    const result = normalizeAttentionProfile(legacy);
+    expect(result).toMatchObject({ zoneShape: "rectangle", marginPercent: 20, negativeOverlap: null });
+  });
+
   it("clamps imported thresholds and clears incomplete calibration", () => {
     const input = {
       ...calibrated(),

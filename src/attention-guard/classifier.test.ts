@@ -40,6 +40,20 @@ describe("local Attention Guard classifier", () => {
     expect(needsCalibration.classification.warningLevel).toBe(0);
   });
 
+  it("scores an elliptical zone more strictly when several feature axes drift together", () => {
+    const profile = calibratedProfile();
+    const combined = sample({
+      yawDeg: profile.zone.yawDeg,
+      pitchDeg: profile.zone.pitchDeg,
+      gazeX: profile.zone.gazeX,
+      gazeY: profile.zone.gazeY,
+    });
+    const rectangularScore = computeAttentionScore(combined, profile);
+    profile.zoneShape = "ellipse";
+    const ellipticalScore = computeAttentionScore(combined, profile);
+    expect(ellipticalScore).toBeGreaterThan(rectangularScore!);
+  });
+
   it("uses a deterministic hold before emitting level 1", () => {
     const profile = calibratedProfile();
     const drift = sample({ yawDeg: 40 });

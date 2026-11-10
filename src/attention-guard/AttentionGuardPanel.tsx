@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AttentionGuardController } from "./controller";
+import CalibrationWizard from "./CalibrationWizard";
 import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionProfile, type AttentionProfile } from "./profile";
 import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
 import type { AttentionClassification, RawAttentionSignals } from "./types";
@@ -135,6 +136,7 @@ export default function AttentionGuardPanel({
   const profileFileRef = useRef<HTMLInputElement | null>(null);
   const [newProfileName, setNewProfileName] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
+  const [view, setView] = useState<"monitor" | "calibrate">("monitor");
   const isActive = state.status === "on" || state.status === "starting";
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
   const profile = useMemo(() => activeAttentionProfile(store), [store]);
@@ -296,6 +298,11 @@ export default function AttentionGuardPanel({
         )}
       </div>
 
+      <div className="attention-tabs" role="tablist" aria-label="Attention Guard views">
+        <button id="attention-monitor-tab" type="button" role="tab" aria-selected={view === "monitor"} className={view === "monitor" ? "active" : ""} onClick={() => setView("monitor")}>Monitor</button>
+        <button id="attention-calibrate-tab" type="button" role="tab" aria-selected={view === "calibrate"} className={view === "calibrate" ? "active" : ""} onClick={() => setView("calibrate")}>Calibrate</button>
+      </div>
+
       <section className="attention-settings" aria-labelledby="attention-profile-title">
         <div className="attention-section-heading">
           <div><h3 id="attention-profile-title">Mode and profile</h3><p>Each mode has its own calibration and attention zone.</p></div>
@@ -330,6 +337,16 @@ export default function AttentionGuardPanel({
         {profileMessage && <p className="attention-inline-message" role="status">{profileMessage}</p>}
       </section>
 
+      {view === "calibrate" ? (
+        <CalibrationWizard
+          controller={controller}
+          profile={profile}
+          cameraStatus={state.status}
+          onStartTracking={() => { controller.selectDevice(selectedDeviceId); void controller.start(selectedDeviceId); }}
+          onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
+        />
+      ) : (
+        <div className="attention-monitor-view" role="tabpanel" id="attention-monitor-panel" aria-labelledby="attention-monitor-tab">
       <details className="attention-tuning">
         <summary>Classifier zone and sensitivity</summary>
         <p>Adjust how far pose/gaze may drift from calibration before it counts as outside the zone. Values are normalized per profile.</p>
@@ -363,6 +380,8 @@ export default function AttentionGuardPanel({
         <AttentionSwitch label="Warning sound" help="Soft in-app chime; off by default." checked={store.soundEnabled} onChange={(value) => updateStore({ soundEnabled: value })} />
         <AttentionSwitch label="Strict pause" help="Pause the focus timer after a sustained level 2 warning." checked={store.strictPause} onChange={(value) => updateStore({ strictPause: value })} />
       </details>
+        </div>
+      )}
 
       <details className="attention-privacy">
         <summary>Camera and privacy details</summary>
