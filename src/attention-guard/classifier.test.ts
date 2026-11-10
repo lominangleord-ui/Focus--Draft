@@ -54,6 +54,27 @@ describe("local Attention Guard classifier", () => {
     expect(ellipticalScore).toBeGreaterThan(rectangularScore!);
   });
 
+  it("applies the configured pose/gaze weights and glance allowance", () => {
+    const profile = calibratedProfile();
+    profile.tuning.level1DwellMs = 1_000;
+    profile.tuning.glanceAllowanceMs = 2_000;
+    const gazeOnly = sample({ gazeX: profile.baseline!.gazeX + profile.zone.gazeX * 1.3 });
+    const defaultWeightScore = computeAttentionScore(gazeOnly, profile);
+    profile.tuning.poseWeight = 0;
+    profile.tuning.gazeWeight = 1;
+    expect(computeAttentionScore(gazeOnly, profile)).toBeGreaterThan(defaultWeightScore!);
+
+    profile.tuning.smoothingAlpha = 1;
+    let update = updateAttentionClassifier(createClassifierMemory(), gazeOnly, profile, 1_000);
+    update = updateAttentionClassifier(update.memory, gazeOnly, profile, 3_999);
+    expect(update.classification.warningLevel).toBe(0);
+    update = updateAttentionClassifier(update.memory, gazeOnly, profile, 4_000);
+    expect(update.classification.warningLevel).toBe(1);
+    profile.tuning.poseWeight = 0;
+    profile.tuning.gazeWeight = 0;
+    expect(computeAttentionScore(gazeOnly, profile)).toBeNull();
+  });
+
   it("uses a deterministic hold before emitting level 1", () => {
     const profile = calibratedProfile();
     const drift = sample({ yawDeg: 40 });
@@ -62,11 +83,11 @@ describe("local Attention Guard classifier", () => {
     expect(first.classification.warningLevel).toBe(0);
     expect(first.intervention).toBeNull();
 
-    const held = updateAttentionClassifier(first.memory, drift, profile, 4_499);
+    const held = updateAttentionClassifier(first.memory, drift, profile, 5_399);
     expect(held.classification.warningLevel).toBe(0);
-    const triggered = updateAttentionClassifier(held.memory, drift, profile, 4_500);
+    const triggered = updateAttentionClassifier(held.memory, drift, profile, 5_400);
     expect(triggered.classification.warningLevel).toBe(1);
-    expect(triggered.intervention).toMatchObject({ level: 1, triggeredAt: 4_500, reason: "looking-away" });
+    expect(triggered.intervention).toMatchObject({ level: 1, triggeredAt: 5_400, reason: "looking-away" });
   });
 
   it("escalates to level 2 only after its longer dwell period", () => {
@@ -86,12 +107,12 @@ describe("local Attention Guard classifier", () => {
     profile.tuning.smoothingAlpha = 0.9;
     const drift = sample({ yawDeg: 40 });
     const first = updateAttentionClassifier(createClassifierMemory(), drift, profile, 1_000);
-    const warned = updateAttentionClassifier(first.memory, drift, profile, 4_500);
+    const warned = updateAttentionClassifier(first.memory, drift, profile, 5_400);
     expect(warned.classification.warningLevel).toBe(1);
 
-    const returned = updateAttentionClassifier(warned.memory, sample(), profile, 4_600);
+    const returned = updateAttentionClassifier(warned.memory, sample(), profile, 5_500);
     expect(returned.classification.warningLevel).toBe(1);
-    const cleared = updateAttentionClassifier(returned.memory, sample(), profile, 6_200);
+    const cleared = updateAttentionClassifier(returned.memory, sample(), profile, 7_100);
     expect(cleared.classification.warningLevel).toBe(0);
     expect(cleared.classification.phase).toBe("attentive");
   });

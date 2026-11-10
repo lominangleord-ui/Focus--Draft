@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AttentionGuardController } from "./controller";
 import CalibrationWizard from "./CalibrationWizard";
+import TestLab from "./TestLab";
 import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionProfile, type AttentionProfile } from "./profile";
 import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
 import type { AttentionClassification, RawAttentionSignals } from "./types";
@@ -113,7 +114,7 @@ export function AttentionCameraIndicator({
   return (
     <div className={`attention-live-indicator ${active ? "is-active" : "is-paused"}`} role="status">
       <span className="attention-live-dot" aria-hidden="true" />
-      <span>{state.status === "on" ? "Camera on" : state.status === "starting" ? "Starting camera" : "Camera paused"}</span>
+      <span>{state.runPurpose === "diagnostic" ? state.status === "on" ? "Test camera on" : state.status === "starting" ? "Starting test camera" : "Test camera paused" : state.status === "on" ? "Camera on" : state.status === "starting" ? "Starting camera" : "Camera paused"}</span>
       <button type="button" onClick={onOpen} aria-label="Open Attention Guard panel">Details</button>
       {active && <button type="button" onClick={() => controller.stop()} aria-label="Turn off Attention Guard">Stop</button>}
     </div>
@@ -136,7 +137,7 @@ export default function AttentionGuardPanel({
   const profileFileRef = useRef<HTMLInputElement | null>(null);
   const [newProfileName, setNewProfileName] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
-  const [view, setView] = useState<"monitor" | "calibrate">("monitor");
+  const [view, setView] = useState<"monitor" | "calibrate" | "lab">("monitor");
   const isActive = state.status === "on" || state.status === "starting";
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
   const profile = useMemo(() => activeAttentionProfile(store), [store]);
@@ -242,8 +243,8 @@ export default function AttentionGuardPanel({
 
       <section className={`attention-control-card ${isActive ? "is-active" : ""}`} aria-label="Camera tracking controls">
         <div className="attention-control-copy">
-          <strong>{state.status === "on" ? "Tracking is on" : state.status === "starting" ? "Starting local tracking…" : state.status === "paused" ? "Tracking paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off"}</strong>
-          <span>{state.status === "on" ? "Camera frames are being analyzed on this device." : state.status === "paused" ? "The camera and inference worker were stopped when the tab went into the background." : state.status === "error" ? state.error : "No camera is active. Your timer works normally while this is off."}</span>
+          <strong>{state.status === "on" && state.runPurpose === "diagnostic" ? "Temporary Test Lab camera is on" : state.status === "on" ? "Tracking is on" : state.status === "starting" && state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.status === "starting" ? "Starting local tracking…" : state.status === "paused" ? "Tracking paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off"}</strong>
+          <span>{state.status === "on" && state.runPurpose === "diagnostic" ? "This camera run is a temporary diagnostic test and is not counted as a focus session." : state.status === "on" ? "Camera frames are being analyzed on this device." : state.status === "paused" ? "The camera and inference worker were stopped when the tab went into the background." : state.status === "error" ? state.error : "No camera is active. Your timer works normally while this is off."}</span>
         </div>
         <button
           type="button"
@@ -301,6 +302,7 @@ export default function AttentionGuardPanel({
       <div className="attention-tabs" role="tablist" aria-label="Attention Guard views">
         <button id="attention-monitor-tab" type="button" role="tab" aria-selected={view === "monitor"} className={view === "monitor" ? "active" : ""} onClick={() => setView("monitor")}>Monitor</button>
         <button id="attention-calibrate-tab" type="button" role="tab" aria-selected={view === "calibrate"} className={view === "calibrate" ? "active" : ""} onClick={() => setView("calibrate")}>Calibrate</button>
+        <button id="attention-test-lab-tab" type="button" role="tab" aria-selected={view === "lab"} className={view === "lab" ? "active" : ""} onClick={() => setView("lab")}>Test Lab</button>
       </div>
 
       <section className="attention-settings" aria-labelledby="attention-profile-title">
@@ -344,6 +346,16 @@ export default function AttentionGuardPanel({
           cameraStatus={state.status}
           onStartTracking={() => { controller.selectDevice(selectedDeviceId); void controller.start(selectedDeviceId); }}
           onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
+        />
+      ) : view === "lab" ? (
+        <TestLab
+          controller={controller}
+          profile={profile}
+          cameraStatus={state.status}
+          runPurpose={state.runPurpose}
+          onStartCamera={() => { controller.selectDevice(selectedDeviceId); void controller.startDiagnostic(selectedDeviceId); }}
+          onStopCamera={() => controller.stop()}
+          onSaveProfile={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
         />
       ) : (
         <div className="attention-monitor-view" role="tabpanel" id="attention-monitor-panel" aria-labelledby="attention-monitor-tab">

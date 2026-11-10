@@ -1,6 +1,6 @@
 import { createClassifierMemory, updateAttentionClassifier, type ClassifierMemory } from "./classifier";
 import type { AttentionProfile } from "./profile";
-import type { AttentionClassification, AttentionWorkerResponse, CameraDevice, GuardRuntimeState, RawAttentionSignals } from "./types";
+import type { AttentionClassification, AttentionWorkerResponse, CameraDevice, GuardRunPurpose, GuardRuntimeState, RawAttentionSignals } from "./types";
 
 const OFF_STATE: GuardRuntimeState = {
   status: "off",
@@ -8,6 +8,7 @@ const OFF_STATE: GuardRuntimeState = {
   devices: [],
   selectedDeviceId: "",
   activeDeviceId: "",
+  runPurpose: null,
 };
 
 function cameraErrorMessage(error: unknown) {
@@ -149,10 +150,18 @@ export class AttentionGuardController {
   }
 
   async start(deviceId = this.runtime.selectedDeviceId) {
+    await this.startWithPurpose(deviceId, "focus");
+  }
+
+  async startDiagnostic(deviceId = this.runtime.selectedDeviceId) {
+    await this.startWithPurpose(deviceId, "diagnostic");
+  }
+
+  private async startWithPurpose(deviceId: string, runPurpose: GuardRunPurpose) {
     const run = ++this.generation;
     this.stopResources();
     this.setSignals(null);
-    this.updateState({ status: "starting", error: "", selectedDeviceId: deviceId, activeDeviceId: "" });
+    this.updateState({ status: "starting", error: "", selectedDeviceId: deviceId, activeDeviceId: "", runPurpose });
 
     if (!window.isSecureContext) {
       this.fail(run, new Error("Camera access requires a secure page (HTTPS or localhost)."));
@@ -214,7 +223,7 @@ export class AttentionGuardController {
     this.generation += 1;
     this.stopResources();
     this.setSignals(null);
-    this.updateState({ status: "off", error: "", activeDeviceId: "" });
+    this.updateState({ status: "off", error: "", activeDeviceId: "", runPurpose: null });
   }
 
   private readonly onVisibilityChange = () => {
@@ -294,7 +303,7 @@ export class AttentionGuardController {
     this.generation += 1;
     this.stopResources();
     this.setSignals(null);
-    this.updateState({ status: "error", error: message, activeDeviceId: "" });
+    this.updateState({ status: "error", error: message, activeDeviceId: "", runPurpose: null });
   }
 
   private stopResources() {

@@ -11071,7 +11071,7 @@ body:has(.focus-app[data-design="vaporwave"]) {
 /* ================= ATTENTION CALIBRATION WIZARD ================= */
 .attention-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.35rem;
   padding: 0.25rem;
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -11750,4 +11750,366 @@ body:has(.focus-app[data-design="vaporwave"]) {
   .attention-progress-track i {
     transition: none;
   }
+}
+
+/* ================= ATTENTION TEST LAB ================= */
+.attention-test-lab {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+.attention-test-lab .attention-section-heading {
+  align-items: flex-start;
+}
+.attention-lab-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 0.85rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+.attention-lab-card h4 {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.93);
+  font-size: 0.8rem;
+}
+.attention-lab-card h5 {
+  margin: 0.15rem 0 -0.15rem;
+  color: rgba(255, 255, 255, 0.83);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+}
+.attention-lab-card > p,
+.attention-lab-camera-card p,
+.attention-lab-limitations {
+  margin: 0.18rem 0 0;
+  color: rgba(255, 255, 255, 0.59);
+  font-size: 0.67rem;
+  line-height: 1.45;
+}
+.attention-lab-camera-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+}
+.attention-lab-camera-card > div {
+  min-width: 0;
+}
+.attention-lab-live-badge {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(87, 214, 139, 0.3);
+  border-radius: 999px;
+  color: #a0e8b7;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+.attention-lab-preview {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.78rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+.attention-lab-preview .attention-classification-dot {
+  flex: 0 0 auto;
+}
+.attention-lab-preview > div:first-of-type {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+.attention-lab-preview > div strong {
+  color: #fff;
+  font-size: 0.74rem;
+}
+.attention-lab-preview > div small {
+  color: rgba(255, 255, 255, 0.59);
+  font-size: 0.61rem;
+  line-height: 1.35;
+}
+.attention-lab-preview.is-clear .attention-classification-dot {
+  background: #59d78b;
+}
+.attention-lab-preview.is-caution .attention-classification-dot {
+  background: #ffc06b;
+}
+.attention-lab-preview.is-warning .attention-classification-dot {
+  background: #ff7474;
+}
+.attention-lab-controller-phase {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: right;
+}
+.attention-lab-controller-phase b {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.61rem;
+}
+.attention-lab-controller-phase small {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.52rem;
+}
+.attention-lab-signal-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.attention-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: start;
+  gap: 0.8rem;
+}
+.attention-lab-tuning > summary {
+  color: rgba(255, 255, 255, 0.91);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.attention-lab-tuning > p {
+  margin: -0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.64rem;
+  line-height: 1.4;
+}
+.attention-lab-number-field input {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.58rem;
+  font-size: 0.78rem;
+}
+.attention-lab-number-field > span {
+  min-height: 1.3em;
+  font-size: 0.56rem;
+}
+.attention-lab-tuning .attention-number-grid {
+  gap: 0.48rem;
+}
+.attention-lab-stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.attention-lab-test-card > .attention-secondary-button,
+.attention-lab-self-test > .attention-secondary-button {
+  align-self: flex-start;
+}
+.attention-lab-test-progress,
+.attention-self-test-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.attention-lab-test-progress > span,
+.attention-self-test-step > span {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.61rem;
+}
+.attention-self-test-step > strong {
+  color: #fff;
+  font-size: 0.72rem;
+}
+.attention-test-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.attention-test-summary > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+.attention-test-summary strong {
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+}
+.attention-test-summary span {
+  color: rgba(255, 255, 255, 0.53);
+  font-size: 0.52rem;
+  line-height: 1.25;
+}
+.attention-self-test-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 192, 107, 0.25);
+  border-radius: 0.7rem;
+  background: rgba(255, 192, 107, 0.04);
+}
+.attention-self-test-result.is-usable {
+  border-color: rgba(87, 214, 139, 0.25);
+  background: rgba(87, 214, 139, 0.04);
+}
+.attention-self-test-result > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.63rem;
+  line-height: 1.4;
+}
+.attention-suggestion-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.attention-suggestion-metrics span {
+  padding: 0.27rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.55rem;
+}
+.attention-suggestion-metrics b {
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
+}
+.attention-self-test-result .panel-primary {
+  align-self: flex-start;
+  min-height: 2.45rem;
+  padding: 0.5rem 0.72rem;
+  font-size: 0.65rem;
+}
+.attention-simulator {
+  gap: 0.55rem;
+}
+.attention-scenario-field {
+  min-width: 9rem;
+  max-width: 13rem;
+}
+.attention-scenario-field select {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0.7rem;
+  background: #171b23;
+  color: #fff;
+  font-size: 0.66rem;
+}
+.attention-scenario-description {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.59);
+  font-size: 0.63rem;
+}
+.attention-simulator-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.attention-simulator-controls > span {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6rem;
+}
+.attention-simulator-timeline {
+  display: flex;
+  height: 3.3rem;
+  align-items: flex-end;
+  gap: 2px;
+  overflow: hidden;
+  padding: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 0.65rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+.attention-simulator-timeline i {
+  min-width: 3px;
+  flex: 1 1 3px;
+  border-radius: 2px 2px 0 0;
+  background: rgba(255, 255, 255, 0.35);
+}
+.attention-simulator-timeline i.phase-attentive {
+  background: #59d78b;
+}
+.attention-simulator-timeline i.phase-drifting {
+  background: #ffc06b;
+}
+.attention-simulator-timeline i.phase-away,
+.attention-simulator-timeline i.phase-face-missing {
+  background: #ff7474;
+}
+.attention-simulator-timeline i.phase-low-quality,
+.attention-simulator-timeline i.phase-needs-calibration {
+  background: #86b5ff;
+}
+.attention-simulator-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+}
+.attention-simulator-current strong {
+  color: #fff;
+  font-size: 0.68rem;
+}
+.attention-simulator-current span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.59rem;
+}
+.attention-lab-limitations {
+  padding: 0 0.1rem;
+}
+@media (max-width: 760px) {
+  .attention-lab-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .attention-test-lab {
+    padding: 0.65rem;
+  }
+  .attention-lab-camera-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .attention-lab-signal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .attention-lab-controller-phase {
+    display: none;
+  }
+  .attention-scenario-field {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+  .attention-calibration-subheading:has(.attention-scenario-field) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+.attention-self-test-step > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.63rem;
+  line-height: 1.4;
 }

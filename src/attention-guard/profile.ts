@@ -24,7 +24,10 @@ export type AttentionClassifierTuning = {
   level2DwellMs: number;
   recoveryMs: number;
   faceMissingMs: number;
+  glanceAllowanceMs: number;
   hysteresis: number;
+  poseWeight: number;
+  gazeWeight: number;
   lowLightFloor: number;
   minFaceWidth: number;
 };
@@ -60,7 +63,10 @@ const DEFAULT_TUNING: AttentionClassifierTuning = {
   level2DwellMs: 6_000,
   recoveryMs: 1_600,
   faceMissingMs: 4_500,
+  glanceAllowanceMs: 900,
   hysteresis: 0.2,
+  poseWeight: 0.65,
+  gazeWeight: 0.35,
   lowLightFloor: 0.11,
   minFaceWidth: 0.075,
 };
@@ -130,6 +136,11 @@ export function normalizeAttentionProfile(value: unknown): AttentionProfile | nu
   const validCalibration = calibratedAt != null && baseline != null;
   const level1Score = finite(tuning.level1Score, defaults.tuning.level1Score, 0.2, 2.5);
   const level2Score = Math.max(level1Score + 0.15, finite(tuning.level2Score, defaults.tuning.level2Score, 0.4, 4));
+  const rawPoseWeight = finite(tuning.poseWeight, defaults.tuning.poseWeight, 0, 1);
+  const rawGazeWeight = finite(tuning.gazeWeight, defaults.tuning.gazeWeight, 0, 1);
+  const rawWeightTotal = rawPoseWeight + rawGazeWeight;
+  const poseWeight = rawWeightTotal > 0 ? rawPoseWeight / rawWeightTotal : defaults.tuning.poseWeight;
+  const gazeWeight = rawWeightTotal > 0 ? rawGazeWeight / rawWeightTotal : defaults.tuning.gazeWeight;
 
   return {
     id: value.id.trim().slice(0, 100),
@@ -162,7 +173,10 @@ export function normalizeAttentionProfile(value: unknown): AttentionProfile | nu
       level2DwellMs: Math.round(finite(tuning.level2DwellMs, defaults.tuning.level2DwellMs, 1_000, 60_000)),
       recoveryMs: Math.round(finite(tuning.recoveryMs, defaults.tuning.recoveryMs, 300, 15_000)),
       faceMissingMs: Math.round(finite(tuning.faceMissingMs, defaults.tuning.faceMissingMs, 1_000, 30_000)),
+      glanceAllowanceMs: Math.round(finite(tuning.glanceAllowanceMs, defaults.tuning.glanceAllowanceMs, 0, 10_000)),
       hysteresis: finite(tuning.hysteresis, defaults.tuning.hysteresis, 0.05, 0.8),
+      poseWeight,
+      gazeWeight,
       lowLightFloor: finite(tuning.lowLightFloor, defaults.tuning.lowLightFloor, 0, 0.5),
       minFaceWidth: finite(tuning.minFaceWidth, defaults.tuning.minFaceWidth, 0.02, 0.5),
     },

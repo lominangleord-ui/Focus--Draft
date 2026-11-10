@@ -1,5 +1,5 @@
 import { computeAttentionScore } from "./classifier";
-import { defaultAttentionProfile, type AttentionBaseline, type AttentionProfile, type AttentionZone } from "./profile";
+import { defaultAttentionProfile, type AttentionBaseline, type AttentionClassifierTuning, type AttentionProfile, type AttentionZone } from "./profile";
 import type { AttentionMode, RawAttentionSignals } from "./types";
 
 export const CALIBRATION_MIN_SAMPLES = 8;
@@ -129,6 +129,7 @@ function createScoringProfile(
   baseline: AttentionBaseline,
   zone: AttentionZone,
   zoneShape: AttentionProfile["zoneShape"],
+  tuning: AttentionClassifierTuning,
 ): AttentionProfile {
   return {
     ...defaultAttentionProfile(mode),
@@ -136,6 +137,7 @@ function createScoringProfile(
     calibratedAt: 1,
     zone,
     zoneShape,
+    tuning,
   };
 }
 
@@ -162,6 +164,7 @@ export function calculateCalibration(
   samplesByTarget: CalibrationSamples,
   marginPercent: number,
   zoneShape: AttentionProfile["zoneShape"],
+  tuning: AttentionClassifierTuning = defaultAttentionProfile(mode).tuning,
 ): CalibrationResult | null {
   const targets = getCalibrationTargets(mode);
   if (targets.some((target) => (samplesByTarget[target.id]?.length ?? 0) < CALIBRATION_MIN_SAMPLES)) return null;
@@ -190,7 +193,7 @@ export function calculateCalibration(
   // Elliptical scoring combines multiple simultaneous deviations more strictly
   // than rectangular scoring. Expand only as much as needed to keep the robust
   // medians of the intentionally on-task targets inside the fitted zone.
-  let scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape);
+  let scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape, tuning);
   const positiveTargetMedians = positiveTargets.map((target) => {
     const sample = samplesByTarget[target.id][0];
     const summary = Object.fromEntries(SIGNAL_KEYS.map((key) => [key, targetSummary(samplesByTarget[target.id], key).center])) as AttentionBaseline;
@@ -200,7 +203,7 @@ export function calculateCalibration(
   if (maxPositiveScore > 0.96) {
     const expansion = maxPositiveScore / 0.96;
     for (const key of SIGNAL_KEYS) zone[key] = clamp(zone[key] * expansion, MIN_ZONE[key], MAX_ZONE[key]);
-    scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape);
+    scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape, tuning);
   }
 
   const negativeOverlap = negativeSamples.length

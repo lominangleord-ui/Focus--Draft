@@ -33,7 +33,23 @@ describe("Attention Guard profile files", () => {
     delete legacy.marginPercent;
     delete legacy.negativeOverlap;
     const result = normalizeAttentionProfile(legacy);
-    expect(result).toMatchObject({ zoneShape: "rectangle", marginPercent: 20, negativeOverlap: null });
+    expect(result).toMatchObject({
+      zoneShape: "rectangle",
+      marginPercent: 20,
+      negativeOverlap: null,
+      tuning: { glanceAllowanceMs: 900, poseWeight: 0.65, gazeWeight: 0.35 },
+    });
+  });
+
+  it("normalizes classifier weights and glance allowance", () => {
+    const input = {
+      ...calibrated(),
+      tuning: { ...defaultAttentionProfile("screen").tuning, poseWeight: 1, gazeWeight: 0.5, glanceAllowanceMs: 99_000 },
+    };
+    const result = normalizeAttentionProfile(input);
+    expect(result?.tuning.poseWeight).toBeCloseTo(2 / 3);
+    expect(result?.tuning.gazeWeight).toBeCloseTo(1 / 3);
+    expect(result?.tuning.glanceAllowanceMs).toBe(10_000);
   });
 
   it("clamps imported thresholds and clears incomplete calibration", () => {

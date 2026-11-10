@@ -92,6 +92,22 @@ describe("Attention Guard calibration", () => {
     expect(overlapped?.warnings.some((warning) => warning.includes("off-page samples overlap"))).toBe(true);
   });
 
+  it("uses the profile's feature weights when estimating negative overlap", () => {
+    const samples = makeSamples("book", {
+      top: { pitchDeg: -4, gazeY: -0.18 },
+      bottom: { pitchDeg: 4, gazeY: 0.18 },
+      left: { yawDeg: -4, gazeX: -0.18 },
+      right: { yawDeg: 4, gazeX: 0.18 },
+      "negative-top": { gazeY: -1.2 },
+      "negative-bottom": { gazeY: 1.2 },
+      "negative-left": { gazeX: -1.2 },
+      "negative-right": { gazeX: 1.2 },
+    });
+    const tuning = { ...defaultAttentionProfile("book").tuning, poseWeight: 1, gazeWeight: 0 };
+    const result = calculateCalibration("book", samples, 20, "rectangle", tuning);
+    expect(result?.negativeOverlap).toBe(1);
+  });
+
   it("widens the calibrated region with margin and records the selected shape", () => {
     const samples = makeSamples("book", {
       top: { pitchDeg: -4, gazeY: -0.18 },

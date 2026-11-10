@@ -143,8 +143,8 @@ export default function CalibrationWizard({
   const currentTargetId = capture?.targetId ?? targets.find((target) => (samples[target.id]?.length ?? 0) < CALIBRATION_MIN_SAMPLES)?.id ?? null;
   const currentTarget = targets.find((target) => target.id === currentTargetId) ?? targets[0];
   const result = useMemo(
-    () => calculateCalibration(profile.mode, samples, marginPercent, zoneShape),
-    [marginPercent, profile.mode, samples, zoneShape],
+    () => calculateCalibration(profile.mode, samples, marginPercent, zoneShape, profile.tuning),
+    [marginPercent, profile.mode, profile.tuning, samples, zoneShape],
   );
   const storedZoneScale = (100 + marginPercent) / (100 + profile.marginPercent);
   const previewZone = result?.zone ?? (profile.calibratedAt != null ? scaleAttentionZone(profile.zone, storedZoneScale) : profile.zone);

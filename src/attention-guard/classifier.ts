@@ -56,11 +56,12 @@ export function computeAttentionScore(signals: RawAttentionSignals, profile: Att
   const gazeScore = gazeDeviations.length ? groupScore(gazeDeviations) : null;
   if (poseScore == null && gazeScore == null) return null;
 
-  // Head pose carries slightly more weight than coarse webcam gaze. Missing
-  // feature groups are omitted and the remaining weights are renormalized.
-  const poseWeight = poseScore == null ? 0 : 0.65;
-  const gazeWeight = gazeScore == null ? 0 : 0.35;
+  // Missing feature groups are omitted and the configured weights are
+  // renormalized; the default remains pose-heavy because webcam gaze is coarse.
+  const poseWeight = poseScore == null ? 0 : profile.tuning.poseWeight;
+  const gazeWeight = gazeScore == null ? 0 : profile.tuning.gazeWeight;
   const totalWeight = poseWeight + gazeWeight;
+  if (totalWeight <= 0) return null;
   return ((poseScore ?? 0) * poseWeight + (gazeScore ?? 0) * gazeWeight) / totalWeight;
 }
 
@@ -117,7 +118,11 @@ function commitCandidate(
     ? memory.candidateLevel === candidateLevel && memory.candidateSince != null ? memory.candidateSince : now
     : memory.recoverySince ?? now;
   const dwell = increasing
-    ? faceMissing ? profile.tuning.faceMissingMs : candidateLevel === 1 ? profile.tuning.level1DwellMs : profile.tuning.level2DwellMs
+    ? faceMissing
+      ? profile.tuning.faceMissingMs
+      : candidateLevel === 1
+        ? profile.tuning.level1DwellMs + profile.tuning.glanceAllowanceMs
+        : profile.tuning.level2DwellMs
     : profile.tuning.recoveryMs;
 
   if (now - since < dwell) {
