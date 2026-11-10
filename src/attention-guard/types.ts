@@ -17,6 +17,25 @@ export type RawAttentionSignals = {
   eyeBlinkRight: number | null;
 };
 
+export type AttentionWarningLevel = 0 | 1 | 2;
+export type AttentionPhase = "waiting" | "needs-calibration" | "attentive" | "drifting" | "away" | "face-missing" | "low-quality";
+export type AttentionReason = "waiting-for-signals" | "profile-not-calibrated" | "within-zone" | "looking-away" | "face-not-detected" | "lighting-too-low" | "face-too-small" | "insufficient-signals";
+
+export type AttentionClassification = {
+  phase: AttentionPhase;
+  reason: AttentionReason;
+  score: number | null;
+  warningLevel: AttentionWarningLevel;
+  updatedAt: number;
+};
+
+export type AttentionIntervention = {
+  level: 1 | 2;
+  score: number;
+  reason: AttentionReason;
+  triggeredAt: number;
+};
+
 export type GuardStatus = "off" | "starting" | "on" | "paused" | "error";
 
 export type CameraDevice = {

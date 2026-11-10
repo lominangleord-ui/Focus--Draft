@@ -6,6 +6,8 @@ import { inkOn, lightnessFor, luminance } from "./accent";
 import { playUi, soundSupported } from "./sound";
 import AttentionGuardPanel, { AttentionCameraIndicator } from "./attention-guard/AttentionGuardPanel";
 import { AttentionGuardController } from "./attention-guard/controller";
+import { activeAttentionProfile, clearAttentionStore } from "./attention-guard/storage";
+import { useAttentionStore } from "./attention-guard/useAttentionStore";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
 const WebReader = lazy(() => import("./WebReader"));
@@ -978,6 +980,7 @@ function ToggleRow({ label, value, onChange }: { label: string; value: boolean; 
 
 function App() {
   const [state, setState] = useState<AppState>(loadState);
+  const { store: attentionStore, updateStore: updateAttentionStore } = useAttentionStore();
   const [attentionController] = useState(() => new AttentionGuardController());
   const consumeLegacyNotes = useCallback(() => {
     setState((prev) => prev.notes ? { ...prev, notes: "" } : prev);
@@ -1049,6 +1052,12 @@ function App() {
     attentionController.mount();
     return () => attentionController.dispose();
   }, [attentionController]);
+  useEffect(() => {
+    attentionController.setProfile(activeAttentionProfile(attentionStore));
+  }, [attentionController, attentionStore]);
+  useEffect(() => {
+    if (attentionController.getState().status === "off") attentionController.selectDevice(attentionStore.cameraDeviceId);
+  }, [attentionController, attentionStore.cameraDeviceId]);
 
   const totalSeconds = secondsFor(state.mode, state);
   const progress = clamp(1 - state.remaining / Math.max(totalSeconds, 1), 0, 1);
@@ -2630,13 +2639,14 @@ function App() {
         <button className="panel-danger" onClick={() => {
           localStorage.removeItem(STORE_KEY);
           localStorage.removeItem(PREV_STORE_KEY);
+          clearAttentionStore();
           void clearNotebookStorage()
             .catch((error: unknown) => window.alert(error instanceof Error ? error.message : "Notebook data could not be erased."))
             .finally(() => window.location.reload());
         }}>Erase local data</button>
       </>
     ),
-    attention: () => <AttentionGuardPanel controller={attentionController} />,
+    attention: () => <AttentionGuardPanel controller={attentionController} store={attentionStore} updateStore={updateAttentionStore} />,
   };
 
   const panelMeta: Record<PanelId, { title: string; icon: string }> = {

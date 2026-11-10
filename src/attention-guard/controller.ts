@@ -1,4 +1,6 @@
-import type { AttentionWorkerResponse, CameraDevice, GuardRuntimeState, RawAttentionSignals } from "./types";
+import { createClassifierMemory, updateAttentionClassifier, type ClassifierMemory } from "./classifier";
+import type { AttentionProfile } from "./profile";
+import type { AttentionClassification, AttentionWorkerResponse, CameraDevice, GuardRuntimeState, RawAttentionSignals } from "./types";
 
 const OFF_STATE: GuardRuntimeState = {
   status: "off",
@@ -45,8 +47,13 @@ function assetUrl(path: string) {
 export class AttentionGuardController {
   private runtime: GuardRuntimeState = OFF_STATE;
   private signals: RawAttentionSignals | null = null;
+  private profile: AttentionProfile | null = null;
+  private profileKey = "";
+  private classifierMemory: ClassifierMemory = createClassifierMemory();
+  private classification: AttentionClassification = { phase: "waiting", reason: "waiting-for-signals", score: null, warningLevel: 0, updatedAt: 0 };
   private stateListeners = new Set<() => void>();
   private signalListeners = new Set<() => void>();
+  private classificationListeners = new Set<() => void>();
   private previewElements = new Set<HTMLVideoElement>();
   private stream: MediaStream | null = null;
   private video: HTMLVideoElement | null = null;
@@ -61,6 +68,12 @@ export class AttentionGuardController {
 
   readonly getState = () => this.runtime;
   readonly getSignals = () => this.signals;
+  readonly getClassification = () => this.classification;
+
+  readonly subscribeClassification = (listener: () => void) => {
+    this.classificationListeners.add(listener);
+    return () => { this.classificationListeners.delete(listener); };
+  };
 
   readonly subscribeState = (listener: () => void) => {
     this.stateListeners.add(listener);
@@ -109,6 +122,15 @@ export class AttentionGuardController {
 
   selectDevice(deviceId: string) {
     this.updateState({ selectedDeviceId: deviceId });
+  }
+
+  setProfile(profile: AttentionProfile) {
+    const key = JSON.stringify(profile);
+    if (this.profileKey === key) return;
+    this.profileKey = key;
+    this.profile = profile;
+    this.classifierMemory = createClassifierMemory();
+    this.updateClassification(this.signals);
   }
 
   attachPreview(element: HTMLVideoElement | null) {
@@ -323,6 +345,15 @@ export class AttentionGuardController {
   private setSignals(signals: RawAttentionSignals | null) {
     this.signals = signals;
     this.signalListeners.forEach((listener) => listener());
+    this.updateClassification(signals);
+  }
+
+  private updateClassification(signals: RawAttentionSignals | null) {
+    if (!this.profile) return;
+    const update = updateAttentionClassifier(this.classifierMemory, signals, this.profile, signals?.sampledAt ?? performance.now());
+    this.classifierMemory = update.memory;
+    this.classification = update.classification;
+    this.classificationListeners.forEach((listener) => listener());
   }
 
   private updateState(patch: Partial<GuardRuntimeState>) {

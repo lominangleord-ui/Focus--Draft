@@ -35,10 +35,11 @@ export function matrixToHeadPose(data: readonly number[], rows = 4, columns = 4)
   const pitch = Math.atan2(r21, r22);
   const roll = Math.atan2(r10, r00);
 
+  const clean = (value: number) => Math.abs(value) < 1e-10 ? 0 : value;
   return {
-    yawDeg: toDeg(yaw),
-    pitchDeg: toDeg(pitch),
-    rollDeg: toDeg(roll),
+    yawDeg: clean(toDeg(yaw)),
+    pitchDeg: clean(toDeg(pitch)),
+    rollDeg: clean(toDeg(roll)),
   };
 }
 

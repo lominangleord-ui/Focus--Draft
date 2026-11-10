@@ -10801,3 +10801,269 @@ body:has(.focus-app[data-design="vaporwave"]) {
 .bottom-dock > button {
   flex: 0 0 auto;
 }
+
+.attention-settings,
+.attention-settings-extra,
+.attention-tuning {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+.attention-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.22);
+}
+.attention-mode-switch button {
+  min-height: 2.45rem;
+  border-radius: 0.65rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+.attention-mode-switch button.active {
+  background: var(--accent-soft);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--accent-glow);
+}
+.attention-profile-row {
+  display: flex;
+  align-items: end;
+  gap: 0.65rem;
+}
+.attention-profile-state {
+  margin-bottom: 0.5rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.56rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.attention-profile-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.6rem;
+}
+.attention-profile-create .field input,
+.attention-number-field input {
+  min-height: 2.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.8rem;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  color-scheme: dark;
+}
+.attention-profile-create .field input:focus-visible,
+.attention-number-field input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+}
+.attention-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.attention-file-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.attention-file-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.attention-file-button input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+.attention-file-button:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.attention-inline-message {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.attention-tuning > summary,
+.attention-settings-extra > summary {
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.attention-tuning > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.attention-number-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.attention-number-field {
+  min-width: 0;
+}
+.attention-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.attention-setting-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+.attention-setting-row strong {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.76rem;
+}
+.attention-setting-row small {
+  color: rgba(255, 255, 255, 0.57);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+.attention-small-switch {
+  position: relative;
+  width: 2.55rem;
+  height: 1.42rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 160ms ease;
+}
+.attention-small-switch i {
+  position: absolute;
+  top: 0.18rem;
+  left: 0.18rem;
+  width: 1.06rem;
+  height: 1.06rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 160ms ease;
+}
+.attention-small-switch.is-on {
+  background: var(--accent);
+}
+.attention-small-switch.is-on i {
+  transform: translateX(1.12rem);
+}
+.attention-classification {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+.attention-classification > div:nth-of-type(1) {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+.attention-classification > div strong {
+  color: #fff;
+  font-size: 0.76rem;
+}
+.attention-classification > div small {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.64rem;
+  text-transform: capitalize;
+}
+.attention-classification-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+.attention-phase-attentive .attention-classification-dot {
+  background: #59d78b;
+}
+.attention-phase-drifting .attention-classification-dot {
+  background: #ffc06b;
+}
+.attention-phase-away .attention-classification-dot,
+.attention-phase-face-missing .attention-classification-dot {
+  background: #ff7474;
+}
+.attention-phase-low-quality .attention-classification-dot,
+.attention-phase-needs-calibration .attention-classification-dot {
+  background: #86b5ff;
+}
+.attention-classification-score {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+.attention-classification-score strong {
+  font-family: "JetBrains Mono", monospace;
+}
+.attention-level-tag {
+  padding: 0.25rem 0.4rem;
+  border: 1px solid rgba(255, 122, 122, 0.35);
+  border-radius: 999px;
+  color: #ffb1b1;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+@media (max-width: 520px) {
+  .attention-profile-create {
+    grid-template-columns: 1fr;
+  }
+  .attention-profile-create .attention-secondary-button {
+    width: 100%;
+  }
+  .attention-profile-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .attention-profile-state {
+    align-self: flex-start;
+    margin: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .attention-small-switch,
+  .attention-small-switch i {
+    transition: none;
+  }
+}

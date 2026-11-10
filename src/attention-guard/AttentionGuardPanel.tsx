@@ -1,6 +1,10 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AttentionGuardController } from "./controller";
-import type { RawAttentionSignals } from "./types";
+import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionProfile, type AttentionProfile } from "./profile";
+import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
+import type { AttentionClassification, RawAttentionSignals } from "./types";
+
+type StoreUpdate = (update: Partial<AttentionStore> | ((previous: AttentionStore) => AttentionStore)) => void;
 
 function number(value: number | null, digits = 2) {
   return value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
@@ -37,6 +41,64 @@ function SignalReadout({ signals }: { signals: RawAttentionSignals | null }) {
   );
 }
 
+function AttentionSwitch({ label, checked, help, onChange }: { label: string; checked: boolean; help?: string; onChange: (checked: boolean) => void }) {
+  return (
+    <div className="attention-setting-row">
+      <div><strong>{label}</strong>{help && <small>{help}</small>}</div>
+      <button type="button" role="switch" aria-checked={checked} aria-label={label} className={`attention-small-switch ${checked ? "is-on" : ""}`} onClick={() => onChange(!checked)}>
+        <i aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function AttentionNumberField({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="field compact attention-number-field">
+      <span>{label}</span>
+      <input type="number" min={min} max={max} step={step} value={value} onChange={(event) => {
+        const parsed = Number(event.target.value);
+        if (Number.isFinite(parsed)) onChange(Math.max(min, Math.min(max, parsed)));
+      }} />
+    </label>
+  );
+}
+
+function ClassificationCard({ classification }: { classification: AttentionClassification }) {
+  const label: Record<AttentionClassification["phase"], string> = {
+    waiting: "Waiting for a sample",
+    "needs-calibration": "Calibration needed",
+    attentive: "In calibrated zone",
+    drifting: "Drifting from zone",
+    away: "Outside zone",
+    "face-missing": "Face not detected",
+    "low-quality": "Signal quality too low",
+  };
+  const score = classification.score == null ? "—" : classification.score.toFixed(2);
+  return (
+    <div className={`attention-classification attention-phase-${classification.phase}`}>
+      <span className="attention-classification-dot" aria-hidden="true" />
+      <div><strong>{label[classification.phase]}</strong><small>{classification.reason.split("-").join(" ")}</small></div>
+      <div className="attention-classification-score"><strong>{score}</strong><small>zone score</small></div>
+      {classification.warningLevel > 0 && <b className="attention-level-tag">LEVEL {classification.warningLevel}</b>}
+    </div>
+  );
+}
+
 export function AttentionCameraIndicator({
   controller,
   onOpen,
@@ -57,12 +119,27 @@ export function AttentionCameraIndicator({
   );
 }
 
-export default function AttentionGuardPanel({ controller }: { controller: AttentionGuardController }) {
+export default function AttentionGuardPanel({
+  controller,
+  store,
+  updateStore,
+}: {
+  controller: AttentionGuardController;
+  store: AttentionStore;
+  updateStore: StoreUpdate;
+}) {
   const state = useSyncExternalStore(controller.subscribeState, controller.getState, controller.getState);
   const signals = useSyncExternalStore(controller.subscribeSignals, controller.getSignals, controller.getSignals);
+  const classification = useSyncExternalStore(controller.subscribeClassification, controller.getClassification, controller.getClassification);
   const previewRef = useRef<HTMLVideoElement | null>(null);
+  const profileFileRef = useRef<HTMLInputElement | null>(null);
+  const [newProfileName, setNewProfileName] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
   const isActive = state.status === "on" || state.status === "starting";
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
+  const profile = useMemo(() => activeAttentionProfile(store), [store]);
+  const profilesForMode = store.profiles.filter((item) => item.mode === store.mode);
+  const selectedDeviceId = store.cameraDeviceId;
 
   const bindPreview = useCallback((node: HTMLVideoElement | null) => {
     previewRef.current = node;
@@ -77,6 +154,81 @@ export default function AttentionGuardPanel({ controller }: { controller: Attent
     if (!preview) return;
     return controller.attachPreview(preview);
   }, [controller, state.status]);
+
+  useEffect(() => {
+    if (state.selectedDeviceId !== selectedDeviceId) controller.selectDevice(selectedDeviceId);
+  }, [controller, selectedDeviceId, state.selectedDeviceId]);
+
+  function updateProfile(patch: Partial<AttentionProfile>) {
+    updateStore((previous) => upsertAttentionProfile(previous, {
+      ...profile,
+      ...patch,
+      updatedAt: Date.now(),
+    }));
+  }
+
+  function updateZone(key: keyof AttentionProfile["zone"], value: number) {
+    updateProfile({ zone: { ...profile.zone, [key]: value } });
+  }
+
+  function updateTuning(key: keyof AttentionProfile["tuning"], value: number) {
+    updateProfile({ tuning: { ...profile.tuning, [key]: value } });
+  }
+
+  function changeMode(mode: AttentionStore["mode"]) {
+    updateStore({ mode });
+    setProfileMessage("");
+  }
+
+  function selectProfile(id: string) {
+    updateStore({ activeProfileIds: { ...store.activeProfileIds, [store.mode]: id } });
+    setProfileMessage("");
+  }
+
+  function addProfile() {
+    if (store.profiles.length >= 24) {
+      setProfileMessage("Profile limit reached. Delete an old profile before adding another.");
+      return;
+    }
+    const now = Date.now();
+    const id = `profile-${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const created = createAttentionProfile(store.mode, newProfileName, id, now);
+    updateStore((previous) => upsertAttentionProfile(previous, created));
+    setNewProfileName("");
+    setProfileMessage("Profile added. Calibrate it before using warnings.");
+  }
+
+  function exportProfile() {
+    try {
+      const contents = serializeAttentionProfile(profile);
+      const url = URL.createObjectURL(new Blob([contents], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `focus-draft-${profile.mode}-profile.json`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setProfileMessage("Profile exported. It contains calibration settings only, not stats or camera data.");
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : "Profile could not be exported.");
+    }
+  }
+
+  async function importProfile(file: File | undefined) {
+    if (!file) return;
+    if (store.profiles.length >= 24) {
+      setProfileMessage("Profile limit reached. Delete an old profile before importing another.");
+      return;
+    }
+    try {
+      const imported = parseAttentionProfileFile(await file.text());
+      updateStore((previous) => addImportedProfile(previous, imported));
+      setProfileMessage(`Imported ${imported.mode.toUpperCase()} profile. It is stored only on this device.`);
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : "Profile could not be imported.");
+    } finally {
+      if (profileFileRef.current) profileFileRef.current.value = "";
+    }
+  }
 
   return (
     <div className="attention-panel">
@@ -96,7 +248,13 @@ export default function AttentionGuardPanel({ controller }: { controller: Attent
           className={`attention-toggle ${isActive ? "is-on" : ""}`}
           role="switch"
           aria-checked={isActive}
-          onClick={() => isActive ? controller.stop() : void controller.start()}
+          onClick={() => {
+            if (isActive) controller.stop();
+            else {
+              controller.selectDevice(selectedDeviceId);
+              void controller.start(selectedDeviceId);
+            }
+          }}
         >
           <span className="attention-toggle-track" aria-hidden="true"><i /></span>
           <span>{isActive ? "Turn off tracking" : state.status === "paused" ? "Turn tracking back on" : "Turn on tracking"}</span>
@@ -107,8 +265,11 @@ export default function AttentionGuardPanel({ controller }: { controller: Attent
         <label className="field attention-device-field">
           <span>Camera device</span>
           <select
-            value={state.selectedDeviceId}
-            onChange={(event) => controller.selectDevice(event.target.value)}
+            value={selectedDeviceId}
+            onChange={(event) => {
+              controller.selectDevice(event.target.value);
+              updateStore({ cameraDeviceId: event.target.value });
+            }}
             disabled={isActive || state.devices.length === 0}
           >
             <option value="">Default camera</option>
@@ -135,6 +296,56 @@ export default function AttentionGuardPanel({ controller }: { controller: Attent
         )}
       </div>
 
+      <section className="attention-settings" aria-labelledby="attention-profile-title">
+        <div className="attention-section-heading">
+          <div><h3 id="attention-profile-title">Mode and profile</h3><p>Each mode has its own calibration and attention zone.</p></div>
+        </div>
+        <div className="attention-mode-switch" role="group" aria-label="Attention mode">
+          {(["screen", "book"] as const).map((mode) => (
+            <button key={mode} type="button" className={store.mode === mode ? "active" : ""} aria-pressed={store.mode === mode} onClick={() => changeMode(mode)}>
+              {mode === "screen" ? "SCREEN" : "BOOK"}
+            </button>
+          ))}
+        </div>
+        <div className="attention-profile-row">
+          <label className="field attention-device-field">
+            <span>Active {store.mode.toUpperCase()} profile</span>
+            <select value={profile.id} onChange={(event) => selectProfile(event.target.value)}>
+              {profilesForMode.map((item) => <option key={item.id} value={item.id}>{item.name}{item.calibratedAt ? " · calibrated" : " · needs calibration"}</option>)}
+            </select>
+          </label>
+          <div className="attention-profile-state">{profile.calibratedAt ? "CALIBRATED" : "NOT CALIBRATED"}</div>
+        </div>
+        <div className="attention-profile-create">
+          <label className="field"><span>New profile name</span><input value={newProfileName} maxLength={32} onChange={(event) => setNewProfileName(event.target.value.slice(0, 32))} placeholder={store.mode === "screen" ? "Desk monitor" : "Reading chair"} /></label>
+          <button type="button" className="attention-secondary-button" onClick={addProfile} disabled={store.profiles.length >= 24}>Add profile</button>
+        </div>
+        <div className="attention-profile-actions">
+          <button type="button" className="attention-secondary-button" onClick={exportProfile}>Export profile JSON</button>
+          <label className="attention-file-button">
+            Import profile JSON
+            <input ref={profileFileRef} type="file" accept="application/json,.json" onChange={(event) => void importProfile(event.target.files?.[0])} disabled={store.profiles.length >= 24} />
+          </label>
+        </div>
+        {profileMessage && <p className="attention-inline-message" role="status">{profileMessage}</p>}
+      </section>
+
+      <details className="attention-tuning">
+        <summary>Classifier zone and sensitivity</summary>
+        <p>Adjust how far pose/gaze may drift from calibration before it counts as outside the zone. Values are normalized per profile.</p>
+        <div className="attention-number-grid">
+          <AttentionNumberField label="Head yaw zone (°)" value={profile.zone.yawDeg} min={5} max={60} onChange={(value) => updateZone("yawDeg", value)} />
+          <AttentionNumberField label="Head pitch zone (°)" value={profile.zone.pitchDeg} min={5} max={60} onChange={(value) => updateZone("pitchDeg", value)} />
+          <AttentionNumberField label="Head roll zone (°)" value={profile.zone.rollDeg} min={5} max={60} onChange={(value) => updateZone("rollDeg", value)} />
+          <AttentionNumberField label="Gaze X zone" value={profile.zone.gazeX} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeX", value)} />
+          <AttentionNumberField label="Gaze Y zone" value={profile.zone.gazeY} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeY", value)} />
+          <AttentionNumberField label="Level 1 score" value={profile.tuning.level1Score} min={0.2} max={2.5} step={0.1} onChange={(value) => updateTuning("level1Score", value)} />
+          <AttentionNumberField label="Level 2 score" value={profile.tuning.level2Score} min={0.4} max={4} step={0.1} onChange={(value) => updateTuning("level2Score", Math.max(value, profile.tuning.level1Score + 0.15))} />
+          <AttentionNumberField label="Level 1 hold (ms)" value={profile.tuning.level1DwellMs} min={500} max={30_000} step={500} onChange={(value) => updateTuning("level1DwellMs", value)} />
+          <AttentionNumberField label="Level 2 hold (ms)" value={profile.tuning.level2DwellMs} min={1_000} max={60_000} step={1_000} onChange={(value) => updateTuning("level2DwellMs", value)} />
+        </div>
+      </details>
+
       <section className="attention-debug" aria-labelledby="attention-debug-title">
         <div className="attention-section-heading">
           <div>
@@ -143,8 +354,15 @@ export default function AttentionGuardPanel({ controller }: { controller: Attent
           </div>
           <span className={`attention-sample-state ${signals?.facePresent ? "has-face" : ""}`}>{signals?.facePresent ? "FACE FOUND" : isActive ? "SEARCHING" : "OFF"}</span>
         </div>
+        <ClassificationCard classification={classification} />
         <SignalReadout signals={signals} />
       </section>
+
+      <details className="attention-settings-extra">
+        <summary>Intervention preferences</summary>
+        <AttentionSwitch label="Warning sound" help="Soft in-app chime; off by default." checked={store.soundEnabled} onChange={(value) => updateStore({ soundEnabled: value })} />
+        <AttentionSwitch label="Strict pause" help="Pause the focus timer after a sustained level 2 warning." checked={store.strictPause} onChange={(value) => updateStore({ strictPause: value })} />
+      </details>
 
       <details className="attention-privacy">
         <summary>Camera and privacy details</summary>
