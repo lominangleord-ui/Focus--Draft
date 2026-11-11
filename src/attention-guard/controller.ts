@@ -1,11 +1,15 @@
 import { createClassifierMemory, updateAttentionClassifier, type ClassifierMemory } from "./classifier";
+import { isCameraSelectionConfirmedMissing } from "./deviceSelection";
+import { ATTENTION_SAMPLE_STALE_MS, isAttentionSampleStale } from "./freshness";
+import { canEmitFocusIntervention } from "./lifecycle";
 import type { AttentionProfile } from "./profile";
-import type { AttentionClassification, AttentionWorkerResponse, CameraDevice, GuardRunPurpose, GuardRuntimeState, RawAttentionSignals } from "./types";
+import type { AttentionClassification, AttentionIntervention, AttentionWorkerResponse, CameraDevice, GuardRunPurpose, GuardRuntimeState, RawAttentionSignals } from "./types";
 
 const OFF_STATE: GuardRuntimeState = {
   status: "off",
   error: "",
   devices: [],
+  devicesReady: false,
   selectedDeviceId: "",
   activeDeviceId: "",
   runPurpose: null,
@@ -55,6 +59,7 @@ export class AttentionGuardController {
   private stateListeners = new Set<() => void>();
   private signalListeners = new Set<() => void>();
   private classificationListeners = new Set<() => void>();
+  private interventionListeners = new Set<(intervention: AttentionIntervention) => void>();
   private previewElements = new Set<HTMLVideoElement>();
   private stream: MediaStream | null = null;
   private video: HTMLVideoElement | null = null;
@@ -62,10 +67,12 @@ export class AttentionGuardController {
   private captureTimer: number | null = null;
   private initTimer: number | null = null;
   private generation = 0;
+  private deviceRefreshGeneration = 0;
   private nextFrameId = 1;
   private pendingFrameId: number | null = null;
   private lastVideoTime = -1;
   private mounted = false;
+  private focusTimerActive = false;
 
   readonly getState = () => this.runtime;
   readonly getSignals = () => this.signals;
@@ -74,6 +81,11 @@ export class AttentionGuardController {
   readonly subscribeClassification = (listener: () => void) => {
     this.classificationListeners.add(listener);
     return () => { this.classificationListeners.delete(listener); };
+  };
+
+  readonly subscribeInterventions = (listener: (intervention: AttentionIntervention) => void) => {
+    this.interventionListeners.add(listener);
+    return () => { this.interventionListeners.delete(listener); };
   };
 
   readonly subscribeState = (listener: () => void) => {
@@ -95,26 +107,31 @@ export class AttentionGuardController {
 
   dispose() {
     this.mounted = false;
+    this.focusTimerActive = false;
+    this.deviceRefreshGeneration += 1;
     document.removeEventListener("visibilitychange", this.onVisibilityChange);
     navigator.mediaDevices?.removeEventListener?.("devicechange", this.onDeviceChange);
-    this.stopResources();
+    this.stop();
     this.previewElements.clear();
   }
 
   async refreshDevices() {
     if (!navigator.mediaDevices?.enumerateDevices) return;
+    const request = ++this.deviceRefreshGeneration;
     try {
       const inputs = await navigator.mediaDevices.enumerateDevices();
+      if (request !== this.deviceRefreshGeneration) return;
       const cameras: CameraDevice[] = inputs
         .filter((device) => device.kind === "videoinput")
         .map((device, index) => ({
           deviceId: device.deviceId,
           label: device.label || `Camera ${index + 1}`,
         }));
-      const selectedStillExists = !this.runtime.selectedDeviceId || cameras.some((camera) => camera.deviceId === this.runtime.selectedDeviceId);
+      const selectedDeviceMissing = isCameraSelectionConfirmedMissing(this.runtime.selectedDeviceId, cameras, true);
       this.updateState({
         devices: cameras,
-        selectedDeviceId: selectedStillExists ? this.runtime.selectedDeviceId : "",
+        devicesReady: true,
+        selectedDeviceId: selectedDeviceMissing ? "" : this.runtime.selectedDeviceId,
       });
     } catch {
       // Device enumeration is best-effort; the browser may hide devices until permission is granted.
@@ -123,6 +140,11 @@ export class AttentionGuardController {
 
   selectDevice(deviceId: string) {
     this.updateState({ selectedDeviceId: deviceId });
+  }
+
+  setFocusTimerActive(active: boolean) {
+    this.focusTimerActive = active;
+    if (!active && this.runtime.runPurpose === "focus") this.stop();
   }
 
   setProfile(profile: AttentionProfile) {
@@ -150,7 +172,12 @@ export class AttentionGuardController {
   }
 
   async start(deviceId = this.runtime.selectedDeviceId) {
+    if (!this.focusTimerActive) return;
     await this.startWithPurpose(deviceId, "focus");
+  }
+
+  async startCalibration(deviceId = this.runtime.selectedDeviceId) {
+    await this.startWithPurpose(deviceId, "calibration");
   }
 
   async startDiagnostic(deviceId = this.runtime.selectedDeviceId) {
@@ -158,8 +185,10 @@ export class AttentionGuardController {
   }
 
   private async startWithPurpose(deviceId: string, runPurpose: GuardRunPurpose) {
+    if (runPurpose === "focus" && !this.focusTimerActive) return;
     const run = ++this.generation;
     this.stopResources();
+    this.classifierMemory = createClassifierMemory();
     this.setSignals(null);
     this.updateState({ status: "starting", error: "", selectedDeviceId: deviceId, activeDeviceId: "", runPurpose });
 
@@ -272,6 +301,9 @@ export class AttentionGuardController {
     const video = this.video;
     const worker = this.worker;
     if (run !== this.generation || !video || !worker || this.runtime.status !== "on") return;
+    if (this.signals && isAttentionSampleStale(this.signals.sampledAt, performance.now(), ATTENTION_SAMPLE_STALE_MS)) {
+      this.setSignals(null);
+    }
     if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0 && !video.paused && this.pendingFrameId == null && video.currentTime !== this.lastVideoTime) {
       this.lastVideoTime = video.currentTime;
       let bitmap: ImageBitmap;
@@ -363,6 +395,9 @@ export class AttentionGuardController {
     this.classifierMemory = update.memory;
     this.classification = update.classification;
     this.classificationListeners.forEach((listener) => listener());
+    if (update.intervention && canEmitFocusIntervention(this.focusTimerActive, this.runtime.status, this.runtime.runPurpose)) {
+      this.interventionListeners.forEach((listener) => listener(update.intervention!));
+    }
   }
 
   private updateState(patch: Partial<GuardRuntimeState>) {

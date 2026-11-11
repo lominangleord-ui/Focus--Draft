@@ -81,8 +81,21 @@ function createOutput(
   return { phase, reason, score, warningLevel, updatedAt };
 }
 
-function resetUncalibrated(_memory: ClassifierMemory, now: number): ClassifierMemory {
+function resetMemory(now: number): ClassifierMemory {
   return { ...createClassifierMemory(), lastUpdatedAt: now };
+}
+
+function resetUncalibrated(_memory: ClassifierMemory, now: number): ClassifierMemory {
+  return resetMemory(now);
+}
+
+function lowQualityUpdate(reason: AttentionReason, now: number): ClassifierUpdate {
+  const memory = resetMemory(now);
+  return {
+    memory,
+    classification: createOutput("low-quality", reason, null, 0, now),
+    intervention: null,
+  };
 }
 
 function candidateForScore(score: number, memory: ClassifierMemory, profile: AttentionProfile): AttentionWarningLevel {
@@ -174,8 +187,13 @@ export function updateAttentionClassifier(
   }
 
   if (!signals) {
-    const memory = { ...previous, candidateLevel: 0 as const, candidateSince: null, recoverySince: null, missingSince: null, lastUpdatedAt: now };
-    return { memory, classification: createOutput("waiting", "waiting-for-signals", null, memory.warningLevel, now), intervention: null };
+    const memory = resetMemory(now);
+    return { memory, classification: createOutput("waiting", "waiting-for-signals", null, 0, now), intervention: null };
+  }
+
+  const brightness = signals.brightness;
+  if (brightness != null && brightness < profile.tuning.lowLightFloor) {
+    return lowQualityUpdate("lighting-too-low", now);
   }
 
   if (!signals.facePresent) {
@@ -195,20 +213,13 @@ export function updateAttentionClassifier(
     };
   }
 
-  const brightness = signals.brightness;
-  if (brightness != null && brightness < profile.tuning.lowLightFloor) {
-    const memory = { ...previous, candidateLevel: 0 as const, candidateSince: null, recoverySince: null, missingSince: null, lastUpdatedAt: now };
-    return { memory, classification: createOutput("low-quality", "lighting-too-low", null, memory.warningLevel, now), intervention: null };
-  }
   if (signals.faceWidth != null && signals.faceWidth < profile.tuning.minFaceWidth) {
-    const memory = { ...previous, candidateLevel: 0 as const, candidateSince: null, recoverySince: null, missingSince: null, lastUpdatedAt: now };
-    return { memory, classification: createOutput("low-quality", "face-too-small", null, memory.warningLevel, now), intervention: null };
+    return lowQualityUpdate("face-too-small", now);
   }
 
   const rawScore = computeAttentionScore(signals, profile);
   if (rawScore == null || !Number.isFinite(rawScore)) {
-    const memory = { ...previous, candidateLevel: 0 as const, candidateSince: null, recoverySince: null, missingSince: null, lastUpdatedAt: now };
-    return { memory, classification: createOutput("low-quality", "insufficient-signals", null, memory.warningLevel, now), intervention: null };
+    return lowQualityUpdate("insufficient-signals", now);
   }
 
   const alpha = profile.tuning.smoothingAlpha;

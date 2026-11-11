@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AttentionGuardController } from "./controller";
 import CalibrationWizard from "./CalibrationWizard";
+import { isCameraSelectionConfirmedMissing } from "./deviceSelection";
+import { canStartFocusTrackingFromView } from "./lifecycle";
+import { prepareAttentionWarningAudio, soundSupported } from "../sound";
 import TestLab from "./TestLab";
 import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionProfile, type AttentionProfile } from "./profile";
 import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
@@ -26,11 +29,14 @@ function SignalValue({ label, value, detail }: { label: string; value: string; d
   );
 }
 
-function SignalReadout({ signals }: { signals: RawAttentionSignals | null }) {
+function SignalReadout({ signals, cameraActive }: { signals: RawAttentionSignals | null; cameraActive: boolean }) {
   const faceLabel = signals?.facePresent ? "Face found" : signals ? "No face" : "Waiting";
+  const faceDetail = signals
+    ? `${signals.landmarkCount} points`
+    : cameraActive ? "Waiting for a fresh local sample" : "Start tracking to sample";
   return (
     <div className="attention-signal-grid">
-      <SignalValue label="Face" value={faceLabel} detail={signals ? `${signals.landmarkCount} points` : "Start tracking to sample"} />
+      <SignalValue label="Face" value={faceLabel} detail={faceDetail} />
       <SignalValue label="Head yaw" value={degrees(signals?.yawDeg ?? null)} />
       <SignalValue label="Head pitch" value={degrees(signals?.pitchDeg ?? null)} />
       <SignalValue label="Head roll" value={degrees(signals?.rollDeg ?? null)} />
@@ -111,12 +117,18 @@ export function AttentionCameraIndicator({
   const state = useSyncExternalStore(controller.subscribeState, controller.getState, controller.getState);
   if (state.status === "off") return null;
   const active = state.status === "on" || state.status === "starting";
+  const runLabel = state.runPurpose === "diagnostic" ? "Test camera" : state.runPurpose === "calibration" ? "Calibration camera" : "Focus camera";
+  const indicatorLabel = state.status === "error"
+    ? "Camera error"
+    : state.status === "starting"
+      ? `Starting ${runLabel.toLowerCase()}`
+      : `${runLabel}${state.status === "on" ? " on" : " paused"}`;
   return (
     <div className={`attention-live-indicator ${active ? "is-active" : "is-paused"}`} role="status">
       <span className="attention-live-dot" aria-hidden="true" />
-      <span>{state.runPurpose === "diagnostic" ? state.status === "on" ? "Test camera on" : state.status === "starting" ? "Starting test camera" : "Test camera paused" : state.status === "on" ? "Camera on" : state.status === "starting" ? "Starting camera" : "Camera paused"}</span>
+      <span>{indicatorLabel}</span>
       <button type="button" onClick={onOpen} aria-label="Open Attention Guard panel">Details</button>
-      {active && <button type="button" onClick={() => controller.stop()} aria-label="Turn off Attention Guard">Stop</button>}
+      {(active || state.status === "paused" || state.status === "error") && <button type="button" onClick={() => controller.stop()} aria-label={active ? "Turn off Attention Guard" : state.status === "paused" ? "Stop paused Attention Guard camera" : "Dismiss Attention Guard error"}>{state.status === "error" ? "Dismiss" : "Stop"}</button>}
     </div>
   );
 }
@@ -125,10 +137,16 @@ export default function AttentionGuardPanel({
   controller,
   store,
   updateStore,
+  focusTimerActive,
+  timerMode,
+  onStartFocusTimer,
 }: {
   controller: AttentionGuardController;
   store: AttentionStore;
   updateStore: StoreUpdate;
+  focusTimerActive: boolean;
+  timerMode: "focus" | "short" | "long";
+  onStartFocusTimer: () => void;
 }) {
   const state = useSyncExternalStore(controller.subscribeState, controller.getState, controller.getState);
   const signals = useSyncExternalStore(controller.subscribeSignals, controller.getSignals, controller.getSignals);
@@ -139,10 +157,58 @@ export default function AttentionGuardPanel({
   const [profileMessage, setProfileMessage] = useState("");
   const [view, setView] = useState<"monitor" | "calibrate" | "lab">("monitor");
   const isActive = state.status === "on" || state.status === "starting";
+  const isTemporaryRun = state.runPurpose === "calibration" || state.runPurpose === "diagnostic";
+  const pausedTemporaryRun = state.status === "paused" && isTemporaryRun;
+  const pausedFocusRun = state.status === "paused" && state.runPurpose === "focus";
+  const showFocusTimerAction = view === "monitor" && !focusTimerActive && !isActive && !pausedTemporaryRun;
+  const canStartFocusTracking = canStartFocusTrackingFromView(view, focusTimerActive);
+  const controlChecked = isActive;
+  const controlDisabled = !canStartFocusTracking && !isActive;
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
+  const warningSoundSupported = soundSupported();
   const profile = useMemo(() => activeAttentionProfile(store), [store]);
   const profilesForMode = store.profiles.filter((item) => item.mode === store.mode);
   const selectedDeviceId = store.cameraDeviceId;
+  const cameraHeading = state.status === "on"
+    ? state.runPurpose === "diagnostic" ? "Temporary Test Lab camera is on" : state.runPurpose === "calibration" ? "Temporary calibration camera is on" : "Focus tracking is on"
+    : state.status === "starting"
+      ? state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.runPurpose === "calibration" ? "Starting temporary calibration camera…" : "Starting focus tracking…"
+      : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off";
+  const cameraDescription = state.status === "on"
+    ? state.runPurpose === "diagnostic"
+      ? "This explicit Test Lab run is temporary and does not trigger focus-session interventions."
+      : state.runPurpose === "calibration"
+        ? "This explicit calibration run is temporary and does not trigger focus-session interventions."
+        : "Camera frames are being analyzed locally during the active Focus timer."
+    : state.status === "starting"
+      ? state.runPurpose === "diagnostic"
+        ? "Starting the explicit Test Lab camera run; it will not trigger focus-session interventions."
+        : state.runPurpose === "calibration"
+          ? "Starting the explicit calibration camera run; it will not trigger focus-session interventions."
+          : "Starting local camera analysis for this Focus timer."
+      : state.status === "paused"
+        ? "The camera and inference worker were stopped when the tab went into the background."
+      : state.status === "error"
+        ? "The camera or local analysis stopped. See the message below, then retry when ready."
+        : view !== "monitor"
+          ? "Use the temporary camera action in this view; it does not require a running Focus timer."
+          : !focusTimerActive
+            ? timerMode === "focus"
+              ? "Start or resume Focus to enable tracking. The camera stays off until you turn it on."
+              : "You are on a break. Switch to Focus to enable tracking; the camera stays off until you turn it on."
+            : "No camera is active. Turn on focus tracking when you want to use it.";
+  const toggleLabel = isActive
+    ? isTemporaryRun ? "Stop temporary camera" : "Turn off tracking"
+    : state.status === "error" && canStartFocusTracking
+      ? "Retry camera"
+      : state.status === "paused" && state.runPurpose === "focus" && canStartFocusTracking
+        ? "Turn tracking back on"
+        : canStartFocusTracking
+          ? "Turn on tracking"
+          : view !== "monitor"
+            ? "Use temporary camera below"
+            : focusTimerActive ? "Use Monitor for tracking" : "Focus timer required";
+  const focusTimerActionLabel = timerMode === "focus" ? "Start or resume Focus timer" : "Switch to Focus and start";
 
   const bindPreview = useCallback((node: HTMLVideoElement | null) => {
     previewRef.current = node;
@@ -159,8 +225,32 @@ export default function AttentionGuardPanel({
   }, [controller, state.status]);
 
   useEffect(() => {
+    if (view !== "monitor" && controller.getState().runPurpose === "focus") controller.stop();
+    return () => {
+      const purpose = controller.getState().runPurpose;
+      if ((view !== "monitor" && purpose === "focus") || (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic")) {
+        controller.stop();
+      }
+    };
+  }, [controller, view]);
+
+  useEffect(() => {
+    if (isCameraSelectionConfirmedMissing(selectedDeviceId, state.devices, state.devicesReady)) {
+      if (state.selectedDeviceId) controller.selectDevice("");
+      updateStore({ cameraDeviceId: "" });
+      return;
+    }
     if (state.selectedDeviceId !== selectedDeviceId) controller.selectDevice(selectedDeviceId);
-  }, [controller, selectedDeviceId, state.selectedDeviceId]);
+  }, [controller, selectedDeviceId, state.devices, state.devicesReady, state.selectedDeviceId, updateStore]);
+
+  function changeView(nextView: typeof view) {
+    if (nextView === view) return;
+    const purpose = controller.getState().runPurpose;
+    const leavingTemporaryRun = (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic");
+    const leavingFocusTracking = nextView !== "monitor" && purpose === "focus";
+    if (leavingTemporaryRun || leavingFocusTracking) controller.stop();
+    setView(nextView);
+  }
 
   function updateProfile(patch: Partial<AttentionProfile>) {
     updateStore((previous) => upsertAttentionProfile(previous, {
@@ -238,30 +328,36 @@ export default function AttentionGuardPanel({
       <section className="attention-intro">
         <div className="attention-kicker">Optional · local processing</div>
         <h2>Attention Guard</h2>
-        <p>Use a webcam to notice when your face and gaze drift away from your calibrated work area. It is off until you turn tracking on.</p>
+        <p>Optional on-device camera checks help you stay within your calibrated work area. Regular tracking runs only during an active Focus timer; calibration and Test Lab use separate temporary camera runs.</p>
       </section>
 
       <section className={`attention-control-card ${isActive ? "is-active" : ""}`} aria-label="Camera tracking controls">
         <div className="attention-control-copy">
-          <strong>{state.status === "on" && state.runPurpose === "diagnostic" ? "Temporary Test Lab camera is on" : state.status === "on" ? "Tracking is on" : state.status === "starting" && state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.status === "starting" ? "Starting local tracking…" : state.status === "paused" ? "Tracking paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off"}</strong>
-          <span>{state.status === "on" && state.runPurpose === "diagnostic" ? "This camera run is a temporary diagnostic test and is not counted as a focus session." : state.status === "on" ? "Camera frames are being analyzed on this device." : state.status === "paused" ? "The camera and inference worker were stopped when the tab went into the background." : state.status === "error" ? state.error : "No camera is active. Your timer works normally while this is off."}</span>
+          <strong>{cameraHeading}</strong>
+          <span>{cameraDescription}</span>
         </div>
-        <button
-          type="button"
-          className={`attention-toggle ${isActive ? "is-on" : ""}`}
-          role="switch"
-          aria-checked={isActive}
-          onClick={() => {
-            if (isActive) controller.stop();
-            else {
-              controller.selectDevice(selectedDeviceId);
-              void controller.start(selectedDeviceId);
-            }
-          }}
-        >
-          <span className="attention-toggle-track" aria-hidden="true"><i /></span>
-          <span>{isActive ? "Turn off tracking" : state.status === "paused" ? "Turn tracking back on" : "Turn on tracking"}</span>
-        </button>
+        <div className="attention-control-actions">
+          <button
+            type="button"
+            className={`attention-toggle ${isActive ? "is-on" : ""}`}
+            role="switch"
+            aria-checked={controlChecked}
+            disabled={controlDisabled}
+            onClick={() => {
+              if (isActive) controller.stop();
+              else if (canStartFocusTracking) {
+                controller.selectDevice(selectedDeviceId);
+                void controller.start(selectedDeviceId);
+              }
+            }}
+          >
+            <span className="attention-toggle-track" aria-hidden="true"><i /></span>
+            <span>{toggleLabel}</span>
+          </button>
+          {showFocusTimerAction && <button type="button" className="attention-secondary-button" onClick={onStartFocusTimer}>{focusTimerActionLabel}</button>}
+          {pausedFocusRun && <button type="button" className="attention-secondary-button" onClick={() => controller.stop()}>Stop paused camera</button>}
+          {pausedTemporaryRun && <button type="button" className="attention-secondary-button" onClick={() => controller.stop()}>Stop paused temporary camera</button>}
+        </div>
       </section>
 
       <div className="attention-camera-row">
@@ -273,9 +369,12 @@ export default function AttentionGuardPanel({
               controller.selectDevice(event.target.value);
               updateStore({ cameraDeviceId: event.target.value });
             }}
-            disabled={isActive || state.devices.length === 0}
+            disabled={isActive}
           >
             <option value="">Default camera</option>
+            {selectedDeviceId && !state.devices.some((device) => device.deviceId === selectedDeviceId) && !isCameraSelectionConfirmedMissing(selectedDeviceId, state.devices, state.devicesReady) && (
+              <option value={selectedDeviceId}>Saved camera (not currently listed)</option>
+            )}
             {state.devices.map((device, index) => (
               <option key={device.deviceId || index} value={device.deviceId}>{device.label}</option>
             ))}
@@ -285,7 +384,9 @@ export default function AttentionGuardPanel({
           Refresh cameras
         </button>
       </div>
-      {!supported && <p className="attention-error" role="alert">Camera access is not available in this browser. Try a current browser on HTTPS or localhost.</p>}
+      {isActive && <p className="attention-inline-message">Stop the current camera run before choosing a different device.</p>}
+      {state.devicesReady && state.devices.length === 0 && <p className="attention-inline-message">No cameras are listed. Choose Default camera to try browser selection, or connect a camera and refresh.</p>}
+      {!supported && state.status !== "error" && <p className="attention-error" role="alert">Camera access is not available in this browser. Try a current browser on HTTPS or localhost.</p>}
       {state.status === "error" && <p className="attention-error" role="alert">{state.error}</p>}
 
       <div className="attention-preview-wrap">
@@ -300,9 +401,9 @@ export default function AttentionGuardPanel({
       </div>
 
       <div className="attention-tabs" role="tablist" aria-label="Attention Guard views">
-        <button id="attention-monitor-tab" type="button" role="tab" aria-selected={view === "monitor"} className={view === "monitor" ? "active" : ""} onClick={() => setView("monitor")}>Monitor</button>
-        <button id="attention-calibrate-tab" type="button" role="tab" aria-selected={view === "calibrate"} className={view === "calibrate" ? "active" : ""} onClick={() => setView("calibrate")}>Calibrate</button>
-        <button id="attention-test-lab-tab" type="button" role="tab" aria-selected={view === "lab"} className={view === "lab" ? "active" : ""} onClick={() => setView("lab")}>Test Lab</button>
+        <button id="attention-monitor-tab" type="button" role="tab" aria-selected={view === "monitor"} className={view === "monitor" ? "active" : ""} onClick={() => changeView("monitor")}>Monitor</button>
+        <button id="attention-calibrate-tab" type="button" role="tab" aria-selected={view === "calibrate"} className={view === "calibrate" ? "active" : ""} onClick={() => changeView("calibrate")}>Calibrate</button>
+        <button id="attention-test-lab-tab" type="button" role="tab" aria-selected={view === "lab"} className={view === "lab" ? "active" : ""} onClick={() => changeView("lab")}>Test Lab</button>
       </div>
 
       <section className="attention-settings" aria-labelledby="attention-profile-title">
@@ -344,7 +445,7 @@ export default function AttentionGuardPanel({
           controller={controller}
           profile={profile}
           cameraStatus={state.status}
-          onStartTracking={() => { controller.selectDevice(selectedDeviceId); void controller.start(selectedDeviceId); }}
+          onStartCalibrationCamera={() => { controller.selectDevice(selectedDeviceId); void controller.startCalibration(selectedDeviceId); }}
           onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
         />
       ) : view === "lab" ? (
@@ -384,12 +485,15 @@ export default function AttentionGuardPanel({
           <span className={`attention-sample-state ${signals?.facePresent ? "has-face" : ""}`}>{signals?.facePresent ? "FACE FOUND" : isActive ? "SEARCHING" : "OFF"}</span>
         </div>
         <ClassificationCard classification={classification} />
-        <SignalReadout signals={signals} />
+        <SignalReadout signals={signals} cameraActive={isActive} />
       </section>
 
       <details className="attention-settings-extra">
         <summary>Intervention preferences</summary>
-        <AttentionSwitch label="Warning sound" help="Soft in-app chime; off by default." checked={store.soundEnabled} onChange={(value) => updateStore({ soundEnabled: value })} />
+        {warningSoundSupported ? <AttentionSwitch label="Warning sound" help="Soft in-app chime; off by default." checked={store.soundEnabled} onChange={(value) => {
+          if (value) prepareAttentionWarningAudio();
+          updateStore({ soundEnabled: value });
+        }} /> : <p className="attention-inline-message">Warning sounds are not supported in this browser.</p>}
         <AttentionSwitch label="Strict pause" help="Pause the focus timer after a sustained level 2 warning." checked={store.strictPause} onChange={(value) => updateStore({ strictPause: value })} />
       </details>
         </div>
@@ -398,11 +502,12 @@ export default function AttentionGuardPanel({
       <details className="attention-privacy">
         <summary>Camera and privacy details</summary>
         <ul>
-          <li>Nothing starts until you select <strong>Turn on tracking</strong> and grant camera permission.</li>
+          <li>Focus tracking can be started only while the Focus timer is running. Pausing, resetting, finishing, skipping, or switching to a break stops its camera and worker; after resuming, start tracking again if desired.</li>
+          <li>Opening Calibrate or Test Lab stops Focus tracking. Their separate temporary camera runs require an explicit start and never trigger focus-session interventions.</li>
           <li>Video frames and landmarks are processed in a local worker. They are not uploaded or saved.</li>
-          <li>Tracking uses the camera only (no microphone). Turning it off stops every camera track and terminates the worker.</li>
+          <li>Tracking uses the camera only (no microphone). Stopping a run ends every camera track and terminates the worker.</li>
           <li>The face model and WebAssembly files are served from this app. External worker requests, including SDK performance telemetry, are blocked.</li>
-          <li>When this tab goes into the background, tracking is stopped; turn it back on when you return.</li>
+          <li>When this tab goes into the background, the current camera run is stopped; start it again explicitly when you return.</li>
         </ul>
       </details>
     </div>

@@ -172,6 +172,28 @@ export function playUi(design: string, kind: UiSoundKind = "tap") {
   }
 }
 
+/** Prepare the audio context from the user's explicit sound-preference gesture. */
+export function prepareAttentionWarningAudio() {
+  audio();
+}
+
+/** A quiet in-app alert used only when an opted-in focus intervention fires. */
+export function playAttentionWarning(level: 1 | 2) {
+  const c = audio();
+  if (!c) return;
+  const at = c.currentTime + 0.01;
+  try {
+    if (level === 1) {
+      blip(c, "sine", 620, 520, at, 0.16, 0.03);
+    } else {
+      blip(c, "sine", 740, 640, at, 0.15, 0.032);
+      blip(c, "sine", 510, 440, at + 0.16, 0.17, 0.03);
+    }
+  } catch {
+    /* audio is optional and must never interrupt a focus session */
+  }
+}
+
 /** True when the browser exposes Web Audio at all (used to hide the setting). */
 export function soundSupported(): boolean {
   if (typeof window === "undefined") return false;

@@ -37,7 +37,7 @@ export type AttentionIntervention = {
 };
 
 export type GuardStatus = "off" | "starting" | "on" | "paused" | "error";
-export type GuardRunPurpose = "focus" | "diagnostic";
+export type GuardRunPurpose = "focus" | "calibration" | "diagnostic";
 
 export type CameraDevice = {
   deviceId: string;
@@ -48,6 +48,7 @@ export type GuardRuntimeState = {
   status: GuardStatus;
   error: string;
   devices: CameraDevice[];
+  devicesReady: boolean;
   selectedDeviceId: string;
   activeDeviceId: string;
   runPurpose: GuardRunPurpose | null;

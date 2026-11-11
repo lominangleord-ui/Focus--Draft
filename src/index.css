@@ -10477,6 +10477,14 @@ body:has(.focus-app[data-design="vaporwave"]) {
   font-size: 0.76rem;
   line-height: 1.4;
 }
+.attention-control-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
 .attention-toggle {
   display: inline-flex;
   align-items: center;
@@ -10502,8 +10510,8 @@ body:has(.focus-app[data-design="vaporwave"]) {
   background: rgba(75, 185, 119, 0.15);
 }
 .attention-toggle:disabled {
-  cursor: wait;
-  opacity: 0.7;
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 .attention-toggle-track {
   position: relative;
@@ -10770,6 +10778,13 @@ body:has(.focus-app[data-design="vaporwave"]) {
   .attention-control-card {
     align-items: stretch;
     flex-direction: column;
+  }
+  .attention-control-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .attention-control-actions > button {
+    width: 100%;
   }
   .attention-toggle {
     width: 100%;

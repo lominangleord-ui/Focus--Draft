@@ -3,10 +3,12 @@ import NotesNotebook, { clearNotebookStorage } from "./NotesNotebook";
 import { DESIGNS, DESIGN_GROUPS, DEFAULT_DESIGN, designById, isDesignId, type DesignId } from "./designs";
 import MotionFx from "./MotionFx";
 import { inkOn, lightnessFor, luminance } from "./accent";
-import { playUi, soundSupported } from "./sound";
+import { playAttentionWarning, playUi, soundSupported } from "./sound";
 import AttentionGuardPanel, { AttentionCameraIndicator } from "./attention-guard/AttentionGuardPanel";
 import { AttentionGuardController } from "./attention-guard/controller";
+import { isActiveFocusTimer, shouldPauseFocusTimer } from "./attention-guard/lifecycle";
 import { activeAttentionProfile, clearAttentionStore } from "./attention-guard/storage";
+import { secondsRemaining } from "./timerMath";
 import { useAttentionStore } from "./attention-guard/useAttentionStore";
 
 const PdfViewer = lazy(() => import("./PdfViewer"));
@@ -1006,6 +1008,7 @@ function App() {
   const [ytMusicInput, setYtMusicInput] = useState("");
   const [phaseLine, setPhaseLine] = useState(() => pickRandom(FOCUS_LINES));
   const [toast, setToast] = useState("");
+  const toastTimeout = useRef<number | null>(null);
   const [sampledHue, setSampledHue] = useState<number | null>(null);
   const [utilTab, setUtilTab] = useState<UtilId | null>(null);
   const [utilMenu, setUtilMenu] = useState(false);
@@ -1025,6 +1028,8 @@ function App() {
   const segmentStartedAt = useRef<number | null>(null);
   const segmentElapsed = useRef(0);
   const completionLock = useRef(false);
+  const completionTimeout = useRef<number | null>(null);
+  const timerRunId = useRef(0);
   const pendingAutoStart = useRef(false);
   const totalSessionsCache = useRef<{ sessionsDone: number; value: number } | null>(null);
   const streakCache = useRef<{ dayKey: string; sessionsDone: number; value: number } | null>(null);
@@ -1047,11 +1052,41 @@ function App() {
   stateRef.current = state;
   const runningRef = useRef(running);
   runningRef.current = running;
+  const attentionStoreRef = useRef(attentionStore);
+  attentionStoreRef.current = attentionStore;
+  const focusTimerActive = isActiveFocusTimer(running, state.mode);
 
   useEffect(() => {
     attentionController.mount();
     return () => attentionController.dispose();
   }, [attentionController]);
+  useEffect(() => () => {
+    if (toastTimeout.current != null) window.clearTimeout(toastTimeout.current);
+    if (completionTimeout.current != null) window.clearTimeout(completionTimeout.current);
+  }, []);
+  useEffect(() => {
+    attentionController.setFocusTimerActive(focusTimerActive);
+  }, [attentionController, focusTimerActive]);
+  useEffect(() => attentionController.subscribeInterventions((intervention) => {
+    const liveState = stateRef.current;
+    if (!runningRef.current || liveState.mode !== "focus") return;
+
+    const preferences = attentionStoreRef.current;
+    if (preferences.soundEnabled) playAttentionWarning(intervention.level);
+    if (shouldPauseFocusTimer(intervention.level, preferences.strictPause, isActiveFocusTimer(runningRef.current, liveState.mode))) {
+      const cause = intervention.reason === "face-not-detected" ? "your face was not visible" : "you were away from your work area";
+      notify(`Focus timer paused because ${cause} for a while. Resume when you're ready.`);
+      pauseTimer();
+      return;
+    }
+
+    const message = intervention.reason === "face-not-detected"
+      ? "Attention Guard can't see your face. Check the camera position or sit back in frame."
+      : intervention.level === 1
+        ? "Gentle reminder: take a moment to look back at your calibrated work area."
+        : "You've been away from your work area for a while. Recenter when you're ready.";
+    notify(message);
+  }), [attentionController]);
   useEffect(() => {
     attentionController.setProfile(activeAttentionProfile(attentionStore));
   }, [attentionController, attentionStore]);
@@ -1241,8 +1276,10 @@ function App() {
   useEffect(() => {
     if (!running) return;
     completionLock.current = false;
+    const runId = timerRunId.current;
     const interval = window.setInterval(() => {
-      const next = Math.max(0, Math.ceil((endAt.current - Date.now()) / 1000));
+      if (runId !== timerRunId.current || !runningRef.current) return;
+      const next = secondsRemaining(endAt.current, Date.now());
       setState((prev) => (prev.remaining === next ? prev : { ...prev, remaining: next }));
       // Read live settings from the ref — the effect closure would go stale
       // if the user toggles check-ins mid-session.
@@ -1253,7 +1290,14 @@ function App() {
       }
       if (next <= 0 && !completionLock.current) {
         completionLock.current = true;
-        window.setTimeout(() => completeSegment(), 0);
+        attentionController.setFocusTimerActive(false);
+        const completionRunId = runId;
+        const timeoutId = window.setTimeout(() => {
+          if (completionTimeout.current === timeoutId) completionTimeout.current = null;
+          if (completionRunId !== timerRunId.current) return;
+          completeSegment();
+        }, 0);
+        completionTimeout.current = timeoutId;
       }
     }, 1000);
     return () => window.clearInterval(interval);
@@ -1282,6 +1326,7 @@ function App() {
     }
     const el = e.target as HTMLElement | null;
     if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+    if (el?.closest("button, a[href], select, summary, [role='button'], [role='switch'], [role='tab'], [role='menuitem']") && e.key !== "Escape") return;
     if (e.code === "Space") {
       e.preventDefault();
       if (running) pauseTimer();
@@ -1359,6 +1404,14 @@ function App() {
   function resetSegmentClock() {
     segmentStartedAt.current = null;
     segmentElapsed.current = 0;
+  }
+
+  function cancelPendingCompletion() {
+    if (completionTimeout.current != null) {
+      window.clearTimeout(completionTimeout.current);
+      completionTimeout.current = null;
+    }
+    completionLock.current = false;
   }
 
   function burstConfetti() {
@@ -1501,8 +1554,12 @@ function App() {
   }
 
   function notify(message: string) {
+    if (toastTimeout.current != null) window.clearTimeout(toastTimeout.current);
     setToast(message);
-    window.setTimeout(() => setToast(""), 2400);
+    toastTimeout.current = window.setTimeout(() => {
+      toastTimeout.current = null;
+      setToast("");
+    }, 2400);
   }
 
   function chooseDesign(id: DesignId) {
@@ -1521,32 +1578,66 @@ function App() {
     });
   }
 
+  function setTimerRunning(nextRunning: boolean, mode = stateRef.current.mode) {
+    if (runningRef.current !== nextRunning) timerRunId.current += 1;
+    runningRef.current = nextRunning;
+    attentionController.setFocusTimerActive(isActiveFocusTimer(nextRunning, mode));
+    setRunning(nextRunning);
+  }
+
   function startTimer() {
-    if (running) return;
+    pendingAutoStart.current = false;
+    if (runningRef.current) return;
     endAt.current = Date.now() + Math.max(1, state.remaining) * 1000;
     segmentStartedAt.current = Date.now();
     lastCheckIn.current = Date.now();
-    setRunning(true);
+    setTimerRunning(true, state.mode);
   }
 
   function pauseTimer() {
+    pendingAutoStart.current = false;
+    const wasRunning = runningRef.current;
+    const remaining = secondsRemaining(endAt.current, Date.now());
+    if (wasRunning && remaining === 0) {
+      cancelPendingCompletion();
+      completeSegment();
+      return;
+    }
+    cancelPendingCompletion();
+    if (wasRunning) {
+      setState((prev) => (prev.remaining === remaining ? prev : { ...prev, remaining }));
+    }
     if (segmentStartedAt.current) {
       segmentElapsed.current += Math.floor((Date.now() - segmentStartedAt.current) / 1000);
       segmentStartedAt.current = null;
     }
-    setRunning(false);
+    setTimerRunning(false);
   }
 
   function resetTimer() {
-    setRunning(false);
+    pendingAutoStart.current = false;
+    cancelPendingCompletion();
+    setTimerRunning(false);
     resetSegmentClock();
     setState((prev) => ({ ...prev, remaining: secondsFor(prev.mode, prev) }));
   }
 
   function switchMode(mode: ModeId) {
-    setRunning(false);
+    if (mode === stateRef.current.mode) return;
+    pendingAutoStart.current = false;
+    cancelPendingCompletion();
+    setTimerRunning(false, mode);
     resetSegmentClock();
     setState((prev) => ({ ...prev, mode, remaining: secondsFor(mode, prev) }));
+  }
+
+  function startFocusTimerFromAttention() {
+    if (state.mode === "focus") {
+      startTimer();
+      return;
+    }
+    switchMode("focus");
+    pendingAutoStart.current = true;
   }
 
   /* Classic pomodoro cycle: after N focus sessions the long break is next,
@@ -1556,11 +1647,10 @@ function App() {
   }
 
   function completeSegment() {
-    setRunning(false);
-    // Mode / session count are stable across ticks, so deriving the route here
-    // is safe; the updater below only touches data that can change
-    // while the timer runs (tasks, stats, settings) and stays pure.
-    const prev = state;
+    setTimerRunning(false);
+    // Read the latest timer settings and session count rather than the timer
+    // effect's render-time closure; settings can change mid-session.
+    const prev = stateRef.current;
     const wasFocus = prev.mode === "focus";
     const n = prev.settings.sessionsBeforeLong;
     const sessionsDone = wasFocus ? prev.sessionsDone + 1 : prev.sessionsDone;
@@ -1588,7 +1678,9 @@ function App() {
   }
 
   function skipSegment() {
-    setRunning(false);
+    pendingAutoStart.current = false;
+    cancelPendingCompletion();
+    setTimerRunning(false);
     const prev = state;
     const wasFocus = prev.mode === "focus";
     const n = prev.settings.sessionsBeforeLong;
@@ -2646,7 +2738,7 @@ function App() {
         }}>Erase local data</button>
       </>
     ),
-    attention: () => <AttentionGuardPanel controller={attentionController} store={attentionStore} updateStore={updateAttentionStore} />,
+    attention: () => <AttentionGuardPanel controller={attentionController} store={attentionStore} updateStore={updateAttentionStore} focusTimerActive={focusTimerActive} timerMode={state.mode} onStartFocusTimer={startFocusTimerFromAttention} />,
   };
 
   const panelMeta: Record<PanelId, { title: string; icon: string }> = {
@@ -3088,7 +3180,7 @@ function App() {
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
     </main>
   );
 }

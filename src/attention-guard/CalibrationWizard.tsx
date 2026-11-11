@@ -47,7 +47,7 @@ function calibrationPrechecks(signals: RawAttentionSignals | null, cameraStatus:
     {
       label: "Camera",
       state: cameraReady ? "pass" : isStarting ? "waiting" : "blocked",
-      detail: cameraReady ? "Camera is on for this calibration." : isStarting ? "Waiting for the local worker to start." : "Start tracking explicitly to use the camera.",
+      detail: cameraReady ? "Camera is on for this calibration." : isStarting ? "Waiting for the local worker to start." : "Start the temporary calibration camera to continue.",
     },
     {
       label: "Face visible",
@@ -116,13 +116,13 @@ export default function CalibrationWizard({
   controller,
   profile,
   cameraStatus,
-  onStartTracking,
+  onStartCalibrationCamera,
   onSave,
 }: {
   controller: AttentionGuardController;
   profile: AttentionProfile;
   cameraStatus: GuardStatus;
-  onStartTracking: () => void;
+  onStartCalibrationCamera: () => void;
   onSave: (profile: AttentionProfile) => void;
 }) {
   const signals = useSyncExternalStore(controller.subscribeSignals, controller.getSignals, controller.getSignals);
@@ -352,8 +352,8 @@ export default function CalibrationWizard({
             <div className="attention-calibration-subheading">
               <div><h4 id="attention-precheck-title">Live prechecks</h4><p>Only capture when the checks below are ready.</p></div>
               {cameraStatus !== "on" && (
-                <button type="button" className="attention-secondary-button" onClick={onStartTracking} disabled={cameraStatus === "starting"}>
-                  {cameraStatus === "starting" ? "Starting…" : "Turn on camera"}
+                <button type="button" className="attention-secondary-button" onClick={onStartCalibrationCamera} disabled={cameraStatus === "starting"}>
+                  {cameraStatus === "starting" ? "Starting…" : "Start temporary camera"}
                 </button>
               )}
             </div>

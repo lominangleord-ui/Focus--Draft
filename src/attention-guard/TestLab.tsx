@@ -477,7 +477,7 @@ export default function TestLab({
       <section className="attention-lab-card attention-lab-camera-card" aria-labelledby="attention-lab-camera-title">
         <div>
           <h4 id="attention-lab-camera-title">Temporary live camera test</h4>
-          <p>The camera runs only after an explicit start here. It is separate from normal focus-session tracking and stops on tab hide or when you stop it.</p>
+          <p>The camera runs only after an explicit start here. It is separate from focus-session tracking and interventions, and stops when you leave Test Lab, hide the tab, or stop it.</p>
         </div>
         {testCameraActive ? (
           <button type="button" className="attention-secondary-button" onClick={onStopCamera}>Stop test camera</button>
