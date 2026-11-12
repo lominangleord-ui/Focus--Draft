@@ -25,8 +25,12 @@ export type AttentionStore = {
   schemaVersion: 1;
   mode: AttentionMode;
   cameraDeviceId: string;
+  /** In-app reminders for sustained off-target behavior during Focus. */
+  offTargetAlertsEnabled: boolean;
   soundEnabled: boolean;
   strictPause: boolean;
+  /** 0 disables the timed Screen-zone break nudge. */
+  screenBreakReminderMinutes: number;
   profiles: AttentionProfile[];
   activeProfileIds: Record<AttentionMode, string>;
   statsByDay: Record<string, AttentionDayStats>;
@@ -65,8 +69,10 @@ export function defaultAttentionStore(): AttentionStore {
     schemaVersion: 1,
     mode: "screen",
     cameraDeviceId: "",
+    offTargetAlertsEnabled: true,
     soundEnabled: false,
     strictPause: false,
+    screenBreakReminderMinutes: 0,
     profiles: [defaultAttentionProfile("screen"), defaultAttentionProfile("book")],
     activeProfileIds: { screen: "default-screen", book: "default-book" },
     statsByDay: {},
@@ -147,12 +153,20 @@ export function normalizeAttentionStore(value: unknown): AttentionStore {
     }
   }
 
+  // Legacy v1 stores without this preference retain the prior on-by-default
+  // in-app nudge behavior; an explicit false remains respected.
+  const offTargetAlertsEnabled = typeof value.offTargetAlertsEnabled === "boolean" ? value.offTargetAlertsEnabled : true;
+
   return {
     schemaVersion: 1,
     mode: isMode(value.mode) ? value.mode : base.mode,
     cameraDeviceId: typeof value.cameraDeviceId === "string" ? value.cameraDeviceId.slice(0, 512) : "",
+    offTargetAlertsEnabled,
     soundEnabled: value.soundEnabled === true,
-    strictPause: value.strictPause === true,
+    strictPause: value.strictPause === true && offTargetAlertsEnabled,
+    screenBreakReminderMinutes: [0, 25, 45, 60].includes(value.screenBreakReminderMinutes as number)
+      ? value.screenBreakReminderMinutes as number
+      : 0,
     profiles: profiles.slice(0, MAX_PROFILES),
     activeProfileIds,
     statsByDay,

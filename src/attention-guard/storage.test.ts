@@ -10,10 +10,12 @@ class MemoryStorage {
 }
 
 describe("Attention Guard local store", () => {
-  it("defaults to off-by-default preferences and separate screen/book profiles", () => {
+  it("defaults to gentle in-app reminders with stronger interventions opt-in", () => {
     const store = defaultAttentionStore();
+    expect(store.offTargetAlertsEnabled).toBe(true);
     expect(store.soundEnabled).toBe(false);
     expect(store.strictPause).toBe(false);
+    expect(store.screenBreakReminderMinutes).toBe(0);
     expect(store.profiles.map((profile) => profile.mode).sort()).toEqual(["book", "screen"]);
     expect(store.profiles.every((profile) => profile.calibratedAt == null)).toBe(true);
   });
@@ -27,6 +29,23 @@ describe("Attention Guard local store", () => {
     expect(loadAttentionStore(storage).cameraDeviceId).toBe("local-camera-id");
     storage.setItem(ATTENTION_STORE_KEY, "not json");
     expect(loadAttentionStore(storage).cameraDeviceId).toBe("");
+  });
+
+  it("normalizes reminder and timed break preferences while preserving legacy behavior", () => {
+    const legacy = normalizeAttentionStore({ schemaVersion: 1, strictPause: true });
+    expect(legacy.offTargetAlertsEnabled).toBe(true);
+    expect(legacy.strictPause).toBe(true);
+    expect(legacy.screenBreakReminderMinutes).toBe(0);
+
+    const configured = normalizeAttentionStore({
+      schemaVersion: 1,
+      offTargetAlertsEnabled: true,
+      strictPause: true,
+      screenBreakReminderMinutes: 45,
+    });
+    expect(configured).toMatchObject({ offTargetAlertsEnabled: true, strictPause: true, screenBreakReminderMinutes: 45 });
+    expect(normalizeAttentionStore({ schemaVersion: 1, screenBreakReminderMinutes: 90 }).screenBreakReminderMinutes).toBe(0);
+    expect(normalizeAttentionStore({ schemaVersion: 1, offTargetAlertsEnabled: false, strictPause: true }).strictPause).toBe(false);
   });
 
   it("keeps a built-in profile for each mode when imported storage is crowded", () => {

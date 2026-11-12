@@ -64,24 +64,28 @@ const NOISE_FLOOR: Record<CalibrationSignalKey, number> = {
 export function getCalibrationTargets(mode: AttentionMode): CalibrationTarget[] {
   if (mode === "screen") {
     return [
-      { id: "center", label: "Center", kind: "positive", x: 50, y: 50, instruction: "Look at the center of your screen and sit in your usual working posture." },
-      { id: "top-left", label: "Top left", kind: "positive", x: 13, y: 13, instruction: "Look at the top-left corner of the area where you normally work." },
-      { id: "top-right", label: "Top right", kind: "positive", x: 87, y: 13, instruction: "Look at the top-right corner of the area where you normally work." },
-      { id: "bottom-left", label: "Bottom left", kind: "positive", x: 13, y: 87, instruction: "Look at the bottom-left corner of the area where you normally work." },
-      { id: "bottom-right", label: "Bottom right", kind: "positive", x: 87, y: 87, instruction: "Look at the bottom-right corner of the area where you normally work." },
+      { id: "center", label: "Screen center", kind: "positive", x: 50, y: 50, instruction: "Look at the center of your screen and sit in your usual working posture." },
+      { id: "top-left", label: "Top left", kind: "positive", x: 20, y: 20, instruction: "Look at the top-left corner of the area where you normally work." },
+      { id: "top-right", label: "Top right", kind: "positive", x: 80, y: 20, instruction: "Look at the top-right corner of the area where you normally work." },
+      { id: "bottom-left", label: "Bottom left", kind: "positive", x: 20, y: 80, instruction: "Look at the bottom-left corner of the area where you normally work." },
+      { id: "bottom-right", label: "Bottom right", kind: "positive", x: 80, y: 80, instruction: "Look at the bottom-right corner of the area where you normally work." },
+      { id: "negative-top", label: "Above screen", kind: "negative", x: 50, y: 4, instruction: "Look just beyond the top edge of your normal screen work area, toward a neutral point." },
+      { id: "negative-bottom", label: "Below screen", kind: "negative", x: 50, y: 96, instruction: "Look just beyond the bottom edge of your normal screen work area, toward a neutral point." },
+      { id: "negative-left", label: "Left of screen", kind: "negative", x: 4, y: 50, instruction: "Look just beyond the left edge of your normal screen work area, toward a neutral point." },
+      { id: "negative-right", label: "Right of screen", kind: "negative", x: 96, y: 50, instruction: "Look just beyond the right edge of your normal screen work area, toward a neutral point." },
     ];
   }
 
   return [
     { id: "center", label: "Page center", kind: "positive", x: 50, y: 50, instruction: "Place your book as usual and look at a comfortable point near the center of the page." },
-    { id: "top", label: "Page top", kind: "positive", x: 50, y: 22, instruction: "Look at a comfortable point near the top of the page." },
-    { id: "bottom", label: "Page bottom", kind: "positive", x: 50, y: 78, instruction: "Look at a comfortable point near the bottom of the page." },
-    { id: "left", label: "Page left", kind: "positive", x: 22, y: 50, instruction: "Look at a comfortable point near the left side of the page." },
-    { id: "right", label: "Page right", kind: "positive", x: 78, y: 50, instruction: "Look at a comfortable point near the right side of the page." },
-    { id: "negative-top", label: "Above the page", kind: "negative", x: 50, y: 5, instruction: "Look just above the book, beyond the page edge. This is a negative, off-page sample." },
-    { id: "negative-bottom", label: "Below the page", kind: "negative", x: 50, y: 95, instruction: "Look just below the book, beyond the page edge. This is a negative, off-page sample." },
-    { id: "negative-left", label: "Left of the page", kind: "negative", x: 5, y: 50, instruction: "Look just to the left of the book, beyond the page edge. This is a negative, off-page sample." },
-    { id: "negative-right", label: "Right of the page", kind: "negative", x: 95, y: 50, instruction: "Look just to the right of the book, beyond the page edge. This is a negative, off-page sample." },
+    { id: "top", label: "Page top", kind: "positive", x: 50, y: 28, instruction: "Look at a comfortable point near the top of the page." },
+    { id: "bottom", label: "Page bottom", kind: "positive", x: 50, y: 72, instruction: "Look at a comfortable point near the bottom of the page." },
+    { id: "left", label: "Page left", kind: "positive", x: 35, y: 50, instruction: "Look at a comfortable point near the left side of the page." },
+    { id: "right", label: "Page right", kind: "positive", x: 65, y: 50, instruction: "Look at a comfortable point near the right side of the page." },
+    { id: "negative-top", label: "Above the page", kind: "negative", x: 50, y: 6, instruction: "Look just above the book, beyond the page edge. This is a negative, off-page sample." },
+    { id: "negative-bottom", label: "Below the page", kind: "negative", x: 50, y: 94, instruction: "Look just below the book, beyond the page edge. This is a negative, off-page sample." },
+    { id: "negative-left", label: "Left of the page", kind: "negative", x: 18, y: 50, instruction: "Look just to the left of the book, beyond the page edge. This is a negative, off-page sample." },
+    { id: "negative-right", label: "Right of the page", kind: "negative", x: 82, y: 50, instruction: "Look just to the right of the book, beyond the page edge. This is a negative, off-page sample." },
   ];
 }
 
@@ -216,9 +220,9 @@ export function calculateCalibration(
   const warnings: string[] = [];
 
   if (negativeOverlap != null && negativeOverlap >= 0.15) {
-    warnings.push(`${Math.round(negativeOverlap * 100)}% of the off-page samples overlap the proposed work zone. Try a smaller margin or repeat the negative samples while looking farther beyond the page.`);
+    warnings.push(`${Math.round(negativeOverlap * 100)}% of the off-target samples overlap the proposed work zone. Try a smaller margin or repeat the negative samples while looking farther beyond the work area.`);
   } else if (negativeOverlap != null && negativeOverlap > 0.03) {
-    warnings.push(`${Math.round(negativeOverlap * 100)}% of the off-page samples overlap the proposed zone. Check the result in the Test Lab before using warnings.`);
+    warnings.push(`${Math.round(negativeOverlap * 100)}% of the off-target samples overlap the proposed zone. Check the result in the Test Lab before using reminders.`);
   }
   if (positiveOutside >= 0.2) {
     warnings.push(`${Math.round(positiveOutside * 100)}% of the on-task samples fall outside the fitted zone. Recheck the target captures or choose a more generous margin.`);

@@ -33,6 +33,7 @@ export function createSimulatedSignals(
     sampledAt,
     facePresent,
     landmarkCount: facePresent ? 478 : 0,
+    faceBounds: facePresent ? { x: 0.3, y: 0.16, width: 0.4, height: 0.68 } : null,
     yawDeg: facePresent ? baseline.yawDeg + (offZone ? profile.zone.yawDeg * 1.9 : 0) : null,
     pitchDeg: facePresent ? baseline.pitchDeg + (offZone ? profile.zone.pitchDeg * 0.35 : 0) : null,
     rollDeg: facePresent ? baseline.rollDeg : null,

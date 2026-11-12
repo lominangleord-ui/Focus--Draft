@@ -1072,14 +1072,22 @@ function App() {
     if (!runningRef.current || liveState.mode !== "focus") return;
 
     const preferences = attentionStoreRef.current;
+    const shouldPause = preferences.offTargetAlertsEnabled
+      && shouldPauseFocusTimer(intervention.level, preferences.strictPause, isActiveFocusTimer(runningRef.current, liveState.mode));
+    if (intervention.reason !== "screen-break" && !preferences.offTargetAlertsEnabled && !shouldPause) return;
     if (preferences.soundEnabled) playAttentionWarning(intervention.level);
-    if (shouldPauseFocusTimer(intervention.level, preferences.strictPause, isActiveFocusTimer(runningRef.current, liveState.mode))) {
+    if (shouldPause) {
       const cause = intervention.reason === "face-not-detected" ? "your face was not visible" : "you were away from your work area";
       notify(`Focus timer paused because ${cause} for a while. Resume when you're ready.`);
       pauseTimer();
       return;
     }
 
+    if (intervention.reason === "screen-break") {
+      const intervalMinutes = preferences.screenBreakReminderMinutes;
+      notify(`Screen break reminder: you have spent ${intervalMinutes} minutes continuously inside your calibrated Screen zone. Take a short break if it feels helpful.`);
+      return;
+    }
     const message = intervention.reason === "face-not-detected"
       ? "Attention Guard can't see your face. Check the camera position or sit back in frame."
       : intervention.level === 1
@@ -1090,6 +1098,9 @@ function App() {
   useEffect(() => {
     attentionController.setProfile(activeAttentionProfile(attentionStore));
   }, [attentionController, attentionStore]);
+  useEffect(() => {
+    attentionController.setScreenBreakReminderMinutes(attentionStore.screenBreakReminderMinutes);
+  }, [attentionController, attentionStore.screenBreakReminderMinutes]);
   useEffect(() => {
     if (attentionController.getState().status === "off") attentionController.selectDevice(attentionStore.cameraDeviceId);
   }, [attentionController, attentionStore.cameraDeviceId]);

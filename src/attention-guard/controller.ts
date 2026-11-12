@@ -1,9 +1,15 @@
 import { createClassifierMemory, updateAttentionClassifier, type ClassifierMemory } from "./classifier";
+import { createScreenBreakMemory, updateScreenBreakReminder, type ScreenBreakMemory } from "./breakReminder";
 import { isCameraSelectionConfirmedMissing } from "./deviceSelection";
 import { ATTENTION_SAMPLE_STALE_MS, isAttentionSampleStale } from "./freshness";
 import { canEmitFocusIntervention } from "./lifecycle";
 import type { AttentionProfile } from "./profile";
 import type { AttentionClassification, AttentionIntervention, AttentionWorkerResponse, CameraDevice, GuardRunPurpose, GuardRuntimeState, RawAttentionSignals } from "./types";
+
+const FIRST_SAMPLE_TIMEOUT_MS = 20_000;
+const FRAME_RESPONSE_TIMEOUT_MS = 8_000;
+const SAMPLE_STALL_TIMEOUT_MS = 8_000;
+const MAX_CAPTURE_FAILURES = 4;
 
 const OFF_STATE: GuardRuntimeState = {
   status: "off",
@@ -66,6 +72,12 @@ export class AttentionGuardController {
   private worker: Worker | null = null;
   private captureTimer: number | null = null;
   private initTimer: number | null = null;
+  private firstSampleTimer: number | null = null;
+  private frameResponseTimer: number | null = null;
+  private consecutiveCaptureFailures = 0;
+  private lastSampleReceivedAt: number | null = null;
+  private screenBreakReminderMinutes = 0;
+  private screenBreakMemory: ScreenBreakMemory = createScreenBreakMemory();
   private generation = 0;
   private deviceRefreshGeneration = 0;
   private nextFrameId = 1;
@@ -147,12 +159,21 @@ export class AttentionGuardController {
     if (!active && this.runtime.runPurpose === "focus") this.stop();
   }
 
+  setScreenBreakReminderMinutes(minutes: number) {
+    const next = [0, 25, 45, 60].includes(minutes) ? minutes : 0;
+    if (next === this.screenBreakReminderMinutes) return;
+    this.screenBreakReminderMinutes = next;
+    this.screenBreakMemory = createScreenBreakMemory();
+    this.updateClassification(this.signals);
+  }
+
   setProfile(profile: AttentionProfile) {
     const key = JSON.stringify(profile);
     if (this.profileKey === key) return;
     this.profileKey = key;
     this.profile = profile;
     this.classifierMemory = createClassifierMemory();
+    this.screenBreakMemory = createScreenBreakMemory();
     this.updateClassification(this.signals);
   }
 
@@ -173,6 +194,18 @@ export class AttentionGuardController {
 
   async start(deviceId = this.runtime.selectedDeviceId) {
     if (!this.focusTimerActive) return;
+    if (!this.profile?.baseline || this.profile.calibratedAt == null) {
+      this.generation += 1;
+      this.stopResources();
+      this.setSignals(null);
+      this.updateState({
+        status: "error",
+        error: "Calibrate the active Attention Guard profile before starting Focus tracking.",
+        activeDeviceId: "",
+        runPurpose: null,
+      });
+      return;
+    }
     await this.startWithPurpose(deviceId, "focus");
   }
 
@@ -280,12 +313,24 @@ export class AttentionGuardController {
     if (message.type === "ready") {
       if (this.initTimer != null) window.clearTimeout(this.initTimer);
       this.initTimer = null;
+      this.firstSampleTimer = window.setTimeout(() => {
+        if (run === this.generation && this.signals == null) {
+          this.fail(run, new Error("The camera and local model started, but no video samples arrived. Check that the selected camera is producing a live picture, then retry."));
+        }
+      }, FIRST_SAMPLE_TIMEOUT_MS);
       this.updateState({ status: "on", error: "" });
       this.scheduleCapture(run);
       return;
     }
     if (message.type === "signals") {
-      if (this.pendingFrameId === message.frameId) this.pendingFrameId = null;
+      if (this.pendingFrameId !== message.frameId) return;
+      if (this.frameResponseTimer != null) window.clearTimeout(this.frameResponseTimer);
+      if (this.firstSampleTimer != null) window.clearTimeout(this.firstSampleTimer);
+      this.frameResponseTimer = null;
+      this.firstSampleTimer = null;
+      this.pendingFrameId = null;
+      this.consecutiveCaptureFailures = 0;
+      this.lastSampleReceivedAt = performance.now();
       this.setSignals(message.signals);
       return;
     }
@@ -301,7 +346,12 @@ export class AttentionGuardController {
     const video = this.video;
     const worker = this.worker;
     if (run !== this.generation || !video || !worker || this.runtime.status !== "on") return;
-    if (this.signals && isAttentionSampleStale(this.signals.sampledAt, performance.now(), ATTENTION_SAMPLE_STALE_MS)) {
+    const now = performance.now();
+    if (this.lastSampleReceivedAt != null && now - this.lastSampleReceivedAt > SAMPLE_STALL_TIMEOUT_MS) {
+      this.fail(run, new Error("Camera samples stopped updating. Check the camera feed and turn tracking on again when it is live."));
+      return;
+    }
+    if (this.signals && isAttentionSampleStale(this.signals.sampledAt, now, ATTENTION_SAMPLE_STALE_MS)) {
       this.setSignals(null);
     }
     if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0 && !video.paused && this.pendingFrameId == null && video.currentTime !== this.lastVideoTime) {
@@ -310,6 +360,7 @@ export class AttentionGuardController {
       try {
         bitmap = await createImageBitmap(video);
       } catch {
+        this.registerCaptureFailure(run, "The browser could not read a fresh camera frame for local tracking. Check camera access and retry.");
         this.scheduleCapture(run);
         return;
       }
@@ -321,12 +372,23 @@ export class AttentionGuardController {
       this.pendingFrameId = frameId;
       try {
         worker.postMessage({ type: "frame", frameId, bitmap, timestamp: performance.now() }, [bitmap]);
+        this.frameResponseTimer = window.setTimeout(() => {
+          if (run === this.generation && this.pendingFrameId === frameId) {
+            this.fail(run, new Error("The local face model stopped responding to camera frames. Turn tracking off, check the browser and camera, then retry."));
+          }
+        }, FRAME_RESPONSE_TIMEOUT_MS);
       } catch {
         bitmap.close();
         this.pendingFrameId = null;
+        this.registerCaptureFailure(run, "The browser could not transfer a camera frame to the local model. This browser may not support the required camera-worker features.");
       }
     }
     this.scheduleCapture(run);
+  }
+
+  private registerCaptureFailure(run: number, message: string) {
+    this.consecutiveCaptureFailures += 1;
+    if (this.consecutiveCaptureFailures >= MAX_CAPTURE_FAILURES) this.fail(run, new Error(message));
   }
 
   private fail(run: number, error: unknown) {
@@ -341,8 +403,15 @@ export class AttentionGuardController {
   private stopResources() {
     if (this.captureTimer != null) window.clearTimeout(this.captureTimer);
     if (this.initTimer != null) window.clearTimeout(this.initTimer);
+    if (this.firstSampleTimer != null) window.clearTimeout(this.firstSampleTimer);
+    if (this.frameResponseTimer != null) window.clearTimeout(this.frameResponseTimer);
     this.captureTimer = null;
     this.initTimer = null;
+    this.firstSampleTimer = null;
+    this.frameResponseTimer = null;
+    this.consecutiveCaptureFailures = 0;
+    this.lastSampleReceivedAt = null;
+    this.screenBreakMemory = createScreenBreakMemory();
     this.pendingFrameId = null;
     this.lastVideoTime = -1;
 
@@ -391,12 +460,32 @@ export class AttentionGuardController {
 
   private updateClassification(signals: RawAttentionSignals | null) {
     if (!this.profile) return;
-    const update = updateAttentionClassifier(this.classifierMemory, signals, this.profile, signals?.sampledAt ?? performance.now());
+    const now = signals?.sampledAt ?? performance.now();
+    const update = updateAttentionClassifier(this.classifierMemory, signals, this.profile, now);
     this.classifierMemory = update.memory;
     this.classification = update.classification;
     this.classificationListeners.forEach((listener) => listener());
-    if (update.intervention && canEmitFocusIntervention(this.focusTimerActive, this.runtime.status, this.runtime.runPurpose)) {
-      this.interventionListeners.forEach((listener) => listener(update.intervention!));
+
+    const eligible = canEmitFocusIntervention(this.focusTimerActive, this.runtime.status, this.runtime.runPurpose);
+    if (update.intervention && eligible) this.interventionListeners.forEach((listener) => listener(update.intervention!));
+
+    const breakReminder = updateScreenBreakReminder(this.screenBreakMemory, {
+      mode: this.profile.mode,
+      reminderMinutes: this.screenBreakReminderMinutes,
+      phase: update.classification.phase,
+      eligible,
+      fresh: signals != null && !isAttentionSampleStale(signals.sampledAt, performance.now(), ATTENTION_SAMPLE_STALE_MS),
+      sampledAt: now,
+    });
+    this.screenBreakMemory = breakReminder.memory;
+    if (breakReminder.shouldRemind) {
+      const intervention: AttentionIntervention = {
+        level: 1,
+        score: update.classification.score ?? 0,
+        reason: "screen-break",
+        triggeredAt: now,
+      };
+      this.interventionListeners.forEach((listener) => listener(intervention));
     }
   }
 

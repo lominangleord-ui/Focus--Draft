@@ -18,6 +18,7 @@ function sample(overrides: Partial<RawAttentionSignals> = {}): RawAttentionSigna
     sampledAt: 1,
     facePresent: true,
     landmarkCount: 478,
+    faceBounds: { x: 0.25, y: 0.15, width: 0.5, height: 0.7 },
     yawDeg: 0,
     pitchDeg: 0,
     rollDeg: 0,

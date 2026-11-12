@@ -8,6 +8,7 @@ function signal(overrides: Partial<RawAttentionSignals> = {}): RawAttentionSigna
     sampledAt: 1,
     facePresent: true,
     landmarkCount: 478,
+    faceBounds: { x: 0.25, y: 0.15, width: 0.5, height: 0.7 },
     yawDeg: 0,
     pitchDeg: 0,
     rollDeg: 0,
@@ -35,8 +36,9 @@ function makeSamples(mode: AttentionMode, overrides: Record<string, Partial<RawA
 describe("Attention Guard calibration", () => {
   it("uses the requested per-mode target sets", () => {
     const screen = getCalibrationTargets("screen");
-    expect(screen.map((target) => target.id)).toEqual(["center", "top-left", "top-right", "bottom-left", "bottom-right"]);
-    expect(screen.every((target) => target.kind === "positive")).toBe(true);
+    expect(screen.map((target) => target.id)).toEqual(["center", "top-left", "top-right", "bottom-left", "bottom-right", "negative-top", "negative-bottom", "negative-left", "negative-right"]);
+    expect(screen.filter((target) => target.kind === "positive").map((target) => target.id)).toEqual(["center", "top-left", "top-right", "bottom-left", "bottom-right"]);
+    expect(screen.filter((target) => target.kind === "negative")).toHaveLength(4);
 
     const book = getCalibrationTargets("book");
     expect(book).toHaveLength(9);
@@ -56,6 +58,10 @@ describe("Attention Guard calibration", () => {
       "top-right": { yawDeg: 7, pitchDeg: -5, gazeX: 0.25, gazeY: -0.3 },
       "bottom-left": { yawDeg: -7, pitchDeg: 5, gazeX: -0.25, gazeY: 0.3 },
       "bottom-right": { yawDeg: 7, pitchDeg: 5, gazeX: 0.25, gazeY: 0.3 },
+      "negative-top": { pitchDeg: -30, gazeY: -1.2 },
+      "negative-bottom": { pitchDeg: 30, gazeY: 1.2 },
+      "negative-left": { yawDeg: -30, gazeX: -1.2 },
+      "negative-right": { yawDeg: 30, gazeX: 1.2 },
     });
     samples.center[0] = signal({ yawDeg: 120, pitchDeg: -120, gazeX: 1.4, gazeY: -1.4 });
 
@@ -65,9 +71,28 @@ describe("Attention Guard calibration", () => {
     expect(result!.baseline.gazeX).toBe(0);
     expect(result!.zone.yawDeg).toBeGreaterThan(7);
     expect(result!.zone.gazeX).toBeGreaterThan(0.25);
-    expect(result!.sampleCount).toBe(5 * CALIBRATION_MIN_SAMPLES);
+    expect(result!.sampleCount).toBe(9 * CALIBRATION_MIN_SAMPLES);
     expect(result!.targetDiagnostics.find((target) => target.id === "top-right")?.gazeXDelta).toBe(0.25);
     expect(result!.positiveOutside).toBeLessThan(0.2);
+  });
+
+  it("measures off-screen overlap for Screen calibration instead of assuming every direction is positive", () => {
+    const samples = makeSamples("screen", {
+      "top-left": { yawDeg: -7, pitchDeg: -5, gazeX: -0.25, gazeY: -0.3 },
+      "top-right": { yawDeg: 7, pitchDeg: -5, gazeX: 0.25, gazeY: -0.3 },
+      "bottom-left": { yawDeg: -7, pitchDeg: 5, gazeX: -0.25, gazeY: 0.3 },
+      "bottom-right": { yawDeg: 7, pitchDeg: 5, gazeX: 0.25, gazeY: 0.3 },
+      "negative-top": { pitchDeg: -30, gazeY: -1.2 },
+      "negative-bottom": { pitchDeg: 30, gazeY: 1.2 },
+      "negative-left": { yawDeg: -30, gazeX: -1.2 },
+      "negative-right": { yawDeg: 30, gazeX: 1.2 },
+    });
+    expect(calculateCalibration("screen", samples, 20, "rectangle")?.negativeOverlap).toBe(0);
+
+    for (const id of ["negative-top", "negative-bottom", "negative-left", "negative-right"]) {
+      samples[id] = Array.from({ length: CALIBRATION_MIN_SAMPLES }, (_, index) => signal({ sampledAt: index + 1 }));
+    }
+    expect(calculateCalibration("screen", samples, 20, "rectangle")?.negativeOverlap).toBe(1);
   });
 
   it("measures overlap with explicit negative book samples", () => {
@@ -89,7 +114,7 @@ describe("Attention Guard calibration", () => {
     }
     const overlapped = calculateCalibration("book", samples, 20, "rectangle");
     expect(overlapped?.negativeOverlap).toBe(1);
-    expect(overlapped?.warnings.some((warning) => warning.includes("off-page samples overlap"))).toBe(true);
+    expect(overlapped?.warnings.some((warning) => warning.includes("off-target samples overlap"))).toBe(true);
   });
 
   it("uses the profile's feature weights when estimating negative overlap", () => {

@@ -39,7 +39,10 @@ function calibrationPrechecks(signals: RawAttentionSignals | null, cameraStatus:
   const cameraReady = cameraStatus === "on";
   const isStarting = cameraStatus === "starting";
   const faceReady = signals?.facePresent === true;
-  const hasSignals = Boolean(signals && [signals.yawDeg, signals.pitchDeg, signals.rollDeg, signals.gazeX, signals.gazeY].every((value) => value != null && Number.isFinite(value)));
+  const hasHeadPose = Boolean(signals && [signals.yawDeg, signals.pitchDeg, signals.rollDeg].every((value) => value != null && Number.isFinite(value)));
+  const hasEyeEstimate = Boolean(signals && [signals.gazeX, signals.gazeY].every((value) => value != null && Number.isFinite(value)));
+  const hasSignals = hasHeadPose && hasEyeEstimate;
+  const missingSignals = [!hasHeadPose ? "head-pose angles" : null, !hasEyeEstimate ? "coarse iris/eye-box estimates" : null].filter((value): value is string => value != null);
   const lighting = signals?.brightness;
   const faceWidth = signals?.faceWidth;
 
@@ -66,8 +69,13 @@ function calibrationPrechecks(signals: RawAttentionSignals | null, cameraStatus:
     },
     {
       label: "Pose and gaze signals",
-      state: hasSignals ? "pass" : signals?.facePresent ? "waiting" : "waiting",
-      detail: hasSignals ? "Head-pose and coarse iris estimates are available." : "Waiting for usable head-pose and eye estimates; blinks may briefly pause sampling.",
+      state: hasSignals ? "pass" : cameraReady && faceReady ? "blocked" : "waiting",
+      detail: hasSignals
+        ? "Head-pose and coarse iris estimates are available."
+        : !cameraReady ? "Waiting for the camera and local model."
+          : !signals ? "Waiting for the first local sample."
+            : !faceReady ? "Waiting for the face to return to frame."
+              : `Missing ${missingSignals.join(" and ")}. Center your face, improve light, reduce lens glare, and check camera angle; a blink can pause one sample.`,
     },
   ];
 }
@@ -77,37 +85,27 @@ function CalibrationMap({
   targets,
   samples,
   currentTargetId,
-  zoneShape,
-  marginPercent,
 }: {
   mode: AttentionProfile["mode"];
   targets: CalibrationTarget[];
   samples: CalibrationSamples;
   currentTargetId: string | null;
-  zoneShape: AttentionProfile["zoneShape"];
-  marginPercent: number;
 }) {
-  const radius = mode === "screen" ? 55 + marginPercent * 0.05 : 32 + marginPercent * 0.1;
   const complete = (id: string) => (samples[id]?.length ?? 0) >= CALIBRATION_MIN_SAMPLES;
+  const isScreen = mode === "screen";
   return (
     <div className="attention-calibration-map-wrap">
-      <svg className={`attention-calibration-map mode-${mode}`} viewBox="0 0 100 100" role="img" aria-label={`${mode === "screen" ? "Screen target" : "Book target"} map showing the selected attention-zone shape and calibration directions`}>
-        <rect className="attention-map-surface" x="7" y="7" width="86" height="86" rx={mode === "screen" ? "4" : "2"} />
-        <path className="attention-map-grid" d="M50 8V92 M8 50H92" />
-        {zoneShape === "ellipse" ? (
-          <ellipse className="attention-map-zone" cx="50" cy="50" rx={radius} ry={radius} />
-        ) : (
-          <rect className="attention-map-zone" x={50 - radius} y={50 - radius} width={radius * 2} height={radius * 2} rx={mode === "screen" ? "4" : "2"} />
-        )}
+      <svg className={`attention-calibration-map mode-${mode}`} viewBox="0 0 100 100" role="img" aria-label={`${isScreen ? "Screen" : "Book"} calibration target diagram with on-work-area and off-work-area prompts`}>
+        <rect className="attention-map-surface" x={isScreen ? "14" : "30"} y={isScreen ? "14" : "14"} width={isScreen ? "72" : "40"} height="72" rx={isScreen ? "4" : "2"} />
+        <path className="attention-map-grid" d="M50 15V85 M15 50H85" />
         {targets.map((target) => (
           <g key={target.id} className={`attention-map-target ${target.kind === "negative" ? "is-negative" : "is-positive"} ${complete(target.id) ? "is-complete" : ""} ${target.id === currentTargetId ? "is-current" : ""}`}>
             {target.id === currentTargetId && <circle className="attention-map-target-ring" cx={target.x} cy={target.y} r="6" />}
             <circle cx={target.x} cy={target.y} r={target.id === "center" ? "3.1" : "2.6"} />
           </g>
         ))}
-        <text className="attention-map-label" x="50" y="97" textAnchor="middle">{mode === "screen" ? "normal screen work area" : "page · off-page targets in red"}</text>
       </svg>
-      <p className="attention-map-caption">Green targets are on-task samples; red targets are intentional off-page samples. This is a target diagram, not a pixel-accurate gaze map.</p>
+      <p className="attention-map-caption">Green dots are on-work-area samples; red dots are intentionally off-target. This diagram shows prompts only: the fitted zone uses webcam pose and coarse eye-box signals, not screen-pixel coordinates.</p>
     </div>
   );
 }
@@ -341,7 +339,7 @@ export default function CalibrationWizard({
       <div className="attention-section-heading">
         <div>
           <h3 id="attention-calibration-title">Guided {profile.mode.toUpperCase()} calibration</h3>
-          <p>{profile.mode === "screen" ? "Sample the center and all four corners of your normal screen work area." : "Sample the reading area plus intentional off-page directions to estimate overlap."}</p>
+          <p>{profile.mode === "screen" ? "Sample the center, four screen corners, and four directions just outside your normal work area." : "Sample the reading area plus four intentional off-page directions to estimate overlap."}</p>
         </div>
         <span className={`attention-profile-state ${profile.calibratedAt ? "is-calibrated" : ""}`}>{profile.calibratedAt ? "RECALIBRATE" : "SET UP"}</span>
       </div>
@@ -387,8 +385,6 @@ export default function CalibrationWizard({
               targets={targets}
               samples={samples}
               currentTargetId={currentTargetId}
-              zoneShape={zoneShape}
-              marginPercent={marginPercent}
             />
 
             {currentTarget && !quickRecenter && (
@@ -427,7 +423,7 @@ export default function CalibrationWizard({
                     <li key={target.id} className={`${complete ? "is-complete" : ""} ${capture?.targetId === target.id ? "is-current" : ""} ${target.kind === "negative" ? "is-negative" : ""}`}>
                       <span className="attention-step-number">{index + 1}</span>
                       <div className="attention-step-copy">
-                        <strong>{target.label}{target.kind === "negative" ? " · off-page" : ""}</strong>
+                        <strong>{target.label}{target.kind === "negative" ? profile.mode === "screen" ? " · off-screen" : " · off-page" : ""}</strong>
                         <small>{complete ? `${count} usable numeric samples` : target.kind === "negative" ? "Capture an intentional off-task direction." : "Capture this comfortable on-task direction."}</small>
                       </div>
                       <button type="button" className="attention-secondary-button" onClick={() => startCapture(target.id)} disabled={!canCapture || Boolean(capture)}>
@@ -462,8 +458,8 @@ export default function CalibrationWizard({
                 </div>
                 {result.negativeOverlap != null && (
                   <div className={`attention-overlap-status ${result.negativeOverlap >= 0.15 ? "is-warning" : result.negativeOverlap > 0.03 ? "is-caution" : "is-clear"}`} role="status">
-                    <strong>{Math.round(result.negativeOverlap * 100)}% off-page overlap</strong>
-                    <span>{result.negativeOverlap >= 0.15 ? "The proposed zone includes too many intentionally off-page samples." : result.negativeOverlap > 0.03 ? "Some off-page samples overlap; verify the zone in the Test Lab." : "No captured off-page samples fall inside the proposed zone."}</span>
+                    <strong>{Math.round(result.negativeOverlap * 100)}% off-target overlap</strong>
+                    <span>{result.negativeOverlap >= 0.15 ? "The proposed zone includes too many intentionally off-target samples." : result.negativeOverlap > 0.03 ? "Some off-target samples overlap; verify the zone in the Test Lab." : "No captured off-target samples fall inside the proposed zone."}</span>
                   </div>
                 )}
                 {result.warnings.length > 0 && (

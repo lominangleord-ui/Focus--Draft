@@ -1,5 +1,5 @@
 import type { FaceLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-vision";
-import type { RawAttentionSignals } from "./types";
+import type { FaceBounds, RawAttentionSignals } from "./types";
 
 export type HeadPose = { yawDeg: number; pitchDeg: number; rollDeg: number };
 
@@ -82,6 +82,18 @@ function faceWidth(landmarks: readonly Point[]) {
   return Number.isFinite(width) ? clamp(width, 0, 1) : null;
 }
 
+/** A compact normalized box for the local preview; landmark arrays stay in the worker. */
+export function normalizedFaceBounds(landmarks: readonly Point[]): FaceBounds | null {
+  const points = landmarks.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+  if (points.length < 4) return null;
+  const left = clamp(Math.min(...points.map((point) => point.x)), 0, 1);
+  const right = clamp(Math.max(...points.map((point) => point.x)), 0, 1);
+  const top = clamp(Math.min(...points.map((point) => point.y)), 0, 1);
+  const bottom = clamp(Math.max(...points.map((point) => point.y)), 0, 1);
+  if (right <= left || bottom <= top) return null;
+  return { x: left, y: top, width: right - left, height: bottom - top };
+}
+
 function blendshapeScore(result: FaceLandmarkerResult, name: string) {
   const score = result.faceBlendshapes[0]?.categories.find((entry) => entry.categoryName === name)?.score;
   return typeof score === "number" && Number.isFinite(score) ? clamp(score, 0, 1) : null;
@@ -99,6 +111,7 @@ export function extractRawSignals(
       sampledAt,
       facePresent: false,
       landmarkCount: 0,
+      faceBounds: null,
       yawDeg: null,
       pitchDeg: null,
       rollDeg: null,
@@ -122,6 +135,7 @@ export function extractRawSignals(
     sampledAt,
     facePresent: true,
     landmarkCount: landmarks.length,
+    faceBounds: normalizedFaceBounds(landmarks),
     yawDeg: pose?.yawDeg ?? null,
     pitchDeg: pose?.pitchDeg ?? null,
     rollDeg: pose?.rollDeg ?? null,

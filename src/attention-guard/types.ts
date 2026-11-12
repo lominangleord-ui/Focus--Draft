@@ -1,10 +1,19 @@
 export type AttentionMode = "screen" | "book";
 
+/** Normalized face rectangle in the unmirrored camera frame. */
+export type FaceBounds = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 /** Numeric-only outputs from the local inference worker. No image or landmark arrays cross this boundary. */
 export type RawAttentionSignals = {
   sampledAt: number;
   facePresent: boolean;
   landmarkCount: number;
+  faceBounds: FaceBounds | null;
   yawDeg: number | null;
   pitchDeg: number | null;
   rollDeg: number | null;
@@ -19,7 +28,7 @@ export type RawAttentionSignals = {
 
 export type AttentionWarningLevel = 0 | 1 | 2;
 export type AttentionPhase = "waiting" | "needs-calibration" | "attentive" | "drifting" | "away" | "face-missing" | "low-quality";
-export type AttentionReason = "waiting-for-signals" | "profile-not-calibrated" | "within-zone" | "looking-away" | "face-not-detected" | "lighting-too-low" | "face-too-small" | "insufficient-signals";
+export type AttentionReason = "waiting-for-signals" | "profile-not-calibrated" | "within-zone" | "looking-away" | "face-not-detected" | "lighting-too-low" | "face-too-small" | "insufficient-signals" | "screen-break";
 
 export type AttentionClassification = {
   phase: AttentionPhase;
