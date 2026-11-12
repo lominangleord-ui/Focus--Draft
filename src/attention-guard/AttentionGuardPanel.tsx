@@ -5,7 +5,7 @@ import { isCameraSelectionConfirmedMissing } from "./deviceSelection";
 import { mapFaceBoundsToPreview } from "./previewGeometry";
 import { canStartFocusTrackingFromView } from "./lifecycle";
 import { prepareAttentionWarningAudio, soundSupported } from "../sound";
-import TestLab from "./TestLab";
+import TestLab from "./TestLabPanel";
 import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionProfile, type AttentionProfile } from "./profile";
 import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
 import type { AttentionClassification, RawAttentionSignals } from "./types";
