@@ -19,14 +19,16 @@ export default function PdfViewer({ data, scale, downloadUrl, name }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    let loadingTask: pdfjs.PDFDocumentLoadingTask | null = null;
     let doc: pdfjs.PDFDocumentProxy | null = null;
 
     async function render() {
       setStatus("loading");
       try {
         // pdf.js transfers (and detaches) the buffer, so hand it a copy.
-        const task = pdfjs.getDocument({ data: data.slice(0), isEvalSupported: false });
-        doc = await task.promise;
+        // Recent pdf.js releases removed eval-based code generation entirely.
+        loadingTask = pdfjs.getDocument({ data: data.slice(0) });
+        doc = await loadingTask.promise;
         if (cancelled) return;
 
         const host = holder.current;
@@ -67,7 +69,7 @@ export default function PdfViewer({ data, scale, downloadUrl, name }: Props) {
     render();
     return () => {
       cancelled = true;
-      doc?.destroy();
+      if (loadingTask) void loadingTask.destroy().catch(() => undefined);
     };
   }, [data, scale]);
 
