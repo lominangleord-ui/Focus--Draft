@@ -7,15 +7,14 @@ export function useAttentionStore() {
   storeRef.current = store;
 
   const updateStore = useCallback((update: Partial<AttentionStore> | ((previous: AttentionStore) => AttentionStore)) => {
-    setStore((previous) => normalizeAttentionStore(
+    const previous = storeRef.current;
+    const next = normalizeAttentionStore(
       typeof update === "function" ? update(previous) : { ...previous, ...update },
-    ));
+    );
+    storeRef.current = next;
+    setStore(next);
+    return saveAttentionStore(next);
   }, []);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => { saveAttentionStore(store); }, 350);
-    return () => window.clearTimeout(id);
-  }, [store]);
 
   useEffect(() => {
     const flush = () => { saveAttentionStore(storeRef.current); };

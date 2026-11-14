@@ -468,9 +468,9 @@ export default function TestLab({
   const previewLabel = phaseText(livePreview);
 
   return (
-    <section className="attention-test-lab" role="tabpanel" id="attention-test-lab-panel" aria-labelledby="attention-test-lab-tab">
+    <section className="attention-test-lab" aria-labelledby="attention-test-lab-title">
       <div className="attention-section-heading">
-        <div><h3>Attention Guard Test Lab</h3><p>Tune and test locally before enabling focus-session interventions. Nothing in this lab is included in your saved stats.</p></div>
+        <div><h3 id="attention-test-lab-title">Attention Guard Test Lab</h3><p>Tune and test locally before enabling focus-session interventions. Nothing in this lab is included in your saved stats.</p></div>
         <span className="attention-profile-state">{profile.mode.toUpperCase()} · {profile.calibratedAt ? "CALIBRATED" : "NEEDS CALIBRATION"}</span>
       </div>
 

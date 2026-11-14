@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AttentionGuardController } from "./controller";
 import CalibrationWizard from "./CalibrationWizard";
+import AttentionModalCameraPreview from "./AttentionModalCameraPreview";
+import AttentionWindow from "./AttentionWindow";
 import { isCameraSelectionConfirmedMissing } from "./deviceSelection";
 import { mapFaceBoundsToPreview } from "./previewGeometry";
 import { canStartFocusTrackingFromView } from "./lifecycle";
@@ -10,7 +12,8 @@ import { createAttentionProfile, parseAttentionProfileFile, serializeAttentionPr
 import { activeAttentionProfile, addImportedProfile, upsertAttentionProfile, type AttentionStore } from "./storage";
 import type { AttentionClassification, RawAttentionSignals } from "./types";
 
-type StoreUpdate = (update: Partial<AttentionStore> | ((previous: AttentionStore) => AttentionStore)) => void;
+type StoreUpdate = (update: Partial<AttentionStore> | ((previous: AttentionStore) => AttentionStore)) => boolean;
+type SettingsPage = "settings" | "calibration" | "test";
 
 function number(value: number | null, digits = 2) {
   return value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
@@ -154,38 +157,36 @@ export default function AttentionGuardPanel({
   const classification = useSyncExternalStore(controller.subscribeClassification, controller.getClassification, controller.getClassification);
   const previewRef = useRef<HTMLVideoElement | null>(null);
   const profileFileRef = useRef<HTMLInputElement | null>(null);
-  const activeViewRef = useRef<HTMLDivElement | null>(null);
   const [newProfileName, setNewProfileName] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
-  const [view, setView] = useState<"monitor" | "calibrate" | "lab">("monitor");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPage, setSettingsPage] = useState<SettingsPage>("settings");
   const profile = useMemo(() => activeAttentionProfile(store), [store]);
   const isActive = state.status === "on" || state.status === "starting";
   const isTemporaryRun = state.runPurpose === "calibration" || state.runPurpose === "diagnostic";
   const pausedTemporaryRun = state.status === "paused" && isTemporaryRun;
   const pausedFocusRun = state.status === "paused" && state.runPurpose === "focus";
-  const showFocusTimerAction = view === "monitor" && profile.calibratedAt != null && !focusTimerActive && !isActive && !pausedTemporaryRun;
-  const canStartFocusTracking = canStartFocusTrackingFromView(view, focusTimerActive);
+  const canStartFocusTracking = canStartFocusTrackingFromView("monitor", focusTimerActive);
   const canStartFocusCamera = canStartFocusTracking && profile.calibratedAt != null;
-  const canStartTemporaryCamera = view === "calibrate" || view === "lab";
   const controlChecked = isActive;
-  const controlDisabled = !isActive && !canStartTemporaryCamera && !canStartFocusCamera;
+  const controlDisabled = !isActive && !canStartFocusCamera;
+  const showFocusTimerAction = profile.calibratedAt != null && !focusTimerActive && !isActive && !pausedTemporaryRun;
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
   const warningSoundSupported = soundSupported();
   const profilesForMode = store.profiles.filter((item) => item.mode === store.mode);
+  const selectedDeviceId = store.cameraDeviceId;
   const previewVideo = previewRef.current;
   const previewViewport = previewVideo?.parentElement;
   const facePreviewBox = signals?.faceBounds && previewVideo && previewViewport
     ? mapFaceBoundsToPreview(signals.faceBounds, previewVideo.videoWidth, previewVideo.videoHeight, previewViewport.clientWidth, previewViewport.clientHeight)
     : null;
-  const selectedDeviceId = store.cameraDeviceId;
   const cameraHeading = state.status === "on"
     ? state.runPurpose === "diagnostic" ? "Temporary Test Lab camera is on" : state.runPurpose === "calibration" ? "Temporary calibration camera is on" : "Focus tracking is on"
     : state.status === "starting"
-      ? state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.runPurpose === "calibration" ? "Starting temporary calibration camera…" : "Starting focus tracking…"
+      ? state.runPurpose === "diagnostic" ? "Starting temporary Test Lab camera…" : state.runPurpose === "calibration" ? "Starting temporary calibration camera…" : "Starting focus tracking…"
       : state.status === "paused" ? "Camera paused"
         : state.status === "error" ? "Camera setup failed"
-          : view === "calibrate" ? "Temporary calibration camera is off"
-            : view === "lab" ? "Temporary Test Lab camera is off" : "Tracking is off";
+          : profile.calibratedAt == null ? "Calibration needed" : "Tracking is off";
   const cameraVisualStatus = state.status === "starting"
     ? state.startupStage === "requesting-permission" ? "Waiting for camera permission"
       : state.startupStage === "retrying-default-camera" ? "Trying the default camera"
@@ -204,13 +205,12 @@ export default function AttentionGuardPanel({
     : state.status === "on"
       ? signals == null ? "The local model is ready and waiting for its first camera frame."
         : signals.facePresent
-          ? state.runPurpose === "calibration" ? "Face detected · follow the highlighted calibration target below." : "Face detected · keep your full face inside the guide."
+          ? state.runPurpose === "calibration" ? "Face detected · follow the calibration prompts in its window." : "Face detected · keep your full face inside the guide."
           : "No face detected · move into the dashed guide and improve lighting if needed."
       : state.status === "paused" ? "The camera is off while this tab is in the background. Start it again when you return."
         : state.status === "error" ? state.error
-          : view === "calibrate" ? "Use “Start temporary camera” in the controls above or Live prechecks below to activate the framing guide."
-            : view === "lab" ? "Use “Start Test Lab camera” in the controls above or below to see live local feedback."
-              : "Start the camera when you are ready; it stays off otherwise.";
+          : profile.calibratedAt == null ? "Open Attention Guard settings with the gear button to calibrate and test this work area."
+            : "Start tracking during Focus when you are ready; the camera stays off otherwise.";
   const cameraDescription = (() => {
     if (state.status === "on") {
       if (state.runPurpose === "diagnostic") return "This explicit Test Lab run is temporary and does not trigger focus-session interventions.";
@@ -225,30 +225,25 @@ export default function AttentionGuardPanel({
     }
     if (state.status === "paused") return "The camera and inference worker were stopped when the tab went into the background.";
     if (state.status === "error") return "The camera or local analysis stopped. See the message below, then retry when ready.";
-    if (view !== "monitor") return "Use the temporary camera action in this view; it does not require a running Focus timer.";
-    if (profile.calibratedAt == null) return "Calibrate and test this profile first. Focus tracking stays unavailable until its work area is calibrated.";
+    if (profile.calibratedAt == null) return "Open settings to calibrate this work area. Focus tracking remains unavailable until calibration is saved.";
     if (!focusTimerActive) {
       return timerMode === "focus"
         ? "Start or resume Focus to enable tracking. The camera stays off until you turn it on."
         : "You are on a break. Switch to Focus to enable tracking; the camera stays off until you turn it on.";
     }
-    return "No camera is active. Turn on focus tracking when you want to use it.";
+    return "No camera is active. Turn on Focus tracking when you want to use it.";
   })();
   const toggleLabel = isActive
     ? isTemporaryRun ? "Stop temporary camera" : "Turn off tracking"
-    : view === "calibrate"
-      ? state.status === "error" ? "Retry temporary camera" : "Start temporary camera"
-      : view === "lab"
-        ? state.status === "error" ? "Retry Test Lab camera" : "Start Test Lab camera"
-        : profile.calibratedAt == null
-          ? "Calibrate profile to enable tracking"
-          : state.status === "error" && canStartFocusTracking
-            ? "Retry camera"
-            : state.status === "paused" && state.runPurpose === "focus" && canStartFocusTracking
-              ? "Turn tracking back on"
-              : canStartFocusCamera
-                ? "Turn on tracking"
-                : "Focus timer required";
+    : profile.calibratedAt == null
+      ? "Open settings to calibrate"
+      : state.status === "error" && canStartFocusTracking
+        ? "Retry camera"
+        : state.status === "paused" && state.runPurpose === "focus" && canStartFocusTracking
+          ? "Turn tracking back on"
+          : canStartFocusCamera
+            ? "Turn on tracking"
+            : "Focus timer required";
   const focusTimerActionLabel = timerMode === "focus" ? "Start or resume Focus timer" : "Switch to Focus and start";
 
   const bindPreview = useCallback((node: HTMLVideoElement | null) => {
@@ -266,19 +261,7 @@ export default function AttentionGuardPanel({
   }, [controller, state.status]);
 
   useEffect(() => {
-    if (view !== "monitor" && controller.getState().runPurpose === "focus") controller.stop();
-    return () => {
-      const purpose = controller.getState().runPurpose;
-      if ((view !== "monitor" && purpose === "focus") || (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic")) {
-        controller.stop();
-      }
-    };
-  }, [controller, view]);
-
-  useEffect(() => {
     if (isActive) {
-      // Remember the browser's resolved default/fallback device without letting
-      // a stale saved ID overwrite the live device during startup.
       if (state.activeDeviceId && state.selectedDeviceId !== selectedDeviceId) {
         updateStore({ cameraDeviceId: state.selectedDeviceId });
       }
@@ -291,21 +274,6 @@ export default function AttentionGuardPanel({
     }
     if (state.selectedDeviceId !== selectedDeviceId) controller.selectDevice(selectedDeviceId);
   }, [controller, isActive, selectedDeviceId, state.activeDeviceId, state.devices, state.devicesReady, state.selectedDeviceId, updateStore]);
-
-  function changeView(nextView: typeof view) {
-    if (nextView !== view) {
-      const purpose = controller.getState().runPurpose;
-      const leavingTemporaryRun = (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic");
-      const leavingFocusTracking = nextView !== "monitor" && purpose === "focus";
-      if (leavingTemporaryRun || leavingFocusTracking) controller.stop();
-      setView(nextView);
-    }
-    if (nextView !== "monitor") {
-      window.requestAnimationFrame(() => {
-        activeViewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
-  }
 
   function updateProfile(patch: Partial<AttentionProfile>) {
     updateStore((previous) => upsertAttentionProfile(previous, {
@@ -355,8 +323,8 @@ export default function AttentionGuardPanel({
     updateStore((previous) => upsertAttentionProfile(previous, created));
     setNewProfileName("");
     setProfileMessage(stoppedCamera
-      ? "Camera stopped. The new profile is active; calibrate it before using warnings."
-      : "Profile added. Calibrate it before using warnings.");
+      ? "Camera stopped. The new profile is active; calibrate it before using Focus tracking."
+      : "Profile added. Calibrate it before using Focus tracking.");
   }
 
   function exportProfile() {
@@ -394,39 +362,74 @@ export default function AttentionGuardPanel({
     }
   }
 
+  function openSettings() {
+    setSettingsPage("settings");
+    setSettingsOpen(true);
+  }
+
+  function openCalibration() {
+    if (controller.getState().runPurpose) controller.stop();
+    setSettingsPage("calibration");
+  }
+
+  function openTestArea() {
+    if (controller.getState().runPurpose) controller.stop();
+    setSettingsPage("test");
+  }
+
+  function backToSettings() {
+    const purpose = controller.getState().runPurpose;
+    if (purpose === "calibration" || purpose === "diagnostic") controller.stop();
+    setSettingsPage("settings");
+  }
+
+  function closeSettings() {
+    const purpose = controller.getState().runPurpose;
+    if (purpose === "calibration" || purpose === "diagnostic") controller.stop();
+    setSettingsPage("settings");
+    setSettingsOpen(false);
+  }
+
+  const settingsTitle = settingsPage === "settings"
+    ? "Attention Guard settings"
+    : settingsPage === "calibration" ? "Calibrate work area" : "Test Lab";
+  const settingsDescription = settingsPage === "settings"
+    ? "Choose a work area and profile, then calibrate or test the local webcam estimates."
+    : settingsPage === "calibration"
+      ? "Capture one minute of normal work or reading, then one minute of intentional off-task looks."
+      : "Check how the saved profile responds to live local webcam signals; tests never trigger Focus interventions.";
+
   return (
     <div className="attention-panel">
       <section className="attention-intro">
-        <div className="attention-kicker">Optional · local processing</div>
-        <h2>Attention Guard</h2>
-        <p>Calibrate a work area and test the webcam estimates before starting Focus tracking. Gentle in-app off-target reminders are on by default and can be changed below; the camera stays off until you explicitly start it.</p>
+        <div className="attention-intro-heading">
+          <div>
+            <div className="attention-kicker">Optional · local processing</div>
+            <h2>Attention Guard</h2>
+          </div>
+          <button
+            type="button"
+            className="attention-settings-button"
+            onClick={openSettings}
+            aria-label="Open Attention Guard settings"
+            aria-haspopup="dialog"
+            aria-expanded={settingsOpen}
+            title="Attention Guard settings"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z" />
+              <path d="m19.4 13.5 1.15.9-1.35 2.34-1.4-.55a7.9 7.9 0 0 1-1.58.92l-.24 1.48h-2.7l-.24-1.48a7.9 7.9 0 0 1-1.58-.92l-1.4.55L6.7 14.4l1.15-.9a7.6 7.6 0 0 1 0-1.8l-1.15-.9 1.35-2.34 1.4.55a7.9 7.9 0 0 1 1.58-.92l.24-1.48h2.7l.24 1.48a7.9 7.9 0 0 1 1.58.92l1.4-.55 1.35 2.34-1.15.9a7.6 7.6 0 0 1 0 1.8Z" />
+            </svg>
+          </button>
+        </div>
+        <p>Use a webcam to estimate whether your face and coarse eye-box signals stay near your usual work area. Nothing starts until you explicitly start a camera run.</p>
+        <div className="attention-active-profile" role="status">
+          <span>{store.mode === "screen" ? "Screen" : "Book"} · {profile.name}</span>
+          <strong className={profile.calibratedAt != null ? "is-ready" : "is-needed"}>{profile.calibratedAt != null ? "CALIBRATED" : "NEEDS CALIBRATION"}</strong>
+        </div>
       </section>
 
-      <div className="attention-mode-switch" role="group" aria-label="Attention mode">
-        {(["screen", "book"] as const).map((mode) => (
-          <button key={mode} type="button" className={store.mode === mode ? "active" : ""} aria-pressed={store.mode === mode} onClick={() => changeMode(mode)}>
-            {mode === "screen" ? "SCREEN" : "BOOK"}
-          </button>
-        ))}
-      </div>
-
-      <details className="attention-guide" open={profile.calibratedAt == null}>
-        <summary><span>First-use guide</span><small>Four steps · 2–3 minutes to set up</small></summary>
-        <ol>
-          <li><b>1</b><div><strong>Choose your work area</strong><small>{store.mode === "screen" ? "Screen mode uses your calibrated screen zone; sustained looks outside it can trigger an off-target nudge. It cannot identify a phone or other object." : "Book mode learns the page area and samples just beyond it to estimate off-page overlap."}</small></div></li>
-          <li><b>2</b><div><strong>Set camera angle and distance</strong><small>Place the camera near eye level, face it with your full face in frame, and keep the same chair, lighting and camera position for calibration and use.</small></div></li>
-          <li><b>3</b><div><strong>Calibrate, then test</strong><small>Follow each on-area and off-area target. Use Test Lab to verify that center, boundary and away movements produce sensible results before relying on reminders.</small></div></li>
-          <li><b>4</b><div><strong>Start Focus and tracking</strong><small>Turning on the camera during a running Focus timer enables gentle in-app off-target reminders by default. You can turn them off below; sound and strict pause are separate optional settings.</small></div></li>
-        </ol>
-        <div className="attention-guide-actions">
-          <button type="button" className="attention-secondary-button" onClick={() => changeView("calibrate")}>Open calibration</button>
-          <button type="button" className="attention-secondary-button" onClick={() => changeView("lab")}>Open Test Lab</button>
-          {!store.offTargetAlertsEnabled && <button type="button" className="attention-secondary-button" onClick={() => updateStore({ offTargetAlertsEnabled: true })}>Re-enable in-app off-target reminders</button>}
-        </div>
-        <p>Webcam direction and iris signals are estimates, not pixel-accurate gaze tracking. The preview outline only shows face position; it does not label pupils or detect phones.</p>
-      </details>
-
-      <section className={`attention-control-card ${isActive ? "is-active" : ""}`} aria-label="Camera tracking controls">
+      <section className={`attention-control-card ${isActive ? "is-active" : ""}`} aria-label="Focus camera tracking controls">
         <div className="attention-control-copy">
           <strong>{cameraHeading}</strong>
           <span>{cameraDescription}</span>
@@ -439,15 +442,8 @@ export default function AttentionGuardPanel({
             aria-checked={controlChecked}
             disabled={controlDisabled}
             onClick={() => {
-              if (isActive) {
-                controller.stop();
-              } else if (view === "calibrate") {
-                void controller.startCalibration(selectedDeviceId);
-              } else if (view === "lab") {
-                void controller.startDiagnostic(selectedDeviceId);
-              } else if (canStartFocusCamera) {
-                void controller.start(selectedDeviceId);
-              }
+              if (isActive) controller.stop();
+              else if (canStartFocusCamera) void controller.start(selectedDeviceId);
             }}
           >
             <span className="attention-toggle-track" aria-hidden="true"><i /></span>
@@ -459,34 +455,9 @@ export default function AttentionGuardPanel({
         </div>
       </section>
 
-      <div className="attention-camera-row">
-        <label className="field attention-device-field">
-          <span>Camera device</span>
-          <select
-            value={selectedDeviceId}
-            onChange={(event) => {
-              controller.selectDevice(event.target.value);
-              updateStore({ cameraDeviceId: event.target.value });
-            }}
-            disabled={isActive}
-          >
-            <option value="">Default camera</option>
-            {selectedDeviceId && !state.devices.some((device) => device.deviceId === selectedDeviceId) && !isCameraSelectionConfirmedMissing(selectedDeviceId, state.devices, state.devicesReady) && (
-              <option value={selectedDeviceId}>Saved camera (not currently listed)</option>
-            )}
-            {state.devices.map((device, index) => (
-              <option key={device.deviceId || index} value={device.deviceId}>{device.label}</option>
-            ))}
-          </select>
-        </label>
-        <button type="button" className="attention-secondary-button" onClick={() => void controller.refreshDevices()}>
-          Refresh cameras
-        </button>
-      </div>
-      {isActive && <p className="attention-inline-message">Stop the current camera run before choosing a different device.</p>}
-      {state.devicesReady && state.devices.length === 0 && <p className="attention-inline-message">No cameras are listed. Choose Default camera to try browser selection, or connect a camera and refresh.</p>}
-      {!supported && state.status !== "error" && <p className="attention-error" role="alert">Camera access is not available in this browser. Try a current browser on HTTPS or localhost.</p>}
+      {isActive && <p className="attention-inline-message">The camera device selector is in Attention Guard settings. Stop this run before changing cameras.</p>}
       {state.status === "error" && <p className="attention-error" role="alert">{state.error}</p>}
+      {!supported && state.status !== "error" && <p className="attention-error" role="alert">Camera access is not available in this browser. Try a current browser on HTTPS or localhost.</p>}
 
       <div className={`attention-preview-wrap is-${state.status}`}>
         {isActive ? (
@@ -525,85 +496,13 @@ export default function AttentionGuardPanel({
           </>
         )}
       </div>
-      <p className="attention-preview-caption">The outline shows face position, not eye landmarks. Head pose is calibrated to your usual camera angle; iris direction is a coarse eye-box estimate and is not measured in screen pixels.</p>
-
-      <div className="attention-tabs" role="tablist" aria-label="Attention Guard views">
-        <button id="attention-monitor-tab" type="button" role="tab" aria-selected={view === "monitor"} className={view === "monitor" ? "active" : ""} onClick={() => changeView("monitor")}>Monitor</button>
-        <button id="attention-calibrate-tab" type="button" role="tab" aria-selected={view === "calibrate"} className={view === "calibrate" ? "active" : ""} onClick={() => changeView("calibrate")}>Calibrate</button>
-        <button id="attention-test-lab-tab" type="button" role="tab" aria-selected={view === "lab"} className={view === "lab" ? "active" : ""} onClick={() => changeView("lab")}>Test Lab</button>
-      </div>
-
-      <section className="attention-settings" aria-labelledby="attention-profile-title">
-        <div className="attention-section-heading">
-          <div><h3 id="attention-profile-title">Active profile</h3><p>Choose a saved calibration for this work area, or create a separate desk/reading setup.</p></div>
-        </div>
-        <div className="attention-profile-row">
-          <label className="field attention-device-field">
-            <span>Active {store.mode.toUpperCase()} profile</span>
-            <select value={profile.id} onChange={(event) => selectProfile(event.target.value)}>
-              {profilesForMode.map((item) => <option key={item.id} value={item.id}>{item.name}{item.calibratedAt ? " · calibrated" : " · needs calibration"}</option>)}
-            </select>
-          </label>
-          <div className="attention-profile-state">{profile.calibratedAt ? "CALIBRATED" : "NOT CALIBRATED"}</div>
-        </div>
-        <div className="attention-profile-create">
-          <label className="field"><span>New profile name</span><input value={newProfileName} maxLength={32} onChange={(event) => setNewProfileName(event.target.value.slice(0, 32))} placeholder={store.mode === "screen" ? "Desk monitor" : "Reading chair"} /></label>
-          <button type="button" className="attention-secondary-button" onClick={addProfile} disabled={store.profiles.length >= 24}>Add profile</button>
-        </div>
-        <div className="attention-profile-actions">
-          <button type="button" className="attention-secondary-button" onClick={exportProfile}>Export profile JSON</button>
-          <label className="attention-file-button">
-            Import profile JSON
-            <input ref={profileFileRef} type="file" accept="application/json,.json" onChange={(event) => void importProfile(event.target.files?.[0])} disabled={store.profiles.length >= 24} />
-          </label>
-        </div>
-        {profileMessage && <p className="attention-inline-message" role="status">{profileMessage}</p>}
-      </section>
-
-      <div className="attention-view-content" ref={activeViewRef}>
-      {view === "calibrate" ? (
-        <CalibrationWizard
-          controller={controller}
-          profile={profile}
-          cameraStatus={state.status}
-          cameraError={state.error}
-          onStartCalibrationCamera={() => { void controller.startCalibration(selectedDeviceId); }}
-          onStopCalibrationCamera={() => controller.stop()}
-          onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
-        />
-      ) : view === "lab" ? (
-        <TestLab
-          controller={controller}
-          profile={profile}
-          cameraStatus={state.status}
-          runPurpose={state.runPurpose}
-          onStartCamera={() => { void controller.startDiagnostic(selectedDeviceId); }}
-          onStopCamera={() => controller.stop()}
-          onSaveProfile={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
-        />
-      ) : (
-        <div className="attention-monitor-view" role="tabpanel" id="attention-monitor-panel" aria-labelledby="attention-monitor-tab">
-      <details className="attention-tuning">
-        <summary>Classifier zone and sensitivity</summary>
-        <p>Adjust how far pose/gaze may drift from calibration before it counts as outside the zone. Values are normalized per profile.</p>
-        <div className="attention-number-grid">
-          <AttentionNumberField label="Head yaw zone (°)" value={profile.zone.yawDeg} min={5} max={60} onChange={(value) => updateZone("yawDeg", value)} />
-          <AttentionNumberField label="Head pitch zone (°)" value={profile.zone.pitchDeg} min={5} max={60} onChange={(value) => updateZone("pitchDeg", value)} />
-          <AttentionNumberField label="Head roll zone (°)" value={profile.zone.rollDeg} min={5} max={60} onChange={(value) => updateZone("rollDeg", value)} />
-          <AttentionNumberField label="Gaze X zone" value={profile.zone.gazeX} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeX", value)} />
-          <AttentionNumberField label="Gaze Y zone" value={profile.zone.gazeY} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeY", value)} />
-          <AttentionNumberField label="Level 1 score" value={profile.tuning.level1Score} min={0.2} max={2.5} step={0.1} onChange={(value) => updateTuning("level1Score", value)} />
-          <AttentionNumberField label="Level 2 score" value={profile.tuning.level2Score} min={0.4} max={4} step={0.1} onChange={(value) => updateTuning("level2Score", Math.max(value, profile.tuning.level1Score + 0.15))} />
-          <AttentionNumberField label="Level 1 hold (ms)" value={profile.tuning.level1DwellMs} min={500} max={30_000} step={500} onChange={(value) => updateTuning("level1DwellMs", value)} />
-          <AttentionNumberField label="Level 2 hold (ms)" value={profile.tuning.level2DwellMs} min={1_000} max={60_000} step={1_000} onChange={(value) => updateTuning("level2DwellMs", value)} />
-        </div>
-      </details>
+      <p className="attention-preview-caption">The outline shows face position, not eye landmarks. Head pose is calibrated to your usual camera angle; iris direction is only a coarse eye-box estimate, not screen-pixel gaze.</p>
 
       <section className="attention-debug" aria-labelledby="attention-debug-title">
         <div className="attention-section-heading">
           <div>
             <h3 id="attention-debug-title">Live signal diagnostics</h3>
-            <p>Only numeric estimates are shown here; the model does not provide a calibrated gaze-confidence score.</p>
+            <p>Numeric estimates only; the model does not provide a calibrated gaze-confidence score.</p>
           </div>
           <span className={`attention-sample-state ${signals?.facePresent ? "has-face" : ""}`}>{signals?.facePresent ? "FACE FOUND" : isActive ? "SEARCHING" : "OFF"}</span>
         </div>
@@ -611,56 +510,212 @@ export default function AttentionGuardPanel({
         <SignalReadout signals={signals} cameraActive={isActive} />
       </section>
 
-      <details className="attention-settings-extra" open={!store.offTargetAlertsEnabled}>
-        <summary>Alerts and break reminders</summary>
-        <p className="attention-preference-intro">Alerts only run during an explicitly started Focus camera session. Calibration and Test Lab never notify or pause the timer.</p>
-        <AttentionSwitch
-          label={store.mode === "screen" ? "Off-target reminders" : "Off-page reminders"}
-          help={store.mode === "screen"
-            ? "In-app nudges after sustained direction outside your screen zone. A phone is not detected; only webcam direction is estimated."
-            : "In-app nudges after sustained direction outside your calibrated reading area."}
-          checked={store.offTargetAlertsEnabled}
-          onChange={(value) => updateStore({ offTargetAlertsEnabled: value, ...(value ? {} : { strictPause: false }) })}
-        />
-        {warningSoundSupported ? <AttentionSwitch label="Warning sound" help="Soft chime for enabled reminders; off by default." checked={store.soundEnabled} onChange={(value) => {
-          if (value) prepareAttentionWarningAudio();
-          updateStore({ soundEnabled: value });
-        }} /> : <p className="attention-inline-message">Warning sounds are not supported in this browser.</p>}
-        <AttentionSwitch
-          label="Strict pause"
-          help="Pause Focus after a sustained level 2 off-target warning. Requires off-target reminders."
-          checked={store.strictPause}
-          disabled={!store.offTargetAlertsEnabled}
-          onChange={(value) => updateStore({ strictPause: value })}
-        />
-        <label className="field attention-break-field">
-          <span>Screen break reminder</span>
-          <select className="attention-break-select" value={store.screenBreakReminderMinutes} disabled={store.mode !== "screen"} onChange={(event) => updateStore({ screenBreakReminderMinutes: Number(event.target.value) })}>
-            <option value={0}>Off</option>
-            <option value={25}>Every 25 minutes</option>
-            <option value={45}>Every 45 minutes</option>
-            <option value={60}>Every 60 minutes</option>
-          </select>
-          <small>{store.mode === "screen"
-            ? "A gentle nudge after continuous time inside your Screen zone. This is a timer—not eye-strain or exact gaze-duration detection."
-            : "Available in Screen mode only; this setting does not apply to reading."}</small>
-        </label>
-      </details>
-        </div>
-      )}
-      </div>
-
       <details className="attention-privacy">
         <summary>Camera and privacy details</summary>
         <ul>
-          <li>Focus tracking can be started only while the Focus timer is running. Pausing, resetting, finishing, skipping, or switching to a break stops its camera and worker; after resuming, start tracking again if desired.</li>
-          <li>Opening Calibrate or Test Lab stops Focus tracking. Their separate temporary camera runs require an explicit start and never trigger focus-session interventions.</li>
-          <li>Video frames and landmarks are processed in a local worker. They are not uploaded or saved.</li>
-          <li>Tracking uses the camera only (no microphone). Stopping a run ends every camera track and terminates the worker.</li>
-          <li>The face model and WebAssembly files are served from this app. External worker requests, including SDK performance telemetry, are blocked.</li>
+          <li>Focus monitoring and interventions run only during an active Focus timer. Calibration and Test Lab runs are temporary and never trigger Focus interventions.</li>
+          <li>Video frames are analyzed locally. The app does not save or upload camera images, video, or raw calibration samples.</li>
+          <li>Tracking uses the camera only, not the microphone. Stopping a run ends every camera track and terminates the worker.</li>
+          <li>The webcam estimates direction and face position; it does not identify phones, measure pixel-accurate gaze, or label pupils.</li>
           <li>When this tab goes into the background, the current camera run is stopped; start it again explicitly when you return.</li>
         </ul>
       </details>
+
+      {settingsOpen && (
+        <AttentionWindow
+          title={settingsTitle}
+          description={settingsDescription}
+          onClose={closeSettings}
+          onBack={settingsPage === "settings" ? undefined : backToSettings}
+          wide={settingsPage !== "settings"}
+        >
+          <div className="attention-dialog-page" hidden={settingsPage !== "settings"}>
+            <p className="attention-dialog-intro">Settings apply to this device and the selected work-area profile. Camera data and calibration signals are processed locally.</p>
+
+            {isTemporaryRun && isActive && <p className="attention-inline-message" role="status">A temporary camera run is still active. Reopen its page to stop or continue it, or close this window to stop the camera.</p>}
+
+            <section className="attention-settings" aria-labelledby="attention-mode-title">
+              <div className="attention-section-heading">
+                <div><h3 id="attention-mode-title">Work area and profile</h3><p>Maintain a separate setup for screen work and book reading.</p></div>
+              </div>
+              <div className="attention-mode-switch" role="group" aria-label="Attention mode">
+                {(["screen", "book"] as const).map((mode) => (
+                  <button key={mode} type="button" className={store.mode === mode ? "active" : ""} aria-pressed={store.mode === mode} onClick={() => changeMode(mode)}>
+                    {mode === "screen" ? "SCREEN" : "BOOK"}
+                  </button>
+                ))}
+              </div>
+              <div className="attention-profile-row">
+                <label className="field attention-device-field">
+                  <span>Active {store.mode.toUpperCase()} profile</span>
+                  <select value={profile.id} onChange={(event) => selectProfile(event.target.value)}>
+                    {profilesForMode.map((item) => <option key={item.id} value={item.id}>{item.name}{item.calibratedAt ? " · calibrated" : " · needs calibration"}</option>)}
+                  </select>
+                </label>
+                <div className="attention-profile-state">{profile.calibratedAt ? "CALIBRATED" : "NOT CALIBRATED"}</div>
+              </div>
+              <div className="attention-profile-create">
+                <label className="field"><span>New profile name</span><input value={newProfileName} maxLength={32} onChange={(event) => setNewProfileName(event.target.value.slice(0, 32))} placeholder={store.mode === "screen" ? "Desk monitor" : "Reading chair"} /></label>
+                <button type="button" className="attention-secondary-button" onClick={addProfile} disabled={store.profiles.length >= 24}>Add profile</button>
+              </div>
+              <div className="attention-profile-actions">
+                <button type="button" className="attention-secondary-button" onClick={exportProfile}>Export profile JSON</button>
+                <label className="attention-file-button">
+                  Import profile JSON
+                  <input ref={profileFileRef} type="file" accept="application/json,.json" onChange={(event) => void importProfile(event.target.files?.[0])} disabled={store.profiles.length >= 24} />
+                </label>
+              </div>
+              {profileMessage && <p className="attention-inline-message" role="status">{profileMessage}</p>}
+            </section>
+
+            <section className="attention-settings" aria-labelledby="attention-camera-settings-title">
+              <div className="attention-section-heading">
+                <div><h3 id="attention-camera-settings-title">Camera input</h3><p>The selected camera is remembered locally for this site.</p></div>
+              </div>
+              <div className="attention-camera-row">
+                <label className="field attention-device-field">
+                  <span>Camera device</span>
+                  <select
+                    value={selectedDeviceId}
+                    onChange={(event) => {
+                      controller.selectDevice(event.target.value);
+                      updateStore({ cameraDeviceId: event.target.value });
+                    }}
+                    disabled={isActive}
+                  >
+                    <option value="">Default camera</option>
+                    {selectedDeviceId && !state.devices.some((device) => device.deviceId === selectedDeviceId) && !isCameraSelectionConfirmedMissing(selectedDeviceId, state.devices, state.devicesReady) && (
+                      <option value={selectedDeviceId}>Saved camera (not currently listed)</option>
+                    )}
+                    {state.devices.map((device, index) => (
+                      <option key={device.deviceId || index} value={device.deviceId}>{device.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <button type="button" className="attention-secondary-button" onClick={() => void controller.refreshDevices()}>Refresh cameras</button>
+              </div>
+              {isActive && <p className="attention-inline-message">Stop the active camera run before changing the selected device.</p>}
+              {state.devicesReady && state.devices.length === 0 && <p className="attention-inline-message">No cameras are listed yet. Choose Default camera to request browser selection, or connect a camera and refresh.</p>}
+              {!supported && <p className="attention-error" role="alert">Camera access is unavailable in this browser or embedded page. Open the secure site directly and check its camera permission.</p>}
+            </section>
+
+            <section className="attention-settings" aria-labelledby="attention-calibration-launch-title">
+              <div className="attention-section-heading">
+                <div><h3 id="attention-calibration-launch-title">Calibration and Test Lab</h3><p>Open a dedicated window for each temporary camera workflow.</p></div>
+              </div>
+              <div className="attention-tool-launch-grid">
+                <button type="button" className="attention-tool-launch" onClick={openCalibration}>
+                  <span className="attention-tool-launch-icon" aria-hidden="true">◎</span>
+                  <span><strong>{profile.calibratedAt ? "Recalibrate work area" : "Calibrate work area"}</strong><small>Two natural-viewing phases, one minute each. Samples can be extended.</small></span>
+                  <span className="attention-tool-launch-arrow" aria-hidden="true">→</span>
+                </button>
+                <button type="button" className="attention-tool-launch" onClick={openTestArea}>
+                  <span className="attention-tool-launch-icon" aria-hidden="true">◌</span>
+                  <span><strong>Test Lab</strong><small>Try live signals, self-test, and simulated scenarios without Focus interventions.</small></span>
+                  <span className="attention-tool-launch-arrow" aria-hidden="true">→</span>
+                </button>
+              </div>
+            </section>
+
+            <details className="attention-guide" open={profile.calibratedAt == null}>
+              <summary><span>First-use guide</span><small>Set up this work area</small></summary>
+              <ol>
+                <li><b>1</b><div><strong>Choose Screen or Book</strong><small>Use the active profile for your screen area or reading page; each mode keeps separate settings.</small></div></li>
+                <li><b>2</b><div><strong>Calibrate, then test</strong><small>Run both one-minute phases, save the profile, and verify the estimates in Test Lab before relying on reminders.</small></div></li>
+                <li><b>3</b><div><strong>Start Focus and tracking</strong><small>Focus monitoring stays off until you explicitly turn it on during an active Focus timer.</small></div></li>
+              </ol>
+            </details>
+
+            <details className="attention-tuning">
+              <summary>Classifier zone and sensitivity</summary>
+              <p>Adjust how far pose and coarse eye-box signals may drift from calibration before they count as outside the zone.</p>
+              <div className="attention-number-grid">
+                <AttentionNumberField label="Head yaw zone (°)" value={profile.zone.yawDeg} min={5} max={60} onChange={(value) => updateZone("yawDeg", value)} />
+                <AttentionNumberField label="Head pitch zone (°)" value={profile.zone.pitchDeg} min={5} max={60} onChange={(value) => updateZone("pitchDeg", value)} />
+                <AttentionNumberField label="Head roll zone (°)" value={profile.zone.rollDeg} min={5} max={60} onChange={(value) => updateZone("rollDeg", value)} />
+                <AttentionNumberField label="Gaze X zone" value={profile.zone.gazeX} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeX", value)} />
+                <AttentionNumberField label="Gaze Y zone" value={profile.zone.gazeY} min={0.15} max={1.5} step={0.05} onChange={(value) => updateZone("gazeY", value)} />
+                <AttentionNumberField label="Level 1 score" value={profile.tuning.level1Score} min={0.2} max={2.5} step={0.1} onChange={(value) => updateTuning("level1Score", value)} />
+                <AttentionNumberField label="Level 2 score" value={profile.tuning.level2Score} min={0.4} max={4} step={0.1} onChange={(value) => updateTuning("level2Score", Math.max(value, profile.tuning.level1Score + 0.15))} />
+                <AttentionNumberField label="Level 1 hold (ms)" value={profile.tuning.level1DwellMs} min={500} max={30_000} step={500} onChange={(value) => updateTuning("level1DwellMs", value)} />
+                <AttentionNumberField label="Level 2 hold (ms)" value={profile.tuning.level2DwellMs} min={1_000} max={60_000} step={1_000} onChange={(value) => updateTuning("level2DwellMs", value)} />
+              </div>
+            </details>
+
+            <details className="attention-settings-extra" open={!store.offTargetAlertsEnabled}>
+              <summary>Alerts and break reminders</summary>
+              <p className="attention-preference-intro">These settings apply only to explicitly started Focus camera sessions. Calibration and Test Lab never notify or pause the timer.</p>
+              <AttentionSwitch
+                label={store.mode === "screen" ? "Off-target reminders" : "Off-page reminders"}
+                help={store.mode === "screen"
+                  ? "In-app nudges after sustained direction outside your screen zone. A phone is not detected; only webcam direction is estimated."
+                  : "In-app nudges after sustained direction outside your calibrated reading area."}
+                checked={store.offTargetAlertsEnabled}
+                onChange={(value) => updateStore({ offTargetAlertsEnabled: value, ...(value ? {} : { strictPause: false }) })}
+              />
+              {warningSoundSupported ? <AttentionSwitch label="Warning sound" help="Soft chime for enabled reminders; off by default." checked={store.soundEnabled} onChange={(value) => {
+                if (value) prepareAttentionWarningAudio();
+                updateStore({ soundEnabled: value });
+              }} /> : <p className="attention-inline-message">Warning sounds are not supported in this browser.</p>}
+              <AttentionSwitch
+                label="Strict pause"
+                help="Pause Focus after a sustained level 2 off-target warning. Requires off-target reminders."
+                checked={store.strictPause}
+                disabled={!store.offTargetAlertsEnabled}
+                onChange={(value) => updateStore({ strictPause: value })}
+              />
+              <label className="field attention-break-field">
+                <span>Screen break reminder</span>
+                <select className="attention-break-select" value={store.screenBreakReminderMinutes} disabled={store.mode !== "screen"} onChange={(event) => updateStore({ screenBreakReminderMinutes: Number(event.target.value) })}>
+                  <option value={0}>Off</option>
+                  <option value={25}>Every 25 minutes</option>
+                  <option value={45}>Every 45 minutes</option>
+                  <option value={60}>Every 60 minutes</option>
+                </select>
+                <small>{store.mode === "screen"
+                  ? "A gentle nudge after continuous time inside your Screen zone. This is a timer—not exact gaze-duration or eye-strain detection."
+                  : "Available in Screen mode only; this setting does not apply to reading."}</small>
+              </label>
+            </details>
+
+            <details className="attention-privacy">
+              <summary>Privacy and camera behavior</summary>
+              <ul>
+                <li>The camera stays off until you explicitly start a Focus, calibration, or Test Lab run.</li>
+                <li>Video and raw numeric calibration samples are processed locally and are not saved. Only the profile's aggregate baseline and zone settings are stored on this device.</li>
+                <li>Calibration and Test Lab runs do not trigger Focus reminders, sounds, or timer pauses.</li>
+                <li>Webcam direction is approximate. The app does not detect phones, pupil landmarks, or pixel-accurate gaze.</li>
+              </ul>
+            </details>
+          </div>
+
+          <div className="attention-dialog-page" hidden={settingsPage !== "calibration"}>
+            <AttentionModalCameraPreview controller={controller} />
+            <CalibrationWizard
+              controller={controller}
+              profile={profile}
+              cameraStatus={state.status}
+              cameraError={state.error}
+              onStartCalibrationCamera={() => { void controller.startCalibration(selectedDeviceId); }}
+              onStopCalibrationCamera={() => controller.stop()}
+              onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
+            />
+          </div>
+
+          <div className="attention-dialog-page" hidden={settingsPage !== "test"}>
+            <AttentionModalCameraPreview controller={controller} />
+            <TestLab
+              controller={controller}
+              profile={profile}
+              cameraStatus={state.status}
+              runPurpose={state.runPurpose}
+              onStartCamera={() => { void controller.startDiagnostic(selectedDeviceId); }}
+              onStopCamera={() => controller.stop()}
+              onSaveProfile={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
+            />
+          </div>
+        </AttentionWindow>
+      )}
     </div>
   );
 }

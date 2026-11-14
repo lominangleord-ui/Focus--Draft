@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCalibration, CALIBRATION_MIN_SAMPLES, getCalibrationTargets, isCalibrationSignalValid, type CalibrationSamples } from "./calibration";
+import { calculateCalibration, calculateSessionCalibration, CALIBRATION_MIN_SAMPLES, CALIBRATION_SESSION_MIN_SAMPLES, getCalibrationTargets, isCalibrationSignalValid, type CalibrationSamples, type CalibrationSessionSamples } from "./calibration";
 import { defaultAttentionProfile } from "./profile";
 import type { AttentionMode, RawAttentionSignals } from "./types";
 
@@ -33,6 +33,25 @@ function makeSamples(mode: AttentionMode, overrides: Record<string, Partial<RawA
   ]));
 }
 
+function makeSessionSamples(): CalibrationSessionSamples {
+  return {
+    focused: Array.from({ length: 80 }, (_, index) => signal({
+      sampledAt: index + 1,
+      yawDeg: ((index % 9) - 4) * 1.2,
+      pitchDeg: ((index % 7) - 3) * 1,
+      gazeX: ((index % 11) - 5) * 0.035,
+      gazeY: ((index % 9) - 4) * 0.04,
+    })),
+    offTask: Array.from({ length: 70 }, (_, index) => signal({
+      sampledAt: index + 100,
+      yawDeg: index % 2 ? 32 : -32,
+      pitchDeg: index % 3 ? 25 : -25,
+      gazeX: index % 2 ? 1.1 : -1.1,
+      gazeY: index % 3 ? 1.1 : -1.1,
+    })),
+  };
+}
+
 describe("Attention Guard calibration", () => {
   it("uses the requested per-mode target sets", () => {
     const screen = getCalibrationTargets("screen");
@@ -50,6 +69,24 @@ describe("Attention Guard calibration", () => {
     const samples = makeSamples("screen");
     samples["bottom-right"] = samples["bottom-right"].slice(0, CALIBRATION_MIN_SAMPLES - 1);
     expect(calculateCalibration("screen", samples, 20, "rectangle")).toBeNull();
+  });
+
+  it("fits a saved zone from sustained focused and intentional off-task sessions", () => {
+    const samples = makeSessionSamples();
+    const result = calculateSessionCalibration("screen", samples, 20, "ellipse");
+
+    expect(result).not.toBeNull();
+    expect(result?.sampleCount).toBe(samples.focused.length + samples.offTask.length);
+    expect(result?.zoneShape).toBe("ellipse");
+    expect(result?.positiveOutside).toBeLessThan(0.2);
+    expect(result?.negativeOverlap).toBe(0);
+    expect(result?.targetDiagnostics.map((item) => item.id)).toEqual(["focused", "off-task"]);
+  });
+
+  it("requires enough valid samples from both session phases", () => {
+    const samples = makeSessionSamples();
+    samples.offTask = samples.offTask.slice(0, CALIBRATION_SESSION_MIN_SAMPLES - 1);
+    expect(calculateSessionCalibration("book", samples, 20, "rectangle")).toBeNull();
   });
 
   it("uses robust medians and produces a zone that contains the on-task directions", () => {

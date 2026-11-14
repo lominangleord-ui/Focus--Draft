@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createAttentionProfile } from "./profile";
-import { ATTENTION_STORE_KEY, defaultAttentionStore, loadAttentionStore, normalizeAttentionStore, saveAttentionStore } from "./storage";
+import { ATTENTION_STORE_KEY, activeAttentionProfile, defaultAttentionStore, loadAttentionStore, normalizeAttentionStore, saveAttentionStore, upsertAttentionProfile } from "./storage";
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -29,6 +29,24 @@ describe("Attention Guard local store", () => {
     expect(loadAttentionStore(storage).cameraDeviceId).toBe("local-camera-id");
     storage.setItem(ATTENTION_STORE_KEY, "not json");
     expect(loadAttentionStore(storage).cameraDeviceId).toBe("");
+  });
+
+  it("persists a calibrated profile and its aggregate sample count", () => {
+    const storage = new MemoryStorage();
+    const profile = createAttentionProfile("screen", "Study desk", "default-screen", 10);
+    profile.calibratedAt = 20;
+    profile.calibrationSamples = 146;
+    profile.baseline = { yawDeg: 1, pitchDeg: -2, rollDeg: 0.5, gazeX: 0.08, gazeY: -0.04 };
+    profile.negativeOverlap = 0.03;
+    const store = upsertAttentionProfile(defaultAttentionStore(), profile);
+
+    expect(saveAttentionStore(store, storage)).toBe(true);
+    expect(activeAttentionProfile(loadAttentionStore(storage))).toMatchObject({
+      calibratedAt: 20,
+      calibrationSamples: 146,
+      baseline: profile.baseline,
+      negativeOverlap: 0.03,
+    });
   });
 
   it("normalizes reminder and timed break preferences while preserving legacy behavior", () => {

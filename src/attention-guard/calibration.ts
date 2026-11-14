@@ -14,7 +14,11 @@ export type CalibrationTarget = {
 };
 
 export type CalibrationSamples = Record<string, RawAttentionSignals[]>;
+export type CalibrationSessionPhase = "focused" | "offTask";
+export type CalibrationSessionSamples = Record<CalibrationSessionPhase, RawAttentionSignals[]>;
 export type CalibrationSignalKey = keyof AttentionBaseline;
+
+export const CALIBRATION_SESSION_MIN_SAMPLES = 20;
 
 export type CalibrationTargetDiagnostic = {
   id: string;
@@ -98,6 +102,16 @@ function median(values: number[]): number {
 
 function medianAbsoluteDeviation(values: number[], center = median(values)) {
   return median(values.map((value) => Math.abs(value - center)));
+}
+
+function quantile(values: number[], fraction: number) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const position = Math.max(0, Math.min(1, fraction)) * (sorted.length - 1);
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  const blend = position - lower;
+  return sorted[lower] * (1 - blend) + sorted[upper] * blend;
 }
 
 function finiteSignalValues(samples: RawAttentionSignals[], key: CalibrationSignalKey) {
@@ -244,6 +258,116 @@ export function calculateCalibration(
     zoneShape,
     marginPercent: safeMargin,
     sampleCount: targets.reduce((sum, target) => sum + samplesByTarget[target.id].length, 0),
+    negativeOverlap,
+    positiveOutside,
+    targetDiagnostics: diagnostics,
+    warnings,
+  };
+}
+
+function makePhaseDiagnostic(
+  id: string,
+  label: string,
+  kind: CalibrationTarget["kind"],
+  samples: RawAttentionSignals[],
+  baseline: AttentionBaseline,
+): CalibrationTargetDiagnostic {
+  const summary = Object.fromEntries(SIGNAL_KEYS.map((key) => [key, targetSummary(samples, key).center])) as AttentionBaseline;
+  return {
+    id,
+    label,
+    kind,
+    yawDelta: summary.yawDeg - baseline.yawDeg,
+    pitchDelta: summary.pitchDeg - baseline.pitchDeg,
+    gazeXDelta: summary.gazeX - baseline.gazeX,
+    gazeYDelta: summary.gazeY - baseline.gazeY,
+  };
+}
+
+/** Fits a work-area zone from two longer natural-viewing phases. Raw frames are
+ * filtered by the same local signal-quality checks as the live wizard; only
+ * aggregate numeric calibration settings are returned for storage. */
+export function calculateSessionCalibration(
+  mode: AttentionMode,
+  session: CalibrationSessionSamples,
+  marginPercent: number,
+  zoneShape: AttentionProfile["zoneShape"],
+  tuning: AttentionClassifierTuning = defaultAttentionProfile(mode).tuning,
+): CalibrationResult | null {
+  const qualityProfile = { ...defaultAttentionProfile(mode), tuning };
+  const focusedSamples = session.focused.filter((sample) => isCalibrationSignalValid(sample, qualityProfile));
+  const offTaskSamples = session.offTask.filter((sample) => isCalibrationSignalValid(sample, qualityProfile));
+  if (focusedSamples.length < CALIBRATION_SESSION_MIN_SAMPLES || offTaskSamples.length < CALIBRATION_SESSION_MIN_SAMPLES) return null;
+
+  const baseline = medianCalibrationBaseline(focusedSamples);
+  if (!baseline) return null;
+
+  const safeMargin = clamp(Number.isFinite(marginPercent) ? marginPercent : 20, 0, 80);
+  const zone = {} as AttentionZone;
+  for (const key of SIGNAL_KEYS) {
+    const deviations = focusedSamples.map((sample) => Math.abs(sample[key]! - baseline[key]));
+    const robustSpread = targetSummary(focusedSamples, key).spread * 2.5;
+    zone[key] = clamp(
+      Math.max(MIN_ZONE[key], NOISE_FLOOR[key], quantile(deviations, 0.9), robustSpread),
+      MIN_ZONE[key],
+      MAX_ZONE[key],
+    );
+  }
+
+  // With an ellipse, simultaneous natural movements can fall outside even when
+  // each individual signal is inside its 90th percentile. Expand only enough
+  // to retain at least 90% of valid focused samples before applying the margin.
+  let scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape, tuning);
+  let positiveOutside = focusedSamples.filter((sample) => (computeAttentionScore(sample, scoreProfile) ?? Number.POSITIVE_INFINITY) > 1).length / focusedSamples.length;
+  for (let attempt = 0; positiveOutside > 0.1 && attempt < 24; attempt += 1) {
+    let changed = false;
+    for (const key of SIGNAL_KEYS) {
+      const expanded = clamp(zone[key] * 1.12, MIN_ZONE[key], MAX_ZONE[key]);
+      if (expanded > zone[key]) {
+        zone[key] = expanded;
+        changed = true;
+      }
+    }
+    if (!changed) break;
+    scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape, tuning);
+    positiveOutside = focusedSamples.filter((sample) => (computeAttentionScore(sample, scoreProfile) ?? Number.POSITIVE_INFINITY) > 1).length / focusedSamples.length;
+  }
+
+  for (const key of SIGNAL_KEYS) {
+    zone[key] = clamp(zone[key] * (1 + safeMargin / 100), MIN_ZONE[key], MAX_ZONE[key]);
+  }
+  scoreProfile = createScoringProfile(mode, baseline, zone, zoneShape, tuning);
+
+  const negativeOverlap = offTaskSamples.filter((sample) => (computeAttentionScore(sample, scoreProfile) ?? Number.POSITIVE_INFINITY) <= 1).length / offTaskSamples.length;
+  positiveOutside = focusedSamples.filter((sample) => (computeAttentionScore(sample, scoreProfile) ?? Number.POSITIVE_INFINITY) > 1).length / focusedSamples.length;
+  const diagnostics = [
+    makePhaseDiagnostic("focused", "Normal work or reading", "positive", focusedSamples, baseline),
+    makePhaseDiagnostic("off-task", "Intentional off-task looks", "negative", offTaskSamples, baseline),
+  ];
+  const warnings: string[] = [];
+
+  if (negativeOverlap >= 0.15) {
+    warnings.push(`${Math.round(negativeOverlap * 100)}% of intentional off-task samples fell inside the proposed work zone. Add another off-task capture with a wider range of ordinary non-work looks, then verify in Test Area.`);
+  } else if (negativeOverlap > 0.03) {
+    warnings.push(`${Math.round(negativeOverlap * 100)}% of off-task samples overlap the proposed work zone. Verify the boundary in Test Area before using reminders.`);
+  }
+  if (positiveOutside >= 0.2) {
+    warnings.push(`${Math.round(positiveOutside * 100)}% of normal work or reading samples fall outside the proposed zone. Add another focused capture or increase the margin.`);
+  }
+  if (SIGNAL_KEYS.some((key) => zone[key] >= MAX_ZONE[key] - 1e-9)) {
+    warnings.push("At least one calibrated range reached its safety limit. The available webcam signals may not distinguish this work area reliably; verify it in Test Area.");
+  }
+  const offTaskDiagnostic = diagnostics[1];
+  if (Math.hypot(offTaskDiagnostic.yawDelta / 6, offTaskDiagnostic.pitchDelta / 6, offTaskDiagnostic.gazeXDelta / 0.18, offTaskDiagnostic.gazeYDelta / 0.18) < 0.18) {
+    warnings.push("Intentional off-task looks were very similar to normal work or reading in the available webcam signals. Keep reminders conservative and verify the estimates in Test Area.");
+  }
+
+  return {
+    baseline,
+    zone,
+    zoneShape,
+    marginPercent: safeMargin,
+    sampleCount: focusedSamples.length + offTaskSamples.length,
     negativeOverlap,
     positiveOutside,
     targetDiagnostics: diagnostics,
