@@ -55,7 +55,7 @@ function installCameraMocks(videoReadyState: number) {
     baseURI: "https://focus.example.test/",
     createElement: () => video,
   });
-  const getUserMedia = vi.fn(async () => stream);
+  const getUserMedia = vi.fn(async (_constraints: MediaStreamConstraints) => stream);
   vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(null, {
     status: 200,
@@ -113,6 +113,23 @@ describe("Attention Guard controller lifecycle gate", () => {
     controller.stop();
   });
 
+  it("keeps facing mode and video size as preferences so ordinary webcams still prompt", async () => {
+    const mocks = installCameraMocks(2);
+    const controller = new AttentionGuardController();
+
+    await controller.startDiagnostic();
+
+    const constraints = mocks.getUserMedia.mock.calls[0]?.[0];
+    expect(mocks.getUserMedia).toHaveBeenCalledTimes(1);
+    expect(constraints?.video).toMatchObject({
+      facingMode: { ideal: "user" },
+      width: { ideal: 640 },
+      height: { ideal: 480 },
+      frameRate: { ideal: 12 },
+    });
+    controller.stop();
+  });
+
   it("shows real camera startup stages and waits for the published worker and model assets", async () => {
     installCameraMocks(2);
     const controller = new AttentionGuardController();
@@ -141,7 +158,7 @@ describe("Attention Guard controller lifecycle gate", () => {
 
     expect(getUserMedia).toHaveBeenCalledTimes(2);
     expect(getUserMedia.mock.calls[0]?.[0]).toMatchObject({ video: { deviceId: { exact: "stale-camera-id" } } });
-    expect(getUserMedia.mock.calls[1]?.[0]).toMatchObject({ video: { facingMode: "user" } });
+    expect(getUserMedia.mock.calls[1]?.[0]).toMatchObject({ video: { facingMode: { ideal: "user" } } });
     expect(controller.getState()).toMatchObject({ status: "starting", startupStage: "loading-model", selectedDeviceId: "mock-camera" });
     expect(FakeWorker.instances).toHaveLength(1);
     controller.stop();

@@ -31,30 +31,41 @@ function isEmbeddedDocument() {
   }
 }
 
+function errorName(error: unknown) {
+  if (error == null || typeof error !== "object" || !("name" in error)) return "";
+  return typeof error.name === "string" ? error.name : "";
+}
+
+function errorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error == null || typeof error !== "object" || !("message" in error)) return "";
+  return typeof error.message === "string" ? error.message : "";
+}
+
 function isCameraConstraintError(error: unknown) {
-  const name = error instanceof Error ? error.name : "";
+  const name = errorName(error);
   return name === "OverconstrainedError" || name === "NotFoundError" || name === "DevicesNotFoundError";
 }
 
 function cameraErrorMessage(error: unknown) {
-  if (!(error instanceof DOMException)) return error instanceof Error ? error.message : "Camera could not be started.";
-  if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+  const name = errorName(error);
+  if (name === "NotAllowedError" || name === "PermissionDeniedError") {
     const embeddedHint = isEmbeddedDocument() ? " This app is embedded; open its Vercel URL directly or allow camera access in the parent page too." : "";
     return `Camera permission was denied or blocked by browser/site settings. Allow camera for this site using the address-bar permission icon, then retry.${embeddedHint}`;
   }
-  if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+  if (name === "NotFoundError" || name === "DevicesNotFoundError") {
     return "No camera was found. Connect a camera and try again.";
   }
-  if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+  if (name === "NotReadableError" || name === "TrackStartError") {
     return "The camera is busy in another app or could not be read. Close other camera apps and try again.";
   }
-  if (error.name === "OverconstrainedError" || error.name === "ConstraintNotSatisfiedError") {
+  if (name === "OverconstrainedError" || name === "ConstraintNotSatisfiedError") {
     return "That camera does not support the requested video size. Choose another camera.";
   }
-  if (error.name === "SecurityError") {
+  if (name === "SecurityError") {
     return "Camera access requires a secure page (HTTPS or localhost).";
   }
-  return error.message || "Camera could not be started.";
+  return errorMessage(error) || "Camera could not be started.";
 }
 
 function createWorker() {
@@ -291,12 +302,12 @@ export class AttentionGuardController {
 
     try {
       const videoConstraints: MediaTrackConstraints = {
-        width: { ideal: 640, max: 1280 },
-        height: { ideal: 480, max: 720 },
-        frameRate: { ideal: 12, max: 20 },
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        frameRate: { ideal: 12 },
       };
       if (deviceId) videoConstraints.deviceId = { exact: deviceId };
-      else videoConstraints.facingMode = "user";
+      else videoConstraints.facingMode = { ideal: "user" };
       // Invoke getUserMedia immediately in the click stack so browsers can show
       // their permission UI before any deployment or model checks run.
       const permissionRequest = navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
@@ -310,10 +321,10 @@ export class AttentionGuardController {
         // Device IDs are origin-specific and can go stale when moving between
         // Vercel preview/production URLs. Retry the user's default camera when
         // an exact ID or strict constraint prevents the browser from prompting.
-        const canRetryDefault = isCameraConstraintError(error) && (Boolean(deviceId) || (error instanceof Error && error.name === "OverconstrainedError"));
+        const canRetryDefault = isCameraConstraintError(error) && (Boolean(deviceId) || errorName(error) === "OverconstrainedError");
         if (!canRetryDefault || run !== this.generation) throw error;
         this.updateState({ startupStage: "retrying-default-camera" });
-        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user" } });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "user" } } });
       }
       if (this.permissionTimer != null) window.clearTimeout(this.permissionTimer);
       this.permissionTimer = null;
