@@ -154,6 +154,7 @@ export default function AttentionGuardPanel({
   const classification = useSyncExternalStore(controller.subscribeClassification, controller.getClassification, controller.getClassification);
   const previewRef = useRef<HTMLVideoElement | null>(null);
   const profileFileRef = useRef<HTMLInputElement | null>(null);
+  const activeViewRef = useRef<HTMLDivElement | null>(null);
   const [newProfileName, setNewProfileName] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
   const [view, setView] = useState<"monitor" | "calibrate" | "lab">("monitor");
@@ -165,8 +166,9 @@ export default function AttentionGuardPanel({
   const showFocusTimerAction = view === "monitor" && profile.calibratedAt != null && !focusTimerActive && !isActive && !pausedTemporaryRun;
   const canStartFocusTracking = canStartFocusTrackingFromView(view, focusTimerActive);
   const canStartFocusCamera = canStartFocusTracking && profile.calibratedAt != null;
+  const canStartTemporaryCamera = view === "calibrate" || view === "lab";
   const controlChecked = isActive;
-  const controlDisabled = !canStartFocusCamera && !isActive;
+  const controlDisabled = !isActive && !canStartTemporaryCamera && !canStartFocusCamera;
   const supported = typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
   const warningSoundSupported = soundSupported();
   const profilesForMode = store.profiles.filter((item) => item.mode === store.mode);
@@ -180,7 +182,10 @@ export default function AttentionGuardPanel({
     ? state.runPurpose === "diagnostic" ? "Temporary Test Lab camera is on" : state.runPurpose === "calibration" ? "Temporary calibration camera is on" : "Focus tracking is on"
     : state.status === "starting"
       ? state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.runPurpose === "calibration" ? "Starting temporary calibration camera…" : "Starting focus tracking…"
-      : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off";
+      : state.status === "paused" ? "Camera paused"
+        : state.status === "error" ? "Camera setup failed"
+          : view === "calibrate" ? "Temporary calibration camera is off"
+            : view === "lab" ? "Temporary Test Lab camera is off" : "Tracking is off";
   const cameraVisualStatus = state.status === "starting"
     ? state.startupStage === "requesting-permission" ? "Waiting for camera permission"
       : state.startupStage === "retrying-default-camera" ? "Trying the default camera"
@@ -203,8 +208,8 @@ export default function AttentionGuardPanel({
           : "No face detected · move into the dashed guide and improve lighting if needed."
       : state.status === "paused" ? "The camera is off while this tab is in the background. Start it again when you return."
         : state.status === "error" ? state.error
-          : view === "calibrate" ? "Start the temporary camera above to activate the framing guide."
-            : view === "lab" ? "Start the temporary camera test to see live local feedback."
+          : view === "calibrate" ? "Use “Start temporary camera” in the controls above or Live prechecks below to activate the framing guide."
+            : view === "lab" ? "Use “Start Test Lab camera” in the controls above or below to see live local feedback."
               : "Start the camera when you are ready; it stays off otherwise.";
   const cameraDescription = (() => {
     if (state.status === "on") {
@@ -231,17 +236,19 @@ export default function AttentionGuardPanel({
   })();
   const toggleLabel = isActive
     ? isTemporaryRun ? "Stop temporary camera" : "Turn off tracking"
-    : view !== "monitor"
-      ? "Use temporary camera below"
-      : profile.calibratedAt == null
-        ? "Calibrate profile to enable tracking"
-        : state.status === "error" && canStartFocusTracking
-          ? "Retry camera"
-          : state.status === "paused" && state.runPurpose === "focus" && canStartFocusTracking
-            ? "Turn tracking back on"
-            : canStartFocusCamera
-              ? "Turn on tracking"
-              : "Focus timer required";
+    : view === "calibrate"
+      ? state.status === "error" ? "Retry temporary camera" : "Start temporary camera"
+      : view === "lab"
+        ? state.status === "error" ? "Retry Test Lab camera" : "Start Test Lab camera"
+        : profile.calibratedAt == null
+          ? "Calibrate profile to enable tracking"
+          : state.status === "error" && canStartFocusTracking
+            ? "Retry camera"
+            : state.status === "paused" && state.runPurpose === "focus" && canStartFocusTracking
+              ? "Turn tracking back on"
+              : canStartFocusCamera
+                ? "Turn on tracking"
+                : "Focus timer required";
   const focusTimerActionLabel = timerMode === "focus" ? "Start or resume Focus timer" : "Switch to Focus and start";
 
   const bindPreview = useCallback((node: HTMLVideoElement | null) => {
@@ -286,12 +293,18 @@ export default function AttentionGuardPanel({
   }, [controller, isActive, selectedDeviceId, state.activeDeviceId, state.devices, state.devicesReady, state.selectedDeviceId, updateStore]);
 
   function changeView(nextView: typeof view) {
-    if (nextView === view) return;
-    const purpose = controller.getState().runPurpose;
-    const leavingTemporaryRun = (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic");
-    const leavingFocusTracking = nextView !== "monitor" && purpose === "focus";
-    if (leavingTemporaryRun || leavingFocusTracking) controller.stop();
-    setView(nextView);
+    if (nextView !== view) {
+      const purpose = controller.getState().runPurpose;
+      const leavingTemporaryRun = (view === "calibrate" && purpose === "calibration") || (view === "lab" && purpose === "diagnostic");
+      const leavingFocusTracking = nextView !== "monitor" && purpose === "focus";
+      if (leavingTemporaryRun || leavingFocusTracking) controller.stop();
+      setView(nextView);
+    }
+    if (nextView !== "monitor") {
+      window.requestAnimationFrame(() => {
+        activeViewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   }
 
   function updateProfile(patch: Partial<AttentionProfile>) {
@@ -426,8 +439,13 @@ export default function AttentionGuardPanel({
             aria-checked={controlChecked}
             disabled={controlDisabled}
             onClick={() => {
-              if (isActive) controller.stop();
-              else if (canStartFocusCamera) {
+              if (isActive) {
+                controller.stop();
+              } else if (view === "calibrate") {
+                void controller.startCalibration(selectedDeviceId);
+              } else if (view === "lab") {
+                void controller.startDiagnostic(selectedDeviceId);
+              } else if (canStartFocusCamera) {
                 void controller.start(selectedDeviceId);
               }
             }}
@@ -542,6 +560,7 @@ export default function AttentionGuardPanel({
         {profileMessage && <p className="attention-inline-message" role="status">{profileMessage}</p>}
       </section>
 
+      <div className="attention-view-content" ref={activeViewRef}>
       {view === "calibrate" ? (
         <CalibrationWizard
           controller={controller}
@@ -629,6 +648,7 @@ export default function AttentionGuardPanel({
       </details>
         </div>
       )}
+      </div>
 
       <details className="attention-privacy">
         <summary>Camera and privacy details</summary>

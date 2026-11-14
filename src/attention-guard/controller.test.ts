@@ -113,6 +113,17 @@ describe("Attention Guard controller lifecycle gate", () => {
     controller.stop();
   });
 
+  it("allows the explicit calibration camera without starting or requiring a Focus timer", async () => {
+    const mocks = installCameraMocks(2);
+    const controller = new AttentionGuardController();
+
+    await controller.startCalibration();
+
+    expect(controller.getState()).toMatchObject({ status: "starting", runPurpose: "calibration", startupStage: "loading-model" });
+    expect(mocks.getUserMedia).toHaveBeenCalledTimes(1);
+    controller.stop();
+  });
+
   it("keeps facing mode and video size as preferences so ordinary webcams still prompt", async () => {
     const mocks = installCameraMocks(2);
     const controller = new AttentionGuardController();
