@@ -19,6 +19,7 @@ const OFF_STATE: GuardRuntimeState = {
   selectedDeviceId: "",
   activeDeviceId: "",
   runPurpose: null,
+  startupStage: null,
 };
 
 function cameraErrorMessage(error: unknown) {
@@ -53,6 +54,33 @@ function createWorker() {
 
 function assetUrl(path: string) {
   return new URL(`${import.meta.env.BASE_URL}${path}`, document.baseURI).href;
+}
+
+const CAMERA_DEPLOYMENT_FILES = [
+  "attention-guard/worker.js",
+  "attention-guard/face_landmarker.task",
+  "attention-guard/wasm/vision_wasm_module_internal.js",
+  "attention-guard/wasm/vision_wasm_module_internal.wasm",
+] as const;
+
+async function verifyCameraDeploymentFiles() {
+  const deploymentHint = 'Vercel must run "npm run build" and publish "dist".';
+  await Promise.all(CAMERA_DEPLOYMENT_FILES.map(async (path) => {
+    let response: Response;
+    try {
+      response = await fetch(assetUrl(path), { method: "HEAD", cache: "no-store" });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Network request failed.";
+      throw new Error(`Could not verify camera file "${path}". Check network access and deployment settings. ${deploymentHint} (${detail})`);
+    }
+    if (!response.ok) {
+      throw new Error(`Camera file "${path}" returned HTTP ${response.status}. ${deploymentHint}`);
+    }
+    const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+    if (contentType.includes("text/html") || (path.endsWith(".js") && !/javascript|ecmascript/.test(contentType))) {
+      throw new Error(`Camera file "${path}" is being served with an invalid content type (${contentType || "missing"}). ${deploymentHint}`);
+    }
+  }));
 }
 
 export class AttentionGuardController {
@@ -203,6 +231,7 @@ export class AttentionGuardController {
         error: "Calibrate the active Attention Guard profile before starting Focus tracking.",
         activeDeviceId: "",
         runPurpose: null,
+        startupStage: null,
       });
       return;
     }
@@ -223,7 +252,14 @@ export class AttentionGuardController {
     this.stopResources();
     this.classifierMemory = createClassifierMemory();
     this.setSignals(null);
-    this.updateState({ status: "starting", error: "", selectedDeviceId: deviceId, activeDeviceId: "", runPurpose });
+    this.updateState({
+      status: "starting",
+      error: "",
+      selectedDeviceId: deviceId,
+      activeDeviceId: "",
+      runPurpose,
+      startupStage: "requesting-permission",
+    });
 
     if (!window.isSecureContext) {
       this.fail(run, new Error("Camera access requires a secure page (HTTPS or localhost)."));
@@ -256,10 +292,19 @@ export class AttentionGuardController {
       this.video.autoplay = true;
       this.video.srcObject = stream;
       const activeDeviceId = stream.getVideoTracks()[0]?.getSettings().deviceId ?? deviceId;
-      this.updateState({ activeDeviceId, selectedDeviceId: activeDeviceId || deviceId });
+      this.updateState({
+        activeDeviceId,
+        selectedDeviceId: activeDeviceId || deviceId,
+        startupStage: "starting-camera",
+      });
       this.syncPreviewElements();
       await this.video.play();
       if (run !== this.generation) return;
+
+      this.updateState({ startupStage: "checking-deployment" });
+      await verifyCameraDeploymentFiles();
+      if (run !== this.generation) return;
+      this.updateState({ startupStage: "loading-model" });
 
       const worker = createWorker();
       this.worker = worker;
@@ -285,7 +330,7 @@ export class AttentionGuardController {
     this.generation += 1;
     this.stopResources();
     this.setSignals(null);
-    this.updateState({ status: "off", error: "", activeDeviceId: "", runPurpose: null });
+    this.updateState({ status: "off", error: "", activeDeviceId: "", runPurpose: null, startupStage: null });
   }
 
   private readonly onVisibilityChange = () => {
@@ -293,7 +338,7 @@ export class AttentionGuardController {
       this.generation += 1;
       this.stopResources();
       this.setSignals(null);
-      this.updateState({ status: "paused", error: "Tracking paused because this tab went into the background. Turn it on again when you return.", activeDeviceId: "" });
+      this.updateState({ status: "paused", error: "Tracking paused because this tab went into the background. Turn it on again when you return.", activeDeviceId: "", startupStage: null });
     }
   };
 
@@ -318,7 +363,7 @@ export class AttentionGuardController {
           this.fail(run, new Error("The camera and local model started, but no video samples arrived. Check that the selected camera is producing a live picture, then retry."));
         }
       }, FIRST_SAMPLE_TIMEOUT_MS);
-      this.updateState({ status: "on", error: "" });
+      this.updateState({ status: "on", error: "", startupStage: null });
       this.scheduleCapture(run);
       return;
     }
@@ -397,7 +442,7 @@ export class AttentionGuardController {
     this.generation += 1;
     this.stopResources();
     this.setSignals(null);
-    this.updateState({ status: "error", error: message, activeDeviceId: "", runPurpose: null });
+    this.updateState({ status: "error", error: message, activeDeviceId: "", runPurpose: null, startupStage: null });
   }
 
   private stopResources() {

@@ -1,0 +1,107 @@
+.attention-preview-placeholder > strong {
+  max-width: 30rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.8rem;
+}
+.attention-preview-placeholder.has-error {
+  padding: 1.25rem;
+  color: #ffc4c4;
+}
+.attention-preview-placeholder.has-error > span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(255, 136, 136, 0.48);
+  border-radius: 50%;
+  background: rgba(150, 35, 45, 0.18);
+  font-weight: 900;
+}
+.attention-preview-placeholder.has-error > strong {
+  color: #ffc4c4;
+}
+.attention-face-overlay {
+  z-index: 2;
+}
+.attention-camera-corner-guides {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.85));
+}
+.attention-face-guide {
+  fill: rgba(255, 209, 123, 0.025);
+  stroke: rgba(255, 209, 123, 0.8);
+  stroke-width: 0.55;
+  stroke-dasharray: 2 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  animation: attention-face-guide-breathe 2.4s ease-in-out infinite;
+}
+.attention-face-guide path {
+  fill: none;
+  stroke-dasharray: none;
+}
+.attention-preview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  z-index: 4;
+  width: fit-content;
+}
+.attention-preview-status.is-pending {
+  border-color: rgba(255, 209, 123, 0.52);
+  color: #ffe0a9;
+}
+.attention-camera-led {
+  display: block;
+  width: 0.48rem;
+  height: 0.48rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #ffc15c;
+  box-shadow: 0 0 0 2px rgba(255, 193, 92, 0.14);
+}
+.attention-camera-led.is-pending {
+  animation: attention-camera-pending 1.1s ease-in-out infinite;
+}
+.attention-camera-led.is-sampling {
+  background: #70e6a1;
+  box-shadow: 0 0 0 2px rgba(112, 230, 161, 0.16);
+  animation: attention-camera-frame 520ms ease-out;
+}
+.attention-preview-hint {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1.45rem 0.75rem 0.65rem;
+  background: linear-gradient(transparent, rgba(4, 7, 12, 0.84));
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
+@keyframes attention-camera-pending {
+  50% { opacity: 0.35; transform: scale(0.78); }
+}
+@keyframes attention-camera-frame {
+  0% { transform: scale(0.65); box-shadow: 0 0 0 0 rgba(112, 230, 161, 0.45); }
+  60% { transform: scale(1.16); box-shadow: 0 0 0 5px rgba(112, 230, 161, 0.08); }
+  100% { transform: scale(1); box-shadow: 0 0 0 2px rgba(112, 230, 161, 0.16); }
+}
+@keyframes attention-face-guide-breathe {
+  50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .attention-face-guide,
+  .attention-camera-led.is-pending,
+  .attention-camera-led.is-sampling {
+    animation: none;
+  }
+}

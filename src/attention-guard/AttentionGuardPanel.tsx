@@ -181,6 +181,29 @@ export default function AttentionGuardPanel({
     : state.status === "starting"
       ? state.runPurpose === "diagnostic" ? "Starting temporary camera test…" : state.runPurpose === "calibration" ? "Starting temporary calibration camera…" : "Starting focus tracking…"
       : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off";
+  const cameraVisualStatus = state.status === "starting"
+    ? state.startupStage === "requesting-permission" ? "Waiting for camera permission"
+      : state.startupStage === "starting-camera" ? "Opening camera stream"
+        : state.startupStage === "checking-deployment" ? "Checking camera files"
+          : "Loading local face model"
+    : state.status === "on"
+      ? signals == null ? "Model ready · waiting for first frame" : signals.facePresent ? "Live · face found" : "Live · looking for face"
+      : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Camera setup failed" : "Camera off";
+  const cameraVisualHint = state.status === "starting"
+    ? state.startupStage === "requesting-permission" ? "Approve camera access in your browser if prompted."
+      : state.startupStage === "starting-camera" ? "Connecting to the selected camera…"
+        : state.startupStage === "checking-deployment" ? "Verifying the worker, model and WebAssembly files on this deployment."
+          : "The camera is connected; loading the local face model."
+    : state.status === "on"
+      ? signals == null ? "The local model is ready and waiting for its first camera frame."
+        : signals.facePresent
+          ? state.runPurpose === "calibration" ? "Face detected · follow the highlighted calibration target below." : "Face detected · keep your full face inside the guide."
+          : "No face detected · move into the dashed guide and improve lighting if needed."
+      : state.status === "paused" ? "The camera is off while this tab is in the background. Start it again when you return."
+        : state.status === "error" ? state.error
+          : view === "calibrate" ? "Start the temporary camera above to activate the framing guide."
+            : view === "lab" ? "Start the temporary camera test to see live local feedback."
+              : "Start the camera when you are ready; it stays off otherwise.";
   const cameraDescription = (() => {
     if (state.status === "on") {
       if (state.runPurpose === "diagnostic") return "This explicit Test Lab run is temporary and does not trigger focus-session interventions.";
@@ -438,23 +461,42 @@ export default function AttentionGuardPanel({
       {!supported && state.status !== "error" && <p className="attention-error" role="alert">Camera access is not available in this browser. Try a current browser on HTTPS or localhost.</p>}
       {state.status === "error" && <p className="attention-error" role="alert">{state.error}</p>}
 
-      <div className="attention-preview-wrap">
+      <div className={`attention-preview-wrap is-${state.status}`}>
         {isActive ? (
           <video ref={bindPreview} className="attention-preview" autoPlay muted playsInline aria-label="Local mirrored camera preview" />
         ) : (
-          <div className="attention-preview-placeholder">
-            <span aria-hidden="true">◉</span>
-            <p>Camera preview appears here while tracking is on.</p>
+          <div className={`attention-preview-placeholder ${state.status === "error" ? "has-error" : ""}`} role={state.status === "error" ? "alert" : undefined}>
+            <span aria-hidden="true">{state.status === "error" ? "!" : state.status === "paused" ? "Ⅱ" : "◉"}</span>
+            <strong>{cameraVisualStatus}</strong>
+            <p>{cameraVisualHint}</p>
           </div>
         )}
-        {isActive && facePreviewBox && (
+        {isActive && (
           <svg className="attention-face-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <rect className="attention-face-outline" x={facePreviewBox.x * 100} y={facePreviewBox.y * 100} width={facePreviewBox.width * 100} height={facePreviewBox.height * 100} rx="3" />
+            <path className="attention-camera-corner-guides" d="M8 20V8h12 M80 8h12v12 M92 80v12H80 M20 92H8V80" />
+            {facePreviewBox ? (
+              <rect className="attention-face-outline" x={facePreviewBox.x * 100} y={facePreviewBox.y * 100} width={facePreviewBox.width * 100} height={facePreviewBox.height * 100} rx="3" />
+            ) : (
+              <g className="attention-face-guide">
+                <ellipse cx="50" cy="47" rx="17" ry="27" />
+                <path d="M46 45h.1 M54 45h.1 M47 59q3 2 6 0" />
+              </g>
+            )}
           </svg>
         )}
-        {isActive && <span className={`attention-preview-status ${signals?.facePresent ? "has-face" : ""}`} role="status">
-          {state.status === "starting" ? "Starting local model" : signals?.facePresent ? "Face found" : signals ? "Searching for face" : "Waiting for camera samples"}
-        </span>}
+        {isActive && (
+          <>
+            <div className={`attention-preview-status ${state.status === "on" && signals?.facePresent ? "has-face" : state.status === "starting" ? "is-pending" : ""}`} role="status">
+              <i
+                key={signals?.sampledAt ?? `${state.status}:${state.startupStage ?? "ready"}`}
+                className={`attention-camera-led ${state.status === "on" && signals ? "is-sampling" : state.status === "starting" ? "is-pending" : ""}`}
+                aria-hidden="true"
+              />
+              <span>{cameraVisualStatus}</span>
+            </div>
+            <div className="attention-preview-hint" aria-live="polite">{cameraVisualHint}</div>
+          </>
+        )}
       </div>
       <p className="attention-preview-caption">The outline shows face position, not eye landmarks. Head pose is calibrated to your usual camera angle; iris direction is a coarse eye-box estimate and is not measured in screen pixels.</p>
 
@@ -496,6 +538,7 @@ export default function AttentionGuardPanel({
           controller={controller}
           profile={profile}
           cameraStatus={state.status}
+          cameraError={state.error}
           onStartCalibrationCamera={() => { controller.selectDevice(selectedDeviceId); void controller.startCalibration(selectedDeviceId); }}
           onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
         />

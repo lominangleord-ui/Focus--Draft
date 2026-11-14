@@ -50,7 +50,7 @@ function calibrationPrechecks(signals: RawAttentionSignals | null, cameraStatus:
     {
       label: "Camera",
       state: cameraReady ? "pass" : isStarting ? "waiting" : "blocked",
-      detail: cameraReady ? "Camera is on for this calibration." : isStarting ? "Waiting for the local worker to start." : "Start the temporary calibration camera to continue.",
+      detail: cameraReady ? "Camera and local model are ready for this calibration." : isStarting ? "Waiting for the local worker to start." : cameraStatus === "error" ? "Camera setup failed; read the error below and retry." : "Start the temporary calibration camera to continue.",
     },
     {
       label: "Face visible",
@@ -114,12 +114,14 @@ export default function CalibrationWizard({
   controller,
   profile,
   cameraStatus,
+  cameraError,
   onStartCalibrationCamera,
   onSave,
 }: {
   controller: AttentionGuardController;
   profile: AttentionProfile;
   cameraStatus: GuardStatus;
+  cameraError: string;
   onStartCalibrationCamera: () => void;
   onSave: (profile: AttentionProfile) => void;
 }) {
@@ -138,6 +140,10 @@ export default function CalibrationWizard({
   const tracking = cameraStatus === "on";
   const prechecks = calibrationPrechecks(signals, cameraStatus, profile);
   const canCapture = tracking && prechecks.every((check) => check.state === "pass" || check.state === "info");
+  const captureBlocker = prechecks.find((check) => check.state === "blocked" || check.state === "waiting");
+  const captureDisabledHint = capture
+    ? "Finish this capture or cancel it before starting another."
+    : captureBlocker ? `${captureBlocker.label}: ${captureBlocker.detail}` : "Start the camera and complete the live prechecks first.";
   const currentTargetId = capture?.targetId ?? targets.find((target) => (samples[target.id]?.length ?? 0) < CALIBRATION_MIN_SAMPLES)?.id ?? null;
   const currentTarget = targets.find((target) => target.id === currentTargetId) ?? targets[0];
   const result = useMemo(
@@ -150,6 +156,10 @@ export default function CalibrationWizard({
   const hasDraftTargets = Object.keys(samples).some((id) => id !== "center" && (samples[id]?.length ?? 0) > 0);
   const canApplyQuickRecenter = quickRecenter && (samples.center?.length ?? 0) >= CALIBRATION_MIN_SAMPLES;
   const canSave = result != null || (profile.calibratedAt != null && hasToleranceEdits);
+  const completedTargetCount = targets.filter((target) => (samples[target.id]?.length ?? 0) >= CALIBRATION_MIN_SAMPLES).length;
+  const saveDisabledHint = profile.calibratedAt == null
+    ? `Capture all ${targets.length} targets before saving (${completedTargetCount} ready).`
+    : "Capture a new calibration or change the zone margin before saving.";
 
   function startCapture(targetId: string) {
     if (!canCapture) {
@@ -351,10 +361,11 @@ export default function CalibrationWizard({
               <div><h4 id="attention-precheck-title">Live prechecks</h4><p>Only capture when the checks below are ready.</p></div>
               {cameraStatus !== "on" && (
                 <button type="button" className="attention-secondary-button" onClick={onStartCalibrationCamera} disabled={cameraStatus === "starting"}>
-                  {cameraStatus === "starting" ? "Starting…" : "Start temporary camera"}
+                  {cameraStatus === "starting" ? "Starting…" : cameraStatus === "error" ? "Retry camera setup" : "Start temporary camera"}
                 </button>
               )}
             </div>
+            {cameraStatus === "error" && <p className="attention-error" role="alert">{cameraError || "Camera setup failed. Retry or choose another camera."}</p>}
             <ul className="attention-precheck-list">
               {prechecks.map((check) => (
                 <li key={check.label} className={`is-${check.state}`}>
@@ -426,7 +437,7 @@ export default function CalibrationWizard({
                         <strong>{target.label}{target.kind === "negative" ? profile.mode === "screen" ? " · off-screen" : " · off-page" : ""}</strong>
                         <small>{complete ? `${count} usable numeric samples` : target.kind === "negative" ? "Capture an intentional off-task direction." : "Capture this comfortable on-task direction."}</small>
                       </div>
-                      <button type="button" className="attention-secondary-button" onClick={() => startCapture(target.id)} disabled={!canCapture || Boolean(capture)}>
+                      <button type="button" className="attention-secondary-button" onClick={() => startCapture(target.id)} disabled={!canCapture || Boolean(capture)} title={!canCapture || capture ? captureDisabledHint : undefined}>
                         {capture?.targetId === target.id ? "Capturing…" : complete ? "Retake" : "Capture"}
                       </button>
                     </li>
@@ -494,7 +505,7 @@ export default function CalibrationWizard({
                 <p className="attention-inline-message">The saved {Math.round(profile.negativeOverlap * 100)}% overlap estimate applies to the old zone. Raw samples were not retained, so this preview cannot recalculate overlap until you run a full calibration.</p>
               )}
               <div className="attention-calibration-actions">
-                <button type="button" className="panel-primary" onClick={saveAction} disabled={!canSave}>
+                <button type="button" className="panel-primary" onClick={saveAction} disabled={!canSave} title={!canSave ? saveDisabledHint : undefined}>
                   {result ? profile.calibratedAt ? "Save updated calibration" : "Save calibration" : "Save zone settings"}
                 </button>
                 <button type="button" className="attention-secondary-button" onClick={clearDraft} disabled={!Object.keys(samples).length && !capture && !quickRecenter}>Clear draft</button>

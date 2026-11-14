@@ -56,6 +56,10 @@ function installCameraMocks(videoReadyState: number) {
     createElement: () => video,
   });
   vi.stubGlobal("navigator", { mediaDevices: { getUserMedia: vi.fn(async () => stream) } });
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(null, {
+    status: 200,
+    headers: { "content-type": String(input).endsWith(".js") ? "text/javascript; charset=utf-8" : "application/octet-stream" },
+  })));
   vi.stubGlobal("HTMLMediaElement", { HAVE_CURRENT_DATA: 2 });
   vi.stubGlobal("Worker", FakeWorker);
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ close: vi.fn() })));
@@ -106,6 +110,35 @@ describe("Attention Guard controller lifecycle gate", () => {
     expect(controller.getState()).toMatchObject({ status: "starting", runPurpose: "focus" });
     expect(FakeWorker.instances).toHaveLength(1);
     controller.stop();
+  });
+
+  it("shows real camera startup stages and waits for the published worker and model assets", async () => {
+    installCameraMocks(2);
+    const controller = new AttentionGuardController();
+
+    const startup = controller.startDiagnostic();
+    expect(controller.getState()).toMatchObject({ status: "starting", startupStage: "requesting-permission" });
+    await startup;
+    expect(controller.getState()).toMatchObject({ status: "starting", startupStage: "loading-model" });
+    expect(fetch).toHaveBeenCalledTimes(4);
+
+    const worker = FakeWorker.instances[0];
+    worker.onmessage?.({ data: { type: "ready" } } as MessageEvent<AttentionWorkerResponse>);
+    expect(controller.getState()).toMatchObject({ status: "on", startupStage: null });
+    controller.stop();
+  });
+
+  it("explains when Vercel is missing the deployed camera worker or model assets", async () => {
+    const mocks = installCameraMocks(2);
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+    const controller = new AttentionGuardController();
+
+    await controller.startDiagnostic();
+
+    expect(controller.getState()).toMatchObject({ status: "error", startupStage: null });
+    expect(controller.getState().error).toContain('Vercel must run "npm run build" and publish "dist"');
+    expect(FakeWorker.instances).toHaveLength(0);
+    expect(mocks.track.stop).toHaveBeenCalled();
   });
 
   it("stops instead of showing a live camera when no video samples ever arrive", async () => {

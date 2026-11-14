@@ -47,6 +47,7 @@ export type AttentionIntervention = {
 
 export type GuardStatus = "off" | "starting" | "on" | "paused" | "error";
 export type GuardRunPurpose = "focus" | "calibration" | "diagnostic";
+export type GuardStartupStage = "requesting-permission" | "starting-camera" | "checking-deployment" | "loading-model" | null;
 
 export type CameraDevice = {
   deviceId: string;
@@ -61,6 +62,7 @@ export type GuardRuntimeState = {
   selectedDeviceId: string;
   activeDeviceId: string;
   runPurpose: GuardRunPurpose | null;
+  startupStage: GuardStartupStage;
 };
 
 export type WorkerInitMessage = {
