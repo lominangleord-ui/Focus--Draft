@@ -116,6 +116,7 @@ export default function CalibrationWizard({
   cameraStatus,
   cameraError,
   onStartCalibrationCamera,
+  onStopCalibrationCamera,
   onSave,
 }: {
   controller: AttentionGuardController;
@@ -123,6 +124,7 @@ export default function CalibrationWizard({
   cameraStatus: GuardStatus;
   cameraError: string;
   onStartCalibrationCamera: () => void;
+  onStopCalibrationCamera: () => void;
   onSave: (profile: AttentionProfile) => void;
 }) {
   const signals = useSyncExternalStore(controller.subscribeSignals, controller.getSignals, controller.getSignals);
@@ -360,8 +362,8 @@ export default function CalibrationWizard({
             <div className="attention-calibration-subheading">
               <div><h4 id="attention-precheck-title">Live prechecks</h4><p>Only capture when the checks below are ready.</p></div>
               {cameraStatus !== "on" && (
-                <button type="button" className="attention-secondary-button" onClick={onStartCalibrationCamera} disabled={cameraStatus === "starting"}>
-                  {cameraStatus === "starting" ? "Starting…" : cameraStatus === "error" ? "Retry camera setup" : "Start temporary camera"}
+                <button type="button" className="attention-secondary-button" onClick={cameraStatus === "starting" ? onStopCalibrationCamera : onStartCalibrationCamera}>
+                  {cameraStatus === "starting" ? "Cancel camera startup" : cameraStatus === "error" ? "Retry camera setup" : "Start temporary camera"}
                 </button>
               )}
             </div>

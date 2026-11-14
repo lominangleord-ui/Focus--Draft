@@ -183,17 +183,19 @@ export default function AttentionGuardPanel({
       : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Tracking stopped" : "Tracking is off";
   const cameraVisualStatus = state.status === "starting"
     ? state.startupStage === "requesting-permission" ? "Waiting for camera permission"
-      : state.startupStage === "starting-camera" ? "Opening camera stream"
-        : state.startupStage === "checking-deployment" ? "Checking camera files"
-          : "Loading local face model"
+      : state.startupStage === "retrying-default-camera" ? "Trying the default camera"
+        : state.startupStage === "starting-camera" ? "Opening camera stream"
+          : state.startupStage === "checking-deployment" ? "Checking camera files"
+            : "Loading local face model"
     : state.status === "on"
       ? signals == null ? "Model ready · waiting for first frame" : signals.facePresent ? "Live · face found" : "Live · looking for face"
       : state.status === "paused" ? "Camera paused" : state.status === "error" ? "Camera setup failed" : "Camera off";
   const cameraVisualHint = state.status === "starting"
     ? state.startupStage === "requesting-permission" ? "Approve camera access in your browser if prompted."
-      : state.startupStage === "starting-camera" ? "Connecting to the selected camera…"
-        : state.startupStage === "checking-deployment" ? "Verifying the worker, model and WebAssembly files on this deployment."
-          : "The camera is connected; loading the local face model."
+      : state.startupStage === "retrying-default-camera" ? "The saved camera setting did not work; asking for the browser's default camera."
+        : state.startupStage === "starting-camera" ? "Connecting to the selected camera…"
+          : state.startupStage === "checking-deployment" ? "Verifying the worker, model and WebAssembly files on this deployment."
+            : "The camera is connected; loading the local face model."
     : state.status === "on"
       ? signals == null ? "The local model is ready and waiting for its first camera frame."
         : signals.facePresent
@@ -267,13 +269,21 @@ export default function AttentionGuardPanel({
   }, [controller, view]);
 
   useEffect(() => {
+    if (isActive) {
+      // Remember the browser's resolved default/fallback device without letting
+      // a stale saved ID overwrite the live device during startup.
+      if (state.activeDeviceId && state.selectedDeviceId !== selectedDeviceId) {
+        updateStore({ cameraDeviceId: state.selectedDeviceId });
+      }
+      return;
+    }
     if (isCameraSelectionConfirmedMissing(selectedDeviceId, state.devices, state.devicesReady)) {
       if (state.selectedDeviceId) controller.selectDevice("");
       updateStore({ cameraDeviceId: "" });
       return;
     }
     if (state.selectedDeviceId !== selectedDeviceId) controller.selectDevice(selectedDeviceId);
-  }, [controller, selectedDeviceId, state.devices, state.devicesReady, state.selectedDeviceId, updateStore]);
+  }, [controller, isActive, selectedDeviceId, state.activeDeviceId, state.devices, state.devicesReady, state.selectedDeviceId, updateStore]);
 
   function changeView(nextView: typeof view) {
     if (nextView === view) return;
@@ -418,7 +428,6 @@ export default function AttentionGuardPanel({
             onClick={() => {
               if (isActive) controller.stop();
               else if (canStartFocusCamera) {
-                controller.selectDevice(selectedDeviceId);
                 void controller.start(selectedDeviceId);
               }
             }}
@@ -539,7 +548,8 @@ export default function AttentionGuardPanel({
           profile={profile}
           cameraStatus={state.status}
           cameraError={state.error}
-          onStartCalibrationCamera={() => { controller.selectDevice(selectedDeviceId); void controller.startCalibration(selectedDeviceId); }}
+          onStartCalibrationCamera={() => { void controller.startCalibration(selectedDeviceId); }}
+          onStopCalibrationCamera={() => controller.stop()}
           onSave={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
         />
       ) : view === "lab" ? (
@@ -548,7 +558,7 @@ export default function AttentionGuardPanel({
           profile={profile}
           cameraStatus={state.status}
           runPurpose={state.runPurpose}
-          onStartCamera={() => { controller.selectDevice(selectedDeviceId); void controller.startDiagnostic(selectedDeviceId); }}
+          onStartCamera={() => { void controller.startDiagnostic(selectedDeviceId); }}
           onStopCamera={() => controller.stop()}
           onSaveProfile={(next) => updateStore((previous) => upsertAttentionProfile(previous, next))}
         />

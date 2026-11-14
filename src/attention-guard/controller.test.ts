@@ -55,7 +55,8 @@ function installCameraMocks(videoReadyState: number) {
     baseURI: "https://focus.example.test/",
     createElement: () => video,
   });
-  vi.stubGlobal("navigator", { mediaDevices: { getUserMedia: vi.fn(async () => stream) } });
+  const getUserMedia = vi.fn(async () => stream);
+  vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(null, {
     status: 200,
     headers: { "content-type": String(input).endsWith(".js") ? "text/javascript; charset=utf-8" : "application/octet-stream" },
@@ -63,7 +64,7 @@ function installCameraMocks(videoReadyState: number) {
   vi.stubGlobal("HTMLMediaElement", { HAVE_CURRENT_DATA: 2 });
   vi.stubGlobal("Worker", FakeWorker);
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ close: vi.fn() })));
-  return { track, video, worker: () => FakeWorker.instances[0] };
+  return { track, stream, video, getUserMedia, worker: () => FakeWorker.instances[0] };
 }
 
 function deferred<T>() {
@@ -126,6 +127,45 @@ describe("Attention Guard controller lifecycle gate", () => {
     worker.onmessage?.({ data: { type: "ready" } } as MessageEvent<AttentionWorkerResponse>);
     expect(controller.getState()).toMatchObject({ status: "on", startupStage: null });
     controller.stop();
+  });
+
+  it("retries the browser default camera when a saved device ID cannot be opened", async () => {
+    const mocks = installCameraMocks(2);
+    const getUserMedia = vi.fn()
+      .mockRejectedValueOnce(new DOMException("Saved camera is unavailable", "OverconstrainedError"))
+      .mockResolvedValueOnce(mocks.stream);
+    vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
+    const controller = new AttentionGuardController();
+
+    await controller.startDiagnostic("stale-camera-id");
+
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(getUserMedia.mock.calls[0]?.[0]).toMatchObject({ video: { deviceId: { exact: "stale-camera-id" } } });
+    expect(getUserMedia.mock.calls[1]?.[0]).toMatchObject({ video: { facingMode: "user" } });
+    expect(controller.getState()).toMatchObject({ status: "starting", startupStage: "loading-model", selectedDeviceId: "mock-camera" });
+    expect(FakeWorker.instances).toHaveLength(1);
+    controller.stop();
+  });
+
+  it("times out a camera permission request that never receives a browser response", async () => {
+    vi.useFakeTimers();
+    const mocks = installCameraMocks(2);
+    const pendingPermission = deferred<MediaStream>();
+    const getUserMedia = vi.fn(() => pendingPermission.promise);
+    vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
+    const controller = new AttentionGuardController();
+
+    const startup = controller.startDiagnostic();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(controller.getState()).toMatchObject({ status: "starting", startupStage: "requesting-permission" });
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(controller.getState()).toMatchObject({ status: "error", startupStage: null });
+    expect(controller.getState().error).toContain("Camera permission is still pending");
+
+    pendingPermission.resolve(mocks.stream);
+    await startup;
+    expect(mocks.track.stop).toHaveBeenCalled();
   });
 
   it("explains when Vercel is missing the deployed camera worker or model assets", async () => {

@@ -7,6 +7,7 @@ import type { AttentionProfile } from "./profile";
 import type { AttentionClassification, AttentionIntervention, AttentionWorkerResponse, CameraDevice, GuardRunPurpose, GuardRuntimeState, RawAttentionSignals } from "./types";
 
 const FIRST_SAMPLE_TIMEOUT_MS = 20_000;
+const CAMERA_PERMISSION_TIMEOUT_MS = 30_000;
 const FRAME_RESPONSE_TIMEOUT_MS = 8_000;
 const SAMPLE_STALL_TIMEOUT_MS = 8_000;
 const MAX_CAPTURE_FAILURES = 4;
@@ -22,10 +23,24 @@ const OFF_STATE: GuardRuntimeState = {
   startupStage: null,
 };
 
+function isEmbeddedDocument() {
+  try {
+    return window.top !== window.self;
+  } catch {
+    return true;
+  }
+}
+
+function isCameraConstraintError(error: unknown) {
+  const name = error instanceof Error ? error.name : "";
+  return name === "OverconstrainedError" || name === "NotFoundError" || name === "DevicesNotFoundError";
+}
+
 function cameraErrorMessage(error: unknown) {
   if (!(error instanceof DOMException)) return error instanceof Error ? error.message : "Camera could not be started.";
   if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-    return "Camera permission was denied. Allow camera access in your browser, then try again.";
+    const embeddedHint = isEmbeddedDocument() ? " This app is embedded; open its Vercel URL directly or allow camera access in the parent page too." : "";
+    return `Camera permission was denied or blocked by browser/site settings. Allow camera for this site using the address-bar permission icon, then retry.${embeddedHint}`;
   }
   if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
     return "No camera was found. Connect a camera and try again.";
@@ -102,6 +117,7 @@ export class AttentionGuardController {
   private initTimer: number | null = null;
   private firstSampleTimer: number | null = null;
   private frameResponseTimer: number | null = null;
+  private permissionTimer: number | null = null;
   private consecutiveCaptureFailures = 0;
   private lastSampleReceivedAt: number | null = null;
   private screenBreakReminderMinutes = 0;
@@ -266,7 +282,10 @@ export class AttentionGuardController {
       return;
     }
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.fail(run, new Error("This browser does not support camera access."));
+      const message = isEmbeddedDocument()
+        ? "Camera access is unavailable in this embedded page. Open the Vercel URL directly, or allow camera access for the iframe in its parent page."
+        : "This browser does not expose camera access. Open the HTTPS Vercel URL in a current browser and check its site permissions.";
+      this.fail(run, new Error(message));
       return;
     }
 
@@ -278,7 +297,26 @@ export class AttentionGuardController {
       };
       if (deviceId) videoConstraints.deviceId = { exact: deviceId };
       else videoConstraints.facingMode = "user";
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
+      // Invoke getUserMedia immediately in the click stack so browsers can show
+      // their permission UI before any deployment or model checks run.
+      const permissionRequest = navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
+      this.permissionTimer = window.setTimeout(() => {
+        this.fail(run, new Error("Camera permission is still pending. If no browser prompt appeared, allow camera for this site in the address-bar permission settings, then retry. Embedded pages also need the parent page to allow camera access."));
+      }, CAMERA_PERMISSION_TIMEOUT_MS);
+      let stream: MediaStream;
+      try {
+        stream = await permissionRequest;
+      } catch (error) {
+        // Device IDs are origin-specific and can go stale when moving between
+        // Vercel preview/production URLs. Retry the user's default camera when
+        // an exact ID or strict constraint prevents the browser from prompting.
+        const canRetryDefault = isCameraConstraintError(error) && (Boolean(deviceId) || (error instanceof Error && error.name === "OverconstrainedError"));
+        if (!canRetryDefault || run !== this.generation) throw error;
+        this.updateState({ startupStage: "retrying-default-camera" });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user" } });
+      }
+      if (this.permissionTimer != null) window.clearTimeout(this.permissionTimer);
+      this.permissionTimer = null;
       if (run !== this.generation) {
         stream.getTracks().forEach((track) => track.stop());
         return;
@@ -447,10 +485,12 @@ export class AttentionGuardController {
 
   private stopResources() {
     if (this.captureTimer != null) window.clearTimeout(this.captureTimer);
+    if (this.permissionTimer != null) window.clearTimeout(this.permissionTimer);
     if (this.initTimer != null) window.clearTimeout(this.initTimer);
     if (this.firstSampleTimer != null) window.clearTimeout(this.firstSampleTimer);
     if (this.frameResponseTimer != null) window.clearTimeout(this.frameResponseTimer);
     this.captureTimer = null;
+    this.permissionTimer = null;
     this.initTimer = null;
     this.firstSampleTimer = null;
     this.frameResponseTimer = null;
